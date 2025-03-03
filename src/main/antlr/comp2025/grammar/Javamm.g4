@@ -12,7 +12,7 @@ RETURN : 'return' ;
 VARARGS : '...'; // TODO Check 1.3 for later modifications
 INTEGER : [0-9]+ ;
 ID : [a-zA-Z]+ ;
-BOOL : 'true' | 'false';
+BOOLEAN : 'true' | 'false';
 
 SINGLE_COMMENT : '//' .*? '\n' -> skip ;
 MULTI_COMMENT : '/*' .*? '*/' -> skip ;
@@ -39,11 +39,14 @@ varDecl
     ;
 
 type
-    : 'int' '[' ']'
-    | 'int' VARARGS
-    | 'boolean'
-    | name='int' // name required to pass initial tests
+    : type '[' ']'
+    | 'int' VARARGS // todo: check above
     | name=ID
+    | name='int' // name required to pass initial tests
+    | name='String'
+    | name='boolean'
+    | name='double'
+    | name='float'
     ;
 
 methodDecl locals[boolean isPublic=false]
@@ -51,9 +54,9 @@ methodDecl locals[boolean isPublic=false]
         type name=ID
         '(' param ')'
         '{' varDecl* stmt* '}'
-    // TODO check if needed
-    // | ('public')? type name=ID '(' ( type name=ID ( ',' type name=ID )* )? ')' '{' ( varDecl)* ( stmt )* 'return' expr ';' '}'
-    // | ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' name=ID ')' '{' ( varDecl )* ( stmt )* '}'
+    /* todo: tb checked, if add content below, also passes the tests
+    | ('public')? type name=ID '(' ( type name=ID ( ',' type name=ID )* )? ')' '{' ( varDecl)* ( stmt )* 'return' expr ';' '}'
+    | ('public')? 'static' 'void' 'main' '(' 'String' '[' ']' name=ID ')' '{' ( varDecl )* ( stmt )* '}'*/
     ;
 
 param
@@ -88,7 +91,7 @@ expr
     | expr op='&&' expr #BinaryExpr
     | expr op='||' expr #BinaryExpr
     | value=INTEGER #IntegerLiteral
-    | value=BOOL #BooleanLiteral
+    | value=BOOLEAN #BooleanLiteral
     | name=ID #VarRefExpr
     | '[' (expr ('.' expr)* )? ']' #ArrayLiteral
     ;
