@@ -10,7 +10,7 @@ PUBLIC : 'public' ;
 RETURN : 'return' ;
 
 VARARGS : '...'; // TODO Check 1.3 for later modifications
-INTEGER : [0-9] ;
+INTEGER : [0-9]+ ;
 ID : [a-zA-Z]+ ;
 BOOL : 'true' | 'false';
 
@@ -57,7 +57,7 @@ methodDecl locals[boolean isPublic=false]
     ;
 
 param
-    : type name=ID
+    : (type name=ID (',' type name=ID)*)?
     ;
 
 stmt
@@ -82,14 +82,13 @@ expr
     | expr '.' name=ID '(' ( expr ( ',' expr )* )? ')' #MethodCallExpr
     | expr '[' expr ']' #ArrayAccessExpr
     | 'this' #ThisExpr
-    | op='!' expr #BinaryExpr
+    | op='!' expr #UnaryOpExpr
     | expr op=('*' | '/') expr #BinaryExpr
     | expr op=('+' | '-') expr #BinaryExpr
     | expr op='&&' expr #BinaryExpr
     | expr op='||' expr #BinaryExpr
-    | value=INTEGER #IntegerLiteral 
+    | value=INTEGER #IntegerLiteral
     | value=BOOL #BooleanLiteral
-    | name=ID #VarRefExpr 
+    | name=ID #VarRefExpr
     | '[' (expr ('.' expr)* )? ']' #ArrayLiteral
     ;
-
