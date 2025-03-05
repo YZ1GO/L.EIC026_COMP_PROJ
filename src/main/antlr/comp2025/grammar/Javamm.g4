@@ -40,8 +40,7 @@ varDecl
     ;
 
 type
-    : 'int' VARARGS // todo: check above
-    | name=ID
+    : name=ID
     | name='int' // name required to pass initial tests
     | name='String'
     | name='boolean'
@@ -62,7 +61,7 @@ methodDecl locals[boolean isPublic=false]
     ;
 
 param
-    : (type name=ID (',' type name=ID)*)?
+    : (type name=ID (',' type name=ID)*)? (',' 'int' VARARGS name=ID)?
     ;
 
 stmt
