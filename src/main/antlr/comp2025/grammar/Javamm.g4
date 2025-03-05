@@ -20,10 +20,10 @@ MULTI_COMMENT : '/*' .*? '*/' -> skip ;
 WS : [ \t\n\r\f]+ -> skip ;
 
 program
-    :  (importDeclaration)* classDecl EOF
+    :  (importDecl)* classDecl EOF
     ;
 
-importDeclaration
+importDecl
     : 'import' name=ID ( '.' ID )* ';'
     ;
 
@@ -61,6 +61,7 @@ methodDecl locals[boolean isPublic=false]
 
 param
     : (type name=ID (',' type name=ID)*)? (',' 'int' VARARGS name=ID)?
+    | 'int' VARARGS name=ID
     ;
 
 stmt
@@ -95,5 +96,5 @@ expr
     | value=INTEGER #IntegerLiteral
     | value=BOOLEAN #BooleanLiteral
     | name=ID #VarRefExpr
-    | '[' (expr ('.' expr)* )? ']' #ArrayLiteral
+    | '[' (expr (',' expr)* )? ']' #ArrayLiteral
     ;
