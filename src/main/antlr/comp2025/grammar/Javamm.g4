@@ -35,17 +35,16 @@ classDecl
     ;
 
 varDecl
-    : type name=ID ';'
-    | type name=ID op='[' op=']' ';'
+    : type name=ID ('[' ']')? ';'
     ;
 
 type
-    : name=ID
-    | name='int' // name required to pass initial tests
+    : name='int' // name required to pass initial tests
     | name='String'
     | name='boolean'
     | name='double'
     | name='float'
+    | name=ID
     | type '[' ']'
     ;
 
@@ -82,9 +81,9 @@ expr
     : '(' expr ')' #ParentExpr
     | 'new' 'int' '[' expr ']' #NewIntArrayExpr
     | 'new' name=ID '(' ( expr ( ',' expr )* )? ')' #NewObjectExpr
+    | expr '[' expr ']' #ArrayAccessExpr
     | expr '.' 'length' #LengthExpr
     | expr '.' name=ID '(' ( expr ( ',' expr )* )? ')' #MethodCallExpr
-    | expr '[' expr ']' #ArrayAccessExpr
     | 'this' #ThisExpr
     | op='!' expr #UnaryNotExpr
     | expr op=('*' | '/') expr #BinaryExpr  // Changing 'Binary' will fail initial tests
