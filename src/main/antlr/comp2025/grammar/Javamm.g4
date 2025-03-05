@@ -10,7 +10,7 @@ PUBLIC : 'public' ;
 STATIC : 'static' ;
 RETURN : 'return' ;
 
-VARARGS : '...'; // TODO Check 1.3 for later modifications
+VARARGS : '...';
 INTEGER : [0-9]+ ;
 ID : [a-zA-Z_] [a-zA-Z0-9_]* ;
 BOOLEAN : 'true' | 'false';
@@ -40,17 +40,18 @@ varDecl
     ;
 
 type
-    : type '[' ']'
-    | 'int' VARARGS // todo: check above
+    : 'int' VARARGS // todo: check above
     | name=ID
     | name='int' // name required to pass initial tests
     | name='String'
     | name='boolean'
     | name='double'
     | name='float'
+    | type '[' ']'
     ;
 
 methodDecl locals[boolean isPublic=false]
+    // TODO: check how to enforce a 'return' stmt in regular method
     : (PUBLIC {$isPublic=true;})? STATIC?
         type name=ID
         '(' param ')'
@@ -75,7 +76,7 @@ stmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     | name=ID '.' name=ID '=' expr ';' #FieldAssignStmt
     | expr '=' expr ';' #AssignStmt
-    | 'return' expr ';' #ReturnStmt
+    | RETURN expr ';' #ReturnStmt
     ;
 
 expr
