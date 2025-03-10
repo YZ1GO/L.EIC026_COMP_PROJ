@@ -60,8 +60,16 @@ methodDecl locals[boolean isPublic=false]
     ;
 
 param
-    : (type name=ID (',' type name=ID)*)? (',' 'int' VARARGS name=ID)?
-    | 'int' VARARGS name=ID
+    : (regularParam (',' regularParam)* (',' varArgsParam)?)
+    | varArgsParam
+    ;
+
+regularParam
+    : type name=ID            #RegularParameter
+    ;
+
+varArgsParam
+    : 'int' VARARGS name=ID   #VarArgsParameter
     ;
 
 stmt
