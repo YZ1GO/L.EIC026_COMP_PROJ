@@ -93,6 +93,9 @@ public class JmmSymbolTableBuilder {
                 })
                 .toList();
 
+            // Debug statement to print parameters
+            System.out.println("Method: " + name + ", Params: " + params);
+
             map.put(name, params);
         }
 

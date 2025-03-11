@@ -20,33 +20,13 @@ public class TypeUtils {
     public static Type newIntType() {
         return new Type("int", false);
     }
-
-    public static Type newStringType() {
-        return new Type("String", false);
-    }
-
-    public static Type newBooleanType() {
-        return new Type("boolean", false);
-    }
-
-    public static Type newDoubleType() {
-        return new Type("double", false);
-    }
-
-    public static Type newFloatType() {
-        return new Type("float", false);
-    }
-
-    public static Type newArrayType(Type baseType) {
-        return new Type(baseType.getName(), true);
-    }
     
     public static Type convertType(JmmNode typeNode) {
 
         // TODO: When you support new types, this must be updated
         // DONE: Updated to support new types
         String name = typeNode.get("name");
-        boolean isArray = !typeNode.getChildren().isEmpty();
+        boolean isArray = Boolean.parseBoolean(typeNode.get("isArray"));
 
         return new Type(name, isArray);
     }
