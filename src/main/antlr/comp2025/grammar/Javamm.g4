@@ -40,10 +40,9 @@ varDecl
 
 type
     : name='int' // name required to pass initial tests
-    | name='String'
+    | name='String' // TODO: In semantic analysis, check the ID instead of String keywords (remove all String from grammar)
     | name='boolean'
-    | name='double'
-    | name='float'
+    | name='void'
     | name=ID
     | type name='[' ']'
     ;

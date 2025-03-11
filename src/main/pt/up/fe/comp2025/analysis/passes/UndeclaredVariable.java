@@ -47,6 +47,13 @@ public class UndeclaredVariable extends AnalysisVisitor {
             return null;
         }
 
+        // Var is declared outside the method, return
+        if (table.getFields().stream()
+                .anyMatch(varDecl -> varDecl.getName().equals(varRefName))) {
+            return null;
+        }
+
+
 
         // Create error report
         var message = String.format("Variable '%s' does not exist.", varRefName);

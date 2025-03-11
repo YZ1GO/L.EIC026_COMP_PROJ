@@ -65,9 +65,13 @@ public class JmmSymbolTableBuilder {
             var name = method.get("name");
             // TODO: After you add more types besides 'int', you will have to update this
             // DONE: Updated based on convertType from TypeUtils.java
-            var returnTypeNode = method.getChild(0);
-            var returnType = TypeUtils.convertType(returnTypeNode);
-            map.put(name, returnType);
+            if (method.getNumChildren() > 0) {
+                var returnTypeNode = method.getChild(0);
+                var returnType = TypeUtils.convertType(returnTypeNode);
+                map.put(name, returnType);
+            } else {
+                map.put(name, new Type("void", false));
+            }
         }
 
         return map;
