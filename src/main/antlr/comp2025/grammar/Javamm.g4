@@ -42,7 +42,7 @@ type locals[boolean isArray=false, boolean isVarArgs=false]
     : name=INT VARARGS {$isArray=true; $isVarArgs=true;}
     | name=INT '[' ']' {$isArray=true;}
     | name=ID '[' ']' {$isArray=true;}
-    | name=INT // name required to pass initial tests
+    | name=INT
     | name='String' // TODO: In semantic analysis, check the ID instead of String keywords (remove all String from grammar)
     | name='boolean'
     | name='void'
@@ -60,8 +60,6 @@ methodDecl locals[boolean isPublic=false]
     ;
 
 param
-    // TODO: Check how to allow 0 params in semantic analysis
-    // TODO: Change into single and check hasVarargs with Java
     : type name=ID
     ;
 
