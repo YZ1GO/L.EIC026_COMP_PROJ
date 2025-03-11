@@ -49,11 +49,10 @@ type
     ;
 
 methodDecl locals[boolean isPublic=false]
-    // TODO: check how to enforce a 'return' stmt in regular method
     : (PUBLIC {$isPublic=true;})? STATIC?
         type name=ID
         '(' param ')'
-        '{' varDecl* stmt* '}'  #RegularMethod
+        '{' varDecl* stmt* RETURN expr ';' '}'  #RegularMethod
     | (PUBLIC {$isPublic=true;})? STATIC 'void' 'main'
         '(' 'String' '[' ']' name=ID ')'
         '{' varDecl* stmt* '}'  #MainMethod
@@ -83,7 +82,6 @@ stmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     | name=ID '.' name=ID '=' expr ';' #FieldAssignStmt
     | expr '=' expr ';' #AssignStmt
-    | RETURN expr ';' #ReturnStmt
     ;
 
 expr
