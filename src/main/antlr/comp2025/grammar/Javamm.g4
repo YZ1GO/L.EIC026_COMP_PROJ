@@ -35,23 +35,25 @@ classDecl
     ;
 
 varDecl
-    : type name=ID ('[' ']')? ';'
+    : type name=ID ';'
     ;
 
-type
-    : name='int' // name required to pass initial tests
+type locals[boolean isArray=false, boolean isVarArgs=false]
+    : name=INT VARARGS {$isArray=true; $isVarArgs=true;}
+    | name=INT '[' ']' {$isArray=true;}
+    | name=ID '[' ']' {$isArray=true;}
+    | name=INT // name required to pass initial tests
     | name='String' // TODO: In semantic analysis, check the ID instead of String keywords (remove all String from grammar)
     | name='boolean'
     | name='void'
     | name=ID
-    | type name='[' ']'
     ;
 
 methodDecl locals[boolean isPublic=false]
     : (PUBLIC {$isPublic=true;})? STATIC?
         type name=ID
-        '(' (param)? ')'
-        '{' varDecl* stmt* RETURN expr ';' '}'  #RegularMethod
+        '(' (param (',' param)*)? ')'
+        '{' varDecl* stmt* '}'  #RegularMethod
     | (PUBLIC {$isPublic=true;})? STATIC 'void' 'main'
         '(' 'String' '[' ']' name=ID ')'
         '{' varDecl* stmt* '}'  #MainMethod
@@ -60,16 +62,7 @@ methodDecl locals[boolean isPublic=false]
 param
     // TODO: Check how to allow 0 params in semantic analysis
     // TODO: Change into single and check hasVarargs with Java
-    : (regularParam (',' regularParam)* (',' varArgsParam)?)
-    | varArgsParam
-    ;
-
-regularParam
-    : type name=ID            #RegularParameter
-    ;
-
-varArgsParam
-    : 'int' VARARGS name=ID   #VarArgsParameter
+    : type name=ID
     ;
 
 stmt
@@ -83,6 +76,7 @@ stmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     | name=ID '.' name=ID '=' expr ';' #FieldAssignStmt
     | expr '=' expr ';' #AssignStmt
+    | RETURN expr ';' #ReturnStmt
     ;
 
 expr

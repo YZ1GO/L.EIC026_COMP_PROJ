@@ -86,11 +86,10 @@ public class JmmSymbolTableBuilder {
             var params = method.getChildren(PARAM).stream()
                     // TODO: When you support new types, this code has to be updated
                     // DONE: Updated based on convertType from TypeUtils.java
-                .flatMap(param -> param.getChildren().stream()) // Get children of PARAM node
-                .map(paramChild -> {
-                    var typeNode = paramChild.getChild(0);
+                .map(param -> {
+                    var typeNode = param.getChild(0);
                     var type = TypeUtils.convertType(typeNode);
-                    return new Symbol(type, paramChild.get("name"));
+                    return new Symbol(type, param.get("name"));
                 })
                 .toList();
 
