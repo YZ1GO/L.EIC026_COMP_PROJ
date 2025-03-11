@@ -45,7 +45,7 @@ type
     | name='double'
     | name='float'
     | name=ID
-    | type '[' ']'
+    | type name='[' ']'
     ;
 
 methodDecl locals[boolean isPublic=false]
@@ -59,7 +59,8 @@ methodDecl locals[boolean isPublic=false]
     ;
 
 param
-    // TODO: Check how to allow 0 params
+    // TODO: Check how to allow 0 params in semantic analysis
+    // TODO: Change into single and check hasVarargs with Java
     : (regularParam (',' regularParam)* (',' varArgsParam)?)
     | varArgsParam
     ;

@@ -33,8 +33,8 @@ public class Launcher {
         TestUtils.noErrors(parserResult.getReports());
 
         // Print AST
-        //System.out.println("AST:");
-        //System.out.println(parserResult.getRootNode().toTree());
+        System.out.println("AST:");
+        System.out.println(parserResult.getRootNode().toTree());
 
 
         // Semantic Analysis stage
@@ -42,7 +42,7 @@ public class Launcher {
         JmmSemanticsResult semanticsResult = sema.semanticAnalysis(parserResult);
         TestUtils.noErrors(semanticsResult.getReports());
 
-
+        /*
         // Optimization stage
         JmmOptimizationImpl ollirGen = new JmmOptimizationImpl();
         OllirResult ollirResult = ollirGen.toOllir(semanticsResult);
@@ -58,6 +58,7 @@ public class Launcher {
 
         // Print Jasmin code
         //System.out.println(jasminResult.getJasminCode());
+         */
     }
 
 }
