@@ -51,7 +51,7 @@ type
 methodDecl locals[boolean isPublic=false]
     : (PUBLIC {$isPublic=true;})? STATIC?
         type name=ID
-        '(' param ')'
+        '(' (param)? ')'
         '{' varDecl* stmt* RETURN expr ';' '}'  #RegularMethod
     | (PUBLIC {$isPublic=true;})? STATIC 'void' 'main'
         '(' 'String' '[' ']' name=ID ')'
@@ -59,6 +59,7 @@ methodDecl locals[boolean isPublic=false]
     ;
 
 param
+    // TODO: Check how to allow 0 params
     : (regularParam (',' regularParam)* (',' varArgsParam)?)
     | varArgsParam
     ;
