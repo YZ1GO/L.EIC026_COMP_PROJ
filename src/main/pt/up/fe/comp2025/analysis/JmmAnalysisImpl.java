@@ -30,7 +30,8 @@ public class JmmAnalysisImpl implements JmmAnalysis {
         return List.of(
                 new UndeclaredVariable(),
                 new MainDeclarationChecker(),
-                new ReturnChecker(table)
+                new ReturnChecker(table),
+                new OperandTypeChecker()
         );
     }
 
