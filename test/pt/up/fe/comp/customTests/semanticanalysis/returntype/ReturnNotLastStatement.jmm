@@ -1,0 +1,6 @@
+class Test {
+    public int[] getArray() {
+        return new int[10];
+        int a = 10;
+    }
+}

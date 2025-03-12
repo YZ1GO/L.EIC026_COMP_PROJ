@@ -57,4 +57,25 @@ public class ReturnTypeSemanticAnalysisTest {
         TestUtils.mustFail(result);
         System.out.println(result.getReports());
     }
+
+    @Test
+    public void missingReturn() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/MissingReturn.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
+
+    @Test
+    public void returnNotLastStatement() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/ReturnNotLastStatement.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
+
+    @Test
+    public void moreThanOneReturn() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/MoreThanOneReturn.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
 }
