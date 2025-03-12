@@ -123,6 +123,11 @@ public class JmmSymbolTableBuilder {
                     })
                     .toList();
 
+            // Debug statement to print local variables
+            /*System.out.println("Method: " + name);
+            locals.forEach(local ->
+                    System.out.println("  Local: " + local.getName() + " (Type: " + local.getType() + ")")
+            );*/
 
             map.put(name, locals);
         }
