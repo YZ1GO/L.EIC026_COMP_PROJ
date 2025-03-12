@@ -94,9 +94,7 @@ public class JmmSymbolTableBuilder {
                 .toList();
 
             // Debug statement to print parameters
-            // TODO: Check PSVM method in grammar, needs fix IMPORTANT
-            // Method: args, Params: []
-            System.out.println("Method: " + name + ", Params: " + params);
+            // System.out.println("Method: " + name + ", Params: " + params);
 
             map.put(name, params);
         }

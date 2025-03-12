@@ -12,8 +12,8 @@ RETURN : 'return' ;
 
 VARARGS : '...';
 INTEGER : [0-9]+ ;
-ID : [a-zA-Z_$] [a-zA-Z0-9_$]* ;
 BOOLEAN : 'true' | 'false';
+ID : [a-zA-Z_$] [a-zA-Z0-9_$]* ;
 
 SINGLE_COMMENT : '//' .*? '\n' -> skip ;
 MULTI_COMMENT : '/*' .*? '*/' -> skip ;
@@ -43,19 +43,19 @@ type locals[boolean isArray=false, boolean isVarArgs=false]
     | name=INT '[' ']' {$isArray=true;}
     | name=ID '[' ']' {$isArray=true;}
     | name=INT
-    | name='String' // TODO: In semantic analysis, check the ID instead of String keywords (remove all String from grammar)
     | name='boolean'
     | name='void'
     | name=ID
     ;
 
-methodDecl locals[boolean isPublic=false]
-    : (PUBLIC {$isPublic=true;})? STATIC?
+methodDecl locals[boolean isPublic=false, boolean isStatic=false]
+    : (PUBLIC {$isPublic=true;})?
         type name=ID
         '(' (param (',' param)*)? ')'
         '{' varDecl* stmt* '}'  #RegularMethod
-    | (PUBLIC {$isPublic=true;})? STATIC 'void' 'main'
-        '(' 'String' '[' ']' name=ID ')'
+    | (PUBLIC {$isPublic=true;})? STATIC {$isStatic=true;}
+        type name=ID
+        '(' param ')'
         '{' varDecl* stmt* '}'  #MainMethod
     ;
 
