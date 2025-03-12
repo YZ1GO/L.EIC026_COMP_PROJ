@@ -1,0 +1,5 @@
+class Test {
+    public String getString() {
+        return 42; // Incorrect return type
+    }
+}

@@ -90,8 +90,8 @@ expr
     | expr op=('+' | '-') expr #BinaryExpr
     | expr op=('<' | '>' | '<=' | '>=') expr #BinaryExpr
     | expr op=('==' | '!=') expr #BinaryExpr
-    | expr '&&' expr #BinaryExpr
-    | expr '||' expr #BinaryExpr
+    | expr op='&&' expr #BinaryExpr
+    | expr op='||' expr #BinaryExpr
     | value=INTEGER #IntegerLiteral
     | value=BOOLEAN #BooleanLiteral
     | name=ID #VarRefExpr

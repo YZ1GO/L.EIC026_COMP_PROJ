@@ -16,6 +16,11 @@ public class ReturnTypeChecker extends AnalysisVisitor {
 
     private String currentMethod;
     private Type returnType;
+    private final TypeUtils typeUtils;
+
+    public ReturnTypeChecker(SymbolTable symbolTable) {
+        this.typeUtils = new TypeUtils(symbolTable);
+    }
 
     @Override
     public void buildVisitor() {
@@ -25,7 +30,7 @@ public class ReturnTypeChecker extends AnalysisVisitor {
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");
-        JmmNode returnTypeNode = method.getChildren().get(0);
+        JmmNode returnTypeNode = method.getChildren().getFirst();
         returnType = TypeUtils.convertType(returnTypeNode);
         return null;
     }
@@ -40,8 +45,8 @@ public class ReturnTypeChecker extends AnalysisVisitor {
                     null)
             );
         } else {
-            JmmNode exprNode = returnStmt.getChildren().get(0);
-            Type exprType = TypeUtils.convertType(exprNode);
+            JmmNode exprNode = returnStmt.getChildren().getFirst();
+            Type exprType = typeUtils.getExprType(exprNode);
             if (!returnType.equals(exprType)) {
                 addReport(Report.newError(
                         Stage.SEMANTIC,

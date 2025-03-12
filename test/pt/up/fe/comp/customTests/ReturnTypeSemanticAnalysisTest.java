@@ -31,4 +31,30 @@ public class ReturnTypeSemanticAnalysisTest {
         TestUtils.mustFail(result);
         System.out.println(result.getReports());
     }
+
+    @Test
+    public void validReturnTypeCustomClass() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/ValidReturnTypeCustomClass.jmm"));
+        TestUtils.noErrors(result);
+    }
+
+    @Test
+    public void incorrectReturnTypeCustomClass() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/IncorrectReturnTypeCustomClass.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
+
+        @Test
+    public void validReturnTypeString() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/ValidReturnTypeString.jmm"));
+        TestUtils.noErrors(result);
+    }
+
+    @Test
+    public void incorrectReturnTypeString() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/IncorrectReturnTypeString.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
 }
