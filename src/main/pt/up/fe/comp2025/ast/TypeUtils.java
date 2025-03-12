@@ -24,6 +24,10 @@ public class TypeUtils {
     public static Type newIntType() {
         return new Type("int", false);
     }
+
+    public static Type newBooleanType() {
+        return new Type("boolean", false);
+    }
     
     public static Type convertType(JmmNode typeNode) {
 
@@ -85,35 +89,12 @@ public class TypeUtils {
 
             case "BinaryExpr": {
                 String op = expr.get("op");
-                Type leftType = getExprType(expr.getChild(0));
-                Type rightType = getExprType(expr.getChild(1));
 
                 switch (op) {
-                    case "*":
-                    case "/":
-                    case "+":
-                    case "-":
-                        if (leftType.equals(newIntType()) && rightType.equals(newIntType())) {
-                            return newIntType();
-                        }
-                        throw new RuntimeException("Invalid operands for operator " + op);
-
-                    case "<":
-                    case ">":
-                    case "<=":
-                    case ">=":
-                    case "==":
-                    case "!=":
-                        return new Type("boolean", false);
-
-                    case "&&":
-                    case "||":
-                        if (leftType.equals(new Type("boolean", false)) &&
-                            rightType.equals(new Type("boolean", false))) {
-                            return new Type("boolean", false);
-                        }
-                        throw new RuntimeException("Logical operands must be boolean");
-
+                    case "*","/","+","-":
+                        return newIntType();
+                    case "<",">","<=",">=","==","!=","&&","||":
+                        return newBooleanType();
                     default:
                         throw new UnsupportedOperationException("Unknown operator: " + op);
                 }
