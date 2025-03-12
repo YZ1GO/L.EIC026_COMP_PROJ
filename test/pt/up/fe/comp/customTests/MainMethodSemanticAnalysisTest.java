@@ -26,7 +26,6 @@ public class MainMethodSemanticAnalysisTest {
         System.out.println(result.getReports());
     }
 
-    // TODO: Supposed to fail since semantic isn't checking for returns yet
     @Test
     public void mainMethodIncorrectReturnType() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/mainmethod/MainMethodIncorrectReturnType.jmm"));
