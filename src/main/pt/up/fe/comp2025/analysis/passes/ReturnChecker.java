@@ -12,13 +12,13 @@ import pt.up.fe.comp2025.ast.TypeUtils;
 /**
  * Ensures that methods have return statements that match their declared return type.
  */
-public class ReturnTypeChecker extends AnalysisVisitor {
+public class ReturnChecker extends AnalysisVisitor {
 
     private String currentMethod;
     private Type returnType;
     private final TypeUtils typeUtils;
 
-    public ReturnTypeChecker(SymbolTable symbolTable) {
+    public ReturnChecker(SymbolTable symbolTable) {
         this.typeUtils = new TypeUtils(symbolTable);
     }
 
@@ -32,9 +32,45 @@ public class ReturnTypeChecker extends AnalysisVisitor {
         currentMethod = method.get("name");
         JmmNode returnTypeNode = method.getChildren().getFirst();
         returnType = TypeUtils.convertType(returnTypeNode);
+
+        // Check if the method has a return statement if it's not void
+        if (!returnType.getName().equals("void")) {
+            if (method.getChildren(Kind.RETURN_STMT).isEmpty()) {
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        method.getLine(),
+                        method.getColumn(),
+                        "Non-void method '" + currentMethod + "' must have a return statement.",
+                        null)
+                );
+            }
+            if (method.getChildren(Kind.RETURN_STMT).size() > 1) {
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        method.getLine(),
+                        method.getColumn(),
+                        "Method '" + currentMethod + "' must have only one return statement.",
+                        null)
+                );
+            }
+        }
+
+        // Check if the return statement is the last statement in the method
+        JmmNode lastChild = method.getChildren().getLast();
+        if (!lastChild.getKind().equals(Kind.RETURN_STMT.toString()) && !returnType.getName().equals("void")) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    lastChild.getLine(),
+                    lastChild.getColumn(),
+                    "Return statement in method '" + currentMethod + "' must be the last statement.",
+                    null)
+            );
+        }
+
         return null;
     }
 
+    // TODO: check String return type
     private Void visitReturnStmt(JmmNode returnStmt, SymbolTable table) {
         if (returnType.getName().equals("void")) {
             addReport(Report.newError(

@@ -1,0 +1,6 @@
+class Test {
+    public int getValue() {
+        return 42;
+        return 10;
+    }
+}
