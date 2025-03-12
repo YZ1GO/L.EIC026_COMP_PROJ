@@ -74,6 +74,8 @@ public class TypeUtils {
             case "BinaryExpr":
                 // For simplicity, assume the type of a binary expression is the type of the left operand
                 return getExprType(expr.getChildren().get(0));
+            case "NewIntArrayExpr":
+                return new Type("int", true);  // Array of int
             default:
                 return new Type("unknown", false);  // Unknown type
         }

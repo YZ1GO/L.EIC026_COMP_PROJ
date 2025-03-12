@@ -64,16 +64,18 @@ public class OperandTypeChecker extends AnalysisVisitor {
             case "-":
             case "*":
             case "/":
-                // These operators require both operands to be integers
-                return leftType.getName().equals("int") && rightType.getName().equals("int");
+                // These operators require both operands to be integers (not arrays)
+                return leftType.getName().equals("int") && !leftType.isArray() &&
+                        rightType.getName().equals("int") && !rightType.isArray();
             case "<":
             case ">":
             case "<=":
             case ">=":
             case "==":
             case "!=":
-                // These operators require both operands to be of the same type
-                return leftType.getName().equals(rightType.getName());
+                // These operators require both operands to be of the same type (and not arrays)
+                return leftType.getName().equals(rightType.getName()) &&
+                        !leftType.isArray() && !rightType.isArray();
             case "&&":
             case "||":
                 // These operators require both operands to be booleans
