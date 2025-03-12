@@ -88,10 +88,10 @@ expr
     | op='!' expr #UnaryNotExpr
     | expr op=('*' | '/') expr #BinaryExpr  // Changing 'Binary' will fail initial tests
     | expr op=('+' | '-') expr #BinaryExpr
-    | expr op=('<' | '>' | '<=' | '>=') expr #ComparisonExpr
-    | expr op=('==' | '!=') expr #EqualityExpr
-    | expr '&&' expr #AndExpr
-    | expr '||' expr #OrExpr
+    | expr op=('<' | '>' | '<=' | '>=') expr #BinaryExpr
+    | expr op=('==' | '!=') expr #BinaryExpr
+    | expr '&&' expr #BinaryExpr
+    | expr '||' expr #BinaryExpr
     | value=INTEGER #IntegerLiteral
     | value=BOOLEAN #BooleanLiteral
     | name=ID #VarRefExpr

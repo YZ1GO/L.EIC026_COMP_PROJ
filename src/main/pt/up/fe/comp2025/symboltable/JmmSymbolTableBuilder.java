@@ -74,6 +74,11 @@ public class JmmSymbolTableBuilder {
             }
         }
 
+        // Debug statement to print return types
+        /*for (var entry : map.entrySet()) {
+            System.out.println("Method: " + entry.getKey() + ", Return Type: " + entry.getValue());
+        }*/
+
         return map;
     }
 
