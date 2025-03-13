@@ -99,5 +99,5 @@ expr
     | value=BOOLEAN #BooleanLiteral
     | value=STRING #StringLiteral
     | name=ID #VarRefExpr
-    | '[' (expr (',' expr)* )? ']' #ArrayLiteral
+    | '[' (expr (',' expr)* )? ']' #ArrayInit
     ;
