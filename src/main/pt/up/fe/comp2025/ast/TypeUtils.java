@@ -70,6 +70,9 @@ public class TypeUtils {
             case "LengthExpr", "IntegerLiteral":
                 return newIntType();
 
+            case "StringLiteral":
+                return new Type("String", false);
+
             case "MethodCallExpr": {
                 Type objectType = getExprType(expr.getChild(0));
                 String methodName = expr.get("name");

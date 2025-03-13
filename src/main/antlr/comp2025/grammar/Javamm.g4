@@ -10,6 +10,9 @@ PUBLIC : 'public' ;
 STATIC : 'static' ;
 RETURN : 'return' ;
 
+STRING : '"' (ESC_SEQ | ~["\\\r\n])* '"' ;
+fragment ESC_SEQ : '\\' ["\\bfnrt] ;
+
 VARARGS : '...';
 INTEGER : [0-9]+ ;
 BOOLEAN : 'true' | 'false';
@@ -94,6 +97,7 @@ expr
     | expr op='||' expr #BinaryExpr
     | value=INTEGER #IntegerLiteral
     | value=BOOLEAN #BooleanLiteral
+    | value=STRING #StringLiteral
     | name=ID #VarRefExpr
     | '[' (expr (',' expr)* )? ']' #ArrayLiteral
     ;
