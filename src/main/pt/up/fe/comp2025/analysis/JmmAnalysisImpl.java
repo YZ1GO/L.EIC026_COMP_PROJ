@@ -33,7 +33,8 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new ReturnChecker(table),
                 new OperandTypeChecker(),
                 new ArrayLiteralChecker(),
-                new DuplicateVariableChecker()
+                new DuplicateVariableChecker(),
+                new DuplicateMethodChecker()
         );
     }
 
