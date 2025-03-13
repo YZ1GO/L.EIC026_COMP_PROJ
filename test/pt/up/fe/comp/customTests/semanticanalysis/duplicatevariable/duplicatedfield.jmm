@@ -1,0 +1,13 @@
+class Test {
+    String b;
+    String b;
+    int a;
+
+    public String method1() {
+        return new String();
+    }
+
+    public int method2() {
+        return 2;
+    }
+}

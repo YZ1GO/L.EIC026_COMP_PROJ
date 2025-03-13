@@ -55,13 +55,13 @@ public class JmmSymbolTableBuilder {
         List<Symbol> fields = buildFields(classDecl);
 
         // Debugging output
-        System.out.println("Class: " + className);
+        /*System.out.println("Class: " + className);
         System.out.println("Fields: " + fields);
         System.out.println("Methods: " + methods);
         System.out.println("Return Types: " + returnTypes);
         System.out.println("Parameters: " + params);
-        System.out.println("Local Variables: " + locals);
-        
+        System.out.println("Local Variables: " + locals);*/
+
         return new JmmSymbolTable(className, methods, returnTypes, params, locals, imports, superClassName, fields);
     }
 
@@ -107,7 +107,7 @@ public class JmmSymbolTableBuilder {
                 .toList();
 
             // Debug statement to print parameters
-            System.out.println("Method: " + name + ", Params: " + params);
+            // System.out.println("Method: " + name + ", Params: " + params);
 
             map.put(name, params);
         }
@@ -132,10 +132,10 @@ public class JmmSymbolTableBuilder {
                     .toList();
 
             // Debug statement to print local variables
-            System.out.println("Method: " + name);
+            /*System.out.println("Method: " + name);
             locals.forEach(local ->
                     System.out.println("  Local: " + local.getName() + " (Type: " + local.getType() + ")")
-            );
+            );*/
 
             map.put(name, locals);
         }
@@ -169,7 +169,7 @@ public class JmmSymbolTableBuilder {
             .map(varDecl -> {
                 Symbol symbol = new Symbol(convertType(varDecl.getChild(0)), varDecl.get("name"));
                 // Debugging output
-                System.out.println("Field: " + symbol.getName() + " (Type: " + symbol.getType() + ")");
+                // System.out.println("Field: " + symbol.getName() + " (Type: " + symbol.getType() + ")");
                 return symbol;
             })
             .collect(Collectors.toList());
