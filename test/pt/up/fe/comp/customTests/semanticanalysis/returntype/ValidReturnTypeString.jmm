@@ -1,16 +1,21 @@
 class Test {
-    String a;
+    String b;
 
     public String getString() {
         return "abc";
     }
 
     public String getString2() {
-        a = "hello";
-        return a;
+        b = "hello";
+        return b;
     }
 
     public String getString4() {
         return new String();
+    }
+
+    public int duplicateVar() {
+        int a;
+        return a;
     }
 }
