@@ -31,6 +31,7 @@ public enum Kind {
     ID,
     ARRAY_INIT,
     ARRAY_ACCESS_EXPR,
+    WHILE_STMT,
     VAR_DECL_STMT;
 
 
