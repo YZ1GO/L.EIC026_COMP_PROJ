@@ -31,12 +31,12 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new UndeclaredVariable(),
                 new MainDeclarationChecker(),
                 new ReturnChecker(table),
-                new ConditionTypeChecker(table),
+                new OperandTypeChecker(),
                 new ArrayLiteralChecker(),
                 new DuplicateVariableChecker(),
                 new DuplicateMethodChecker(),
-                new AssignTypeChecker(table),
-                new OperandTypeChecker()
+                new WhileTypeChecker(),
+                new AssignTypeChecker(table)
         );
     }
 
