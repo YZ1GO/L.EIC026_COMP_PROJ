@@ -1,0 +1,8 @@
+class Test {
+    public int add(int a, int b) {
+        return a + b;
+    }
+    public int add(int a, int b, int c) { // Overloaded, not a duplicate
+        return a + b + c;
+    }
+}
