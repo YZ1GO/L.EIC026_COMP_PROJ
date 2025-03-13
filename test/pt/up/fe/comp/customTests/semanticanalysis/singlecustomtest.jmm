@@ -1,8 +1,9 @@
-class Test {
-    int a;
+class ConditionTypeCheckerTest {
+    public static void main(String[] args) {
+        boolean a;
+        a = 5 || 6;
+        if (1 || 0) { // This should trigger a type mismatch error
 
-    public int testMethod() {
-        a = true;
-        return a;
+        }
     }
 }

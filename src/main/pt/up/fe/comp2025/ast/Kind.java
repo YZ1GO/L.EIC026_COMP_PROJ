@@ -31,7 +31,9 @@ public enum Kind {
     ID,
     ARRAY_INIT,
     ARRAY_ACCESS_EXPR,
-    VAR_DECL_STMT;
+    VAR_DECL_STMT,
+    IF_STMT,
+    WHILE_STMT;
 
 
     private final String name;
