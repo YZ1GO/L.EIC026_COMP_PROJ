@@ -12,7 +12,7 @@ public class ArrayLiteralChecker extends AnalysisVisitor {
 
     @Override
     protected void buildVisitor() {
-        addVisit(Kind.ARRAY_LITERAL, this::visitArrayLiteral);
+        addVisit(Kind.ARRAY_INIT, this::visitArrayLiteral);
         //addVisit(Kind.VAR_DECL_STMT, this::visitVarDeclStmt);
     }
 
@@ -53,35 +53,9 @@ public class ArrayLiteralChecker extends AnalysisVisitor {
 
         return null;
     }
-    /*
+
     private Void visitVarDeclStmt(JmmNode varDeclStmt, SymbolTable table) {
-        var typeUtils = new TypeUtils(table);
-
-        // Get the declared variable type
-        var declaredTypeNode = varDeclStmt.getChild(0);  // type node
-        var declaredType = TypeUtils.convertType(declaredTypeNode);
-
-        // Get the assigned expression
-        var assignedExpr = varDeclStmt.getChild(1);  // expr node
-
-        // Check if the assigned expression is an array literal
-        if (assignedExpr.getKind().equals("ArrayLiteral")) {
-            // Get the type of the array literal
-            var arrayLiteralType = typeUtils.getExprType(assignedExpr);
-
-            // Check if the declared type is an array type
-            if (!declaredType.isArray()) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        varDeclStmt.getLine(),
-                        varDeclStmt.getColumn(),
-                        String.format("Cannot assign array literal to non-array variable of type %s",
-                                declaredType.getName()),
-                        null)
-                );
-            }
-        }
 
         return null;
-    }*/
+    }
 }

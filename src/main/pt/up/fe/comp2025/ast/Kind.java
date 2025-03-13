@@ -29,7 +29,8 @@ public enum Kind {
     VAR_REF_EXPR,
     IMPORT_DECL,
     ID,
-    ARRAY_LITERAL,
+    ARRAY_INIT,
+    ARRAY_ACCESS_EXPR,
     VAR_DECL_STMT;
 
 

@@ -49,25 +49,15 @@ public class TypeUtils {
     public Type getExprType(JmmNode expr) {
 
         // TODO: Update when there are new types
+        // TODO: need to change the switch case to handle with enums of Kind
         switch (expr.getKind()) {
             case "ParentExpr":
                 return getExprType(expr.getChild(0));
 
-            case "NewIntArrayExpr":
-                return new Type("int", true);
-
             case "NewObjectExpr":
                 return new Type(expr.get("name"), false);
 
-            case "ArrayAccessExpr": {
-                Type arrayType = getExprType(expr.getChild(0));
-                if (!arrayType.isArray()) {
-                    throw new RuntimeException("Array access on non-array type");
-                }
-                return new Type(arrayType.getName(), false);
-            }
-
-            case "LengthExpr", "IntegerLiteral":
+            case "ArrayAccessExpr", "LengthExpr", "IntegerLiteral":
                 return newIntType();
 
             case "StringLiteral":
@@ -106,21 +96,8 @@ public class TypeUtils {
             case "VarRefExpr":
                 return resolveVariableType(expr.get("name"));
 
-                //TODO: Test cases for array literals
-            case "ArrayLiteral": {
-                List<JmmNode> elements = expr.getChildren();
-                if (elements.isEmpty()) {
-                    throw new RuntimeException("Empty array literals are not allowed. Provide at least one element or specify the array type explicitly.");
-                }
-                
-                Type commonType = getExprType(elements.getFirst());
-                for (JmmNode element : elements) {
-                    Type elemType = getExprType(element);
-                    if (!elemType.equals(commonType)) {
-                        throw new RuntimeException("Inconsistent array literal types");
-                    }
-                }
-                return new Type(commonType.getName(), true);
+            case "ArrayInit", "NewIntArrayExpr": {
+                return new Type("int", true);
             }
 
             default:
