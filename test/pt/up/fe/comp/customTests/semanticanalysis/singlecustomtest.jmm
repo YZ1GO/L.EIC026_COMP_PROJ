@@ -1,0 +1,8 @@
+class Test {
+    int a;
+
+    public int testMethod() {
+        a = true;
+        return a;
+    }
+}

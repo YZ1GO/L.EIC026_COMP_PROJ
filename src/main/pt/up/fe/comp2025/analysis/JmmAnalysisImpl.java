@@ -34,7 +34,8 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new OperandTypeChecker(),
                 new ArrayLiteralChecker(),
                 new DuplicateVariableChecker(),
-                new DuplicateMethodChecker()
+                new DuplicateMethodChecker(),
+                new AssignTypeChecker(table)
         );
     }
 
