@@ -2,6 +2,7 @@ class Test {
     String b;
 
     public String getString() {
+        String b;
         return "abc";
     }
 
@@ -12,10 +13,5 @@ class Test {
 
     public String getString4() {
         return new String();
-    }
-
-    public int duplicateVar() {
-        int a;
-        return a;
     }
 }

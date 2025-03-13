@@ -1,0 +1,7 @@
+class Test {
+    int a;
+
+    public int duplicatedInt(int a, int a) {
+        return a;
+    }
+}

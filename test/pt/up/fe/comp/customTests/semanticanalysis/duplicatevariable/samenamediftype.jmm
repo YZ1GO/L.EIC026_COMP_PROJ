@@ -1,0 +1,10 @@
+class Test {
+    public int method1(int a) {
+        String a;
+        return 2;
+    }
+
+    public int method2(int a, String a) {
+        return 1;
+    }
+}
