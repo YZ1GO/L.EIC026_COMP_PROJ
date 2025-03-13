@@ -1,5 +1,16 @@
 class Test {
+    String a;
+
     public String getString() {
-        return "Hello, World!";
+        return "abc";
+    }
+
+    public String getString2() {
+        a = "hello";
+        return a;
+    }
+
+    public String getString4() {
+        return new String();
     }
 }
