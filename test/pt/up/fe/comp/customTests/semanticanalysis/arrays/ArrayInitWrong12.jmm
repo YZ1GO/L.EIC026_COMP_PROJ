@@ -1,0 +1,7 @@
+class ArrayInitWrong12 {
+    public int foo() {
+        int a;
+        a = [10, 20];
+        return a;
+    }
+}

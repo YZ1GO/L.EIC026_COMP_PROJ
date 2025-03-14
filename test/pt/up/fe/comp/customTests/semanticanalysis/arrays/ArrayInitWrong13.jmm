@@ -1,0 +1,7 @@
+class ArrayInitWrong13 {
+    public int[] foo() {
+        int[] a;
+        a = [true, 10, 20];
+        return a;
+    }
+}
