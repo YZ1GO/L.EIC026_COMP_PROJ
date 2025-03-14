@@ -13,48 +13,30 @@ public class ArrayLiteralChecker extends AnalysisVisitor {
     @Override
     protected void buildVisitor() {
         addVisit(Kind.ARRAY_INIT, this::visitArrayLiteral);
-        //addVisit(Kind.VAR_DECL_STMT, this::visitVarDeclStmt);
     }
 
     private Void visitArrayLiteral(JmmNode arrayLiteral, SymbolTable table) {
         var typeUtils = new TypeUtils(table);
 
-        // Get the elements of the array literal
+        // all elements of array literal
         var elements = arrayLiteral.getChildren();
         if (elements.isEmpty()) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    arrayLiteral.getLine(),
-                    arrayLiteral.getColumn(),
-                    "Empty array literals are not allowed. Provide at least one element or specify the array type explicitly.",
-                    null)
-            );
+            addReport(newError(arrayLiteral, "Empty array literals are not allowed. Provide at least one element or specify the array type explicitly."));
+
             return null;
         }
 
-        // Get the type of the first element
         var firstElementType = typeUtils.getExprType(elements.getFirst());
 
-        // Check if all elements have the same type
+        // check if all elements have the same type
         for (var element : elements) {
             var elementType = typeUtils.getExprType(element);
             if (!elementType.equals(firstElementType)) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        arrayLiteral.getLine(),
-                        arrayLiteral.getColumn(),
-                        String.format("Inconsistent array literal types: expected %s, found %s",
-                                firstElementType.getName(), elementType.getName()),
-                        null)
-                );
+                addReport(newError(arrayLiteral, String.format("Inconsistent array literal types: expected %s, found %s", firstElementType.getName(), elementType.getName())));
+
                 return null;
             }
         }
-
-        return null;
-    }
-
-    private Void visitVarDeclStmt(JmmNode varDeclStmt, SymbolTable table) {
 
         return null;
     }

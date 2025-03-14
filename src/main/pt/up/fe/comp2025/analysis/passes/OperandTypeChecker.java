@@ -25,28 +25,15 @@ public class OperandTypeChecker extends AnalysisVisitor {
 
         String operator = binaryExpr.get("op");
 
-        // array mismatch
         if (op1_type.isArray() || op2_type.isArray()) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    binaryExpr.getLine(),
-                    binaryExpr.getColumn(),
-                    "Cannot operate on an array and a non-array",
-                    null)
-            );
+            addReport(newError(binaryExpr, String.format("Operator '%s' cannot be applied to arrays", operator)));
             return null;
         }
 
         // && and || only work on booleans
-        if ((operator.equals("&&") || operator.equals("||")) &&
-                (!op1_type.getName().equals("boolean") || !op2_type.getName().equals("boolean"))) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    binaryExpr.getLine(),
-                    binaryExpr.getColumn(),
-                    "Logical operator '" + operator + "' requires boolean operands, but found '" +
-                            op1_type.getName() + "' and '" + op2_type.getName() + "'",
-                    null)
+        if ((operator.equals("&&") || operator.equals("||")) && (!op1_type.getName().equals("boolean") || !op2_type.getName().equals("boolean"))) {
+            addReport(newError(binaryExpr, "Logical operator '" + operator + "' requires boolean operands, but found '" +
+                    op1_type.getName() + "' and '" + op2_type.getName() + "'")
             );
             return null;
         }
