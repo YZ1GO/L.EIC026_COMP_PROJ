@@ -17,27 +17,54 @@ public class OperandTypeChecker extends AnalysisVisitor {
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
         var typeUtils = new TypeUtils(table);
-
         var op1 = binaryExpr.getChild(0);
         var op2 = binaryExpr.getChild(1);
 
         var op1_type = typeUtils.getExprType(op1);
         var op2_type = typeUtils.getExprType(op2);
 
-        boolean hasArray = false;
-        if (op1_type.getName().equals(op2_type.getName())) {
-            if (!op1_type.isArray() && op2_type.isArray()) return null;
-            hasArray = true;
+        String operator = binaryExpr.get("op");
+
+        // array mismatch
+        if (op1_type.isArray() || op2_type.isArray()) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    binaryExpr.getLine(),
+                    binaryExpr.getColumn(),
+                    "Cannot operate on an array and a non-array",
+                    null)
+            );
+            return null;
         }
 
-        String m = hasArray ? "Cannot operate on an array and an non-array" : String.format("Can't operate on different types ('%s' and '%s')", op1_type.getName(), op2_type.getName());
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                binaryExpr.getLine(),
-                binaryExpr.getColumn(),
-                m,
-                null)
-        );
+        // && and || only work on booleans
+        if ((operator.equals("&&") || operator.equals("||")) &&
+                (!op1_type.getName().equals("boolean") || !op2_type.getName().equals("boolean"))) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    binaryExpr.getLine(),
+                    binaryExpr.getColumn(),
+                    "Logical operator '" + operator + "' requires boolean operands, but found '" +
+                            op1_type.getName() + "' and '" + op2_type.getName() + "'",
+                    null)
+            );
+            return null;
+        }
+
+        // +, -, * and / only work on integers
+        if ((operator.equals("+") || operator.equals("-") ||
+                operator.equals("*") || operator.equals("/")) &&
+                (!op1_type.getName().equals("int") || !op2_type.getName().equals("int"))) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    binaryExpr.getLine(),
+                    binaryExpr.getColumn(),
+                    "Arithmetic operator '" + operator + "' requires integer operands, but found '" +
+                            op1_type.getName() + "' and '" + op2_type.getName() + "'",
+                    null)
+            );
+            return null;
+        }
 
         return null;
     }
