@@ -12,9 +12,11 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 public class AssignTypeChecker extends AnalysisVisitor {
 
     private final TypeUtils typeUtils;
+    private final SymbolTable symbolTable;
 
     public AssignTypeChecker(SymbolTable table) {
         this.typeUtils = new TypeUtils(table);
+        this.symbolTable = table;
     }
 
     @Override
@@ -42,8 +44,20 @@ public class AssignTypeChecker extends AnalysisVisitor {
         return null;
     }
 
-    // Check if the types are exactly the same
     private boolean isTypeCompatible(Type declaredType, Type assignedType) {
-        return declaredType.equals(assignedType);
+        // Allow assignment if the types are exactly the same
+        if (declaredType.equals(assignedType)) {
+            return true;
+        }
+    
+        // Allow assignment if both types are imported classes
+        boolean declaredIsImported = isImported(declaredType.getName());
+        boolean assignedIsImported = isImported(assignedType.getName());
+
+        return declaredIsImported && assignedIsImported;
+    }
+    
+    private boolean isImported(String typeName) {
+        return symbolTable.getImports().stream().anyMatch(imported -> imported.endsWith(typeName));
     }
 }
