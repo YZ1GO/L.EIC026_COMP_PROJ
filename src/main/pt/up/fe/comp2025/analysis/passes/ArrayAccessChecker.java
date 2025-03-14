@@ -8,7 +8,7 @@ import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
-public class ArrayIndexing extends AnalysisVisitor {
+public class ArrayAccessChecker extends AnalysisVisitor {
     @Override
     protected void buildVisitor() {
         addVisit(Kind.ARRAY_ACCESS_EXPR, this::visitArrayAccessExpr);

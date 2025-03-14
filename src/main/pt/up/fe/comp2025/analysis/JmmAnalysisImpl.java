@@ -32,11 +32,12 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new MainDeclarationChecker(),
                 new ReturnChecker(table),
                 new ConditionTypeChecker(table),
+                new ArrayInitChecker(),
                 new ArrayLiteralChecker(),
                 new DuplicateVariableChecker(),
                 new DuplicateMethodChecker(),
                 new AssignTypeChecker(table),
-                new ArrayIndexing(),
+                new ArrayAccessChecker(),
                 new OperandTypeChecker()
         );
     }
