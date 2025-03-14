@@ -1,0 +1,7 @@
+class InvalidArrayAssignment {
+    public int[] foo() {
+        int[] a;
+        a = 10;
+        return a;
+    }
+}

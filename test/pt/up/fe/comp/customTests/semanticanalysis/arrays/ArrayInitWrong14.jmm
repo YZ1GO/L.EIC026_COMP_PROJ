@@ -1,0 +1,7 @@
+class ArrayInitWrong14 {
+    public int[] foo() {
+        int[] a;
+        a = [];
+        return a;
+    }
+}

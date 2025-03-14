@@ -1,0 +1,5 @@
+class ArrayAddition {
+    public void foo() {
+        int[] a, b, c;
+    }
+}
