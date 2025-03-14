@@ -29,6 +29,18 @@ public class ArrayIndexing extends AnalysisVisitor {
             );
         }
 
+        var indexType = typeUtils.getExprType(arrayAccessExpr.getChild(1));
+
+        if (!indexType.getName().equals("int") || indexType.isArray()) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    arrayAccessExpr.getLine(),
+                    arrayAccessExpr.getColumn(),
+                    String.format("Array index must be an integer, but found '%s'", indexType.getName()),
+                    null)
+            );
+        }
+
         return null;
     }
 
