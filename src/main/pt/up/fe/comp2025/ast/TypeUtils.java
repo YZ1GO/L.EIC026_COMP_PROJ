@@ -9,6 +9,8 @@ import pt.up.fe.comp2025.symboltable.JmmSymbolTable;
 import java.util.List;
 import java.util.Optional;
 
+import static pt.up.fe.comp2025.ast.Kind.METHOD_DECL;
+
 /**
  * Utility methods regarding types.
  */
@@ -54,8 +56,19 @@ public class TypeUtils {
             case "ParentExpr":
                 return getExprType(expr.getChild(0));
 
-            case "NewObjectExpr":
-                return new Type(expr.get("name"), false);
+            case "NewObjectExpr": {
+                String className = expr.get("name");
+
+                if (className.equals(table.getClassName())) {
+                    return new Type(className, false);
+                }
+
+                if (table.getImports().stream().anyMatch(imported -> imported.endsWith(className))) {
+                    return new Type(className, false);
+                }
+
+                throw new RuntimeException("Class '" + className + "' not found in the current context or imports.");
+            }
 
             case "ArrayAccessExpr", "LengthExpr", "IntegerLiteral":
                 return newIntType();
@@ -94,7 +107,11 @@ public class TypeUtils {
             }
 
             case "VarRefExpr":
-                return resolveVariableType(expr.get("name"));
+                String currentMethod = expr.getAncestor(METHOD_DECL) // Assuming "MethodDecl" is the correct kind for methods
+                        .map(node -> node.get("name"))
+                        .orElseThrow(() -> new RuntimeException("Cannot determine the current method for variable: " + expr.get("name")));
+
+                return resolveVariableType(expr.get("name"), currentMethod);
 
             case "ArrayInit", "NewIntArrayExpr": {
                 return new Type("int", true);
@@ -105,8 +122,7 @@ public class TypeUtils {
         }
     }
 
-    // TODO: handle imports
-    private Type resolveVariableType(String varName) {
+    private Type resolveVariableType(String varName, String currentMethod) {
         // Check fields (class-level variables)
         Optional<Type> fieldType = table.getFields().stream()
                 .filter(field -> field.getName().equals(varName))
@@ -114,32 +130,43 @@ public class TypeUtils {
                 .map(Symbol::getType);
 
         if (fieldType.isPresent()) {
+            System.out.println("Resolved as field: " + varName + " -> " + fieldType.get().getName());
             return fieldType.get();
         }
 
-        // Check parameters and locals (method-level variables)
-        for (String methodName : table.getMethods()) {
-            // Check parameters
-            Optional<Type> paramType = table.getParameters(methodName).stream()
-                    .filter(param -> param.getName().equals(varName))
-                    .findFirst()
-                    .map(Symbol::getType);
+        // Check parameters of the current method
+        Optional<Type> paramType = table.getParameters(currentMethod).stream()
+                .filter(param -> param.getName().equals(varName))
+                .findFirst()
+                .map(Symbol::getType);
 
-            if (paramType.isPresent()) {
-                return paramType.get();
-            }
+        if (paramType.isPresent()) {
+            System.out.println("Resolved as parameter: " + varName + " -> " + paramType.get().getName());
+            return paramType.get();
+        }
 
-            // Check locals
-            Optional<Type> localType = table.getLocalVariables(methodName).stream()
-                    .filter(local -> local.getName().equals(varName))
-                    .findFirst()
-                    .map(Symbol::getType);
+        // Check local variables of the current method
+        Optional<Type> localType = table.getLocalVariables(currentMethod).stream()
+                .filter(local -> local.getName().equals(varName))
+                .findFirst()
+                .map(Symbol::getType);
 
-            if (localType.isPresent()) {
-                return localType.get();
-            }
+        if (localType.isPresent()) {
+            System.out.println("Resolved as local variable: " + varName + " -> " + localType.get().getName());
+            return localType.get();
+        }
+
+        // Check if the variable matches an imported class
+        Optional<String> importedClass = table.getImports().stream()
+                .filter(imported -> imported.endsWith(varName))
+                .findFirst();
+
+        if (importedClass.isPresent()) {
+            System.out.println("Resolved as imported class: " + varName);
+            return new Type(varName, false);
         }
 
         throw new RuntimeException("Variable '" + varName + "' not found");
     }
+
 }
