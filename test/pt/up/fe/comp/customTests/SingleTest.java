@@ -9,7 +9,6 @@ public class SingleTest {
     public void customTest() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/singlecustomtest.jmm"));
         TestUtils.mustFail(result);
-        System.out.println(result.getReports());
     }
 }
 
