@@ -107,7 +107,7 @@ public class TypeUtils {
             }
 
             case "VarRefExpr":
-                String currentMethod = expr.getAncestor(METHOD_DECL) // Assuming "MethodDecl" is the correct kind for methods
+                String currentMethod = expr.getAncestor(METHOD_DECL)
                         .map(node -> node.get("name"))
                         .orElseThrow(() -> new RuntimeException("Cannot determine the current method for variable: " + expr.get("name")));
 

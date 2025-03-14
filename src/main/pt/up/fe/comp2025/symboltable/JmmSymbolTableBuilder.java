@@ -145,11 +145,9 @@ public class JmmSymbolTableBuilder {
 
     private List<String> buildMethods(JmmNode classDecl) {
 
-        var methods = classDecl.getChildren(METHOD_DECL).stream()
+        return classDecl.getChildren(METHOD_DECL).stream()
                 .map(method -> method.get("name"))
                 .toList();
-
-        return methods;
     }
 
     private List<String> buildImports(JmmNode root) {
