@@ -130,7 +130,7 @@ public class TypeUtils {
                 .map(Symbol::getType);
 
         if (fieldType.isPresent()) {
-            System.out.println("Resolved as field: " + varName + " -> " + fieldType.get().getName());
+            //System.out.println("Resolved as field: " + varName + " -> " + fieldType.get().getName());
             return fieldType.get();
         }
 
@@ -141,7 +141,7 @@ public class TypeUtils {
                 .map(Symbol::getType);
 
         if (paramType.isPresent()) {
-            System.out.println("Resolved as parameter: " + varName + " -> " + paramType.get().getName());
+            //System.out.println("Resolved as parameter: " + varName + " -> " + paramType.get().getName());
             return paramType.get();
         }
 
@@ -152,7 +152,7 @@ public class TypeUtils {
                 .map(Symbol::getType);
 
         if (localType.isPresent()) {
-            System.out.println("Resolved as local variable: " + varName + " -> " + localType.get().getName());
+            //System.out.println("Resolved as local variable: " + varName + " -> " + localType.get().getName());
             return localType.get();
         }
 
