@@ -30,10 +30,19 @@ public enum Kind {
     IMPORT_DECL,
     ID,
     ARRAY_INIT,
+    NEW_INT_ARRAY_EXPR,
     ARRAY_ACCESS_EXPR,
     VAR_DECL_STMT,
     IF_STMT,
-    WHILE_STMT;
+    WHILE_STMT,
+    PARENT_EXPR,
+    METHOD_CALL_EXPR,
+    NEW_OBJECT_EXPR, 
+    THIS_EXPR,       
+    UNARY_NOT_EXPR,
+    BOOLEAN_LITERAL, 
+    STRING_LITERAL,
+    LENGTH_EXPR;
 
 
     private final String name;

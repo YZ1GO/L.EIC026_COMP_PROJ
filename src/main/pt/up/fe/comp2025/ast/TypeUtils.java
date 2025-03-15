@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static pt.up.fe.comp2025.ast.Kind.BOOLEAN_LITERAL;
 import static pt.up.fe.comp2025.ast.Kind.METHOD_DECL;
 
 /**
@@ -52,12 +53,12 @@ public class TypeUtils {
     public Type getExprType(JmmNode expr) {
 
         // TODO: Update when there are new types
-        // TODO: need to change the switch case to handle with enums of Kind
-        switch (expr.getKind()) {
-            case "ParentExpr":
+        // DONE: Updated to support new types
+        switch (Kind.fromString(expr.getKind())) {
+            case PARENT_EXPR:
                 return getExprType(expr.getChild(0));
 
-            case "NewObjectExpr": {
+            case NEW_OBJECT_EXPR: {
                 String className = expr.get("name");
 
                 if (className.equals(table.getClassName())) {
@@ -73,13 +74,13 @@ public class TypeUtils {
                 throw new RuntimeException("Class '" + className + "' not found in the current context or imports.");
             }
 
-            case "ArrayAccessExpr", "LengthExpr", "IntegerLiteral":
+            case ARRAY_ACCESS_EXPR, LENGTH_EXPR, INTEGER_LITERAL:
                 return newIntType();
 
-            case "StringLiteral":
+            case STRING_LITERAL:
                 return new Type("String", false);
 
-            case "MethodCallExpr": {
+            case METHOD_CALL_EXPR: {
                 Type objectType = getExprType(expr.getChild(0));
                 String methodName = expr.get("name");
 
@@ -90,13 +91,13 @@ public class TypeUtils {
                 return returnType;
             }
 
-            case "ThisExpr":
+            case THIS_EXPR:
                 return new Type(table.getClassName(), false);
 
-            case "UnaryNotExpr", "BooleanLiteral":
+            case UNARY_NOT_EXPR, BOOLEAN_LITERAL:
                 return new Type("boolean", false);
 
-            case "BinaryExpr": {
+            case BINARY_EXPR: {
                 String op = expr.get("op");
 
                 switch (op) {
@@ -109,14 +110,14 @@ public class TypeUtils {
                 }
             }
 
-            case "VarRefExpr":
+            case VAR_REF_EXPR:
                 String currentMethod = expr.getAncestor(METHOD_DECL)
                         .map(node -> node.get("name"))
                         .orElseThrow(() -> new RuntimeException("Cannot determine the current method for variable: " + expr.get("name")));
 
                 return resolveVariableType(expr.get("name"), currentMethod);
 
-            case "ArrayInit", "NewIntArrayExpr": {
+            case ARRAY_INIT, NEW_INT_ARRAY_EXPR: {
                 return new Type("int", true);
             }
 
@@ -167,7 +168,6 @@ public class TypeUtils {
                 .findFirst();
 
         if (importedClass.isPresent()) {
-            System.out.println("Resolved as imported class: " + varName);
             return new Type(varName, false);
         }
 

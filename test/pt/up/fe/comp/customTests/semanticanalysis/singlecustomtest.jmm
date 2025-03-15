@@ -4,6 +4,6 @@ import C;
 
 class Test extends B {
     public static void main(String[] args) {
-        B a;
+        int a;
     }
 }
