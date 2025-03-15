@@ -1,8 +1,9 @@
-import Test.A;
+import A;
 import B;
+import C;
 
 class Test extends B {
     public static void main(String[] args) {
-        String A;
+        B a;
     }
 }
