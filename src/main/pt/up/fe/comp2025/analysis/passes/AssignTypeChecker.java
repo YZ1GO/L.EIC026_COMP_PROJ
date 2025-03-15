@@ -32,7 +32,18 @@ public class AssignTypeChecker extends AnalysisVisitor {
     
         Type declaredType = typeUtils.getExprType(varRef);
         Type assignedType = typeUtils.getExprType(expr);
-    
+
+        if (assignedType == null) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    expr.getLine(),
+                    expr.getColumn(),
+                    String.format("Class '%s' is not declared, imported, or part of the class hierarchy.", expr.get("name")),
+                    null)
+            );
+            return null;
+        }
+
         if (!isTypeCompatible(declaredType, assignedType)) {
             String declaredTypeStr = formatType(declaredType);
             String assignedTypeStr = formatType(assignedType);

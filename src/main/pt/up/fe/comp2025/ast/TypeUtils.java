@@ -71,7 +71,7 @@ public class TypeUtils {
                     return new Type(className, false);
                 }
 
-                throw new RuntimeException("Class '" + className + "' not found in the current context or imports.");
+                return null;
             }
 
             case ARRAY_ACCESS_EXPR, LENGTH_EXPR, INTEGER_LITERAL:
