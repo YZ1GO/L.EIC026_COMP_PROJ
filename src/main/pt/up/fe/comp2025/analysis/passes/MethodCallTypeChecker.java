@@ -48,20 +48,37 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             return null;
         }
 
-        for (int i = 0; i < methodParams.size(); i++) {
-            Symbol param = methodParams.get(i);
+        boolean foundVarArgs = false;
 
+        for (Symbol param : methodParams) {
             Object isVarArgsObject = param.getType().getObject("isVarArgs");
             boolean isVarArgs = isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
 
             if (isVarArgs) {
-                if (i != methodParams.size() - 1) {
-                    addReport(Report.newError(Stage.SEMANTIC, 
-                            methodCallNode.getLine(), 
+                if (foundVarArgs) {
+                    addReport(Report.newError(Stage.SEMANTIC,
+                            methodCallNode.getLine(),
                             methodCallNode.getColumn(),
-                            "Varargs parameter must be the last parameter.", null));
+                            "Only one parameter can be declared as varargs.", null));
                     return null;
                 }
+
+                foundVarArgs = true;
+            }
+        }
+        
+        // After ensuring only one varargs parameter exists, check if it is the last parameter
+        if (foundVarArgs) {
+            Symbol lastParam = methodParams.getLast();
+            Object isLastVarArgsObject = lastParam.getType().getObject("isVarArgs");
+            boolean isLastVarArgs = isLastVarArgsObject instanceof Boolean && (Boolean) isLastVarArgsObject;
+        
+            if (!isLastVarArgs) {
+                addReport(Report.newError(Stage.SEMANTIC, 
+                        methodCallNode.getLine(), 
+                        methodCallNode.getColumn(),
+                        "Varargs parameter must be the last parameter in the method signature.", null));
+                return null;
             }
         }
 
