@@ -10,6 +10,7 @@ import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,17 +32,31 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
 
         Type objectType = typeUtils.getExprType(methodCallNode.getChild(0));
 
+        if(table.getImports().stream()
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .anyMatch(importName -> importName.trim().equals(objectType.getName()))){
+
+            return null;
+        }
+    
         // Check if the method exists in the class
         List<Symbol> methodParameters = table.getParameters(methodName);
         if (methodParameters == null) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    methodCallNode.getLine(),
-                    methodCallNode.getColumn(),
-                    String.format("Method '%s' is not declared in the class.", methodName),
-                    null)
-            );
-            return null;
+            // Check if the class extends another class
+            String superClassName = table.getSuper();
+            if (superClassName == null || superClassName.isEmpty()) {
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        methodCallNode.getLine(),
+                        methodCallNode.getColumn(),
+                        String.format("Method '%s' is not declared in the class and the class does not extend another class.", methodName),
+                        null)
+                );
+                return null;
+            } else {
+                // Assume the method exists in the superclass
+                return null;
+            }
         }
 
         // Get the argument types of the method call
