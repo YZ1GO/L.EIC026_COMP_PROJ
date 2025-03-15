@@ -48,6 +48,19 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             return null;
         }
 
+        for (int i = 0; i < methodParams.size(); i++) {
+            Symbol param = methodParams.get(i);
+            if (param.getType().isArray() && param.getType().getName().equals("int")) {
+                if (i != methodParams.size() - 1) {
+                    addReport(Report.newError(Stage.SEMANTIC, 
+                            methodCallNode.getLine(), 
+                            methodCallNode.getColumn(),
+                            "Varargs parameter must be the last parameter.", null));
+                    return null;
+                }
+            }
+        }
+
         List<Type> argTypes = methodCallNode.getChildren().subList(1, methodCallNode.getNumChildren())
                 .stream().map(typeUtils::getExprType).collect(Collectors.toList());
 
@@ -70,7 +83,9 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
     private void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
         int fixedParams = params.size() - 1;
         if (args.size() < fixedParams) {
-            addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
+            addReport(Report.newError(Stage.SEMANTIC, 
+                    node.getLine(), 
+                    node.getColumn(),
                     "Insufficient arguments for method '" + methodName + "'.", null));
             return;
         }
@@ -80,11 +95,12 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
         }
 
-        // Check varargs (must be int)
+        // Check varargs (must be int or int[])
         for (int i = fixedParams; i < args.size(); i++) {
-            if (!args.get(i).getName().equals("int") || args.get(i).isArray()) {
+            Type argType = args.get(i);
+            if (!argType.getName().equals("int") && !(argType.getName().equals("int") && argType.isArray())) {
                 addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
-                        "Varargs argument " + (i - fixedParams + 1) + " must be of type 'int'.", null));
+                        "Varargs argument " + (i - fixedParams + 1) + " must be of type 'int' or 'int[]'.", null));
             }
         }
     }

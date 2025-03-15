@@ -2,6 +2,7 @@ class Varargs {
 
     public int foo() {
         int a;
+        int... b;
         a = this.varargs(10, 20, 30);
         return a;
     }

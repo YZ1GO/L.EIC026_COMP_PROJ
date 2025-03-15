@@ -36,6 +36,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new UndeclaredVariable(),
                 new UndeclaredCustomType(),
                 new VoidTypeChecker(),
+                new VarargsDeclarationChecker(),
                 new ConditionTypeChecker(table),
                 new ArrayInitChecker(table),
                 new ArrayLiteralChecker(),
