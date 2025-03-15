@@ -24,6 +24,7 @@ public class AssignTypeChecker extends AnalysisVisitor {
     @Override
     public void buildVisitor() {
         addVisit(Kind.ASSIGN_STMT, this::visitAssignStmt);
+        addVisit(Kind.THIS_EXPR, this::visitThisExpr);
     }
 
     private Void visitAssignStmt(JmmNode assignStmt, SymbolTable table) {
@@ -125,5 +126,22 @@ public class AssignTypeChecker extends AnalysisVisitor {
 
     private String formatType(Type type) {
         return type.getName() + (type.isArray() ? "[]" : "");
+    }
+
+    private Void visitThisExpr(JmmNode thisExpr, SymbolTable table) {
+        // Check if the "this" expression is used in a static context
+        JmmNode parentMethod = thisExpr.getAncestor(Kind.METHOD_DECL).orElse(null);
+        if (parentMethod != null && parentMethod.get("isStatic").equals("true")) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    thisExpr.getLine(),
+                    thisExpr.getColumn(),
+                    "'this' cannot be used in a static method.",
+                    null)
+            );
+            return null;
+        }
+
+        return null;
     }
 }

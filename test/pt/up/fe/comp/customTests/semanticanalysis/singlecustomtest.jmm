@@ -1,11 +1,30 @@
-import B;
+import A;
 
-class Test {
-    int asd;
+class TestThisUsage extends A{
 
-    public int[] test1() {
-        int[] asd;
-        asd = new int[1];
-        return asd;
+    // Case 1: Invalid use of "this" in a static method
+    public static void main(String[] args) {
+        //this.someMethod(); // This should trigger an error: "'this' cannot be used in a static method."
+    }
+
+    // Case 2: Valid use of "this" as an object
+    public void validThisAssignment() {
+        TestThisUsage obj;
+        obj = this; // This should be valid since "this" is of the same type as the class.
+    }
+
+    public void validThisAssignment2() {
+        A obj;
+        obj = this; // This should be valid since "this" is of the same type as the class.
+    }
+
+    // Case 3: Invalid use of "this" as an object
+    public void invalidThisAssignment() {
+        String obj;
+        obj = this; // This should trigger an error because "this" cannot be assigned to a variable of type String.
+    }
+
+    public void someMethod() {
+        // Some method logic
     }
 }
