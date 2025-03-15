@@ -40,6 +40,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new ArrayAccessChecker(),
                 new ClassExtendsChecker(),
                 new ClassNameConflictChecker(),
+                new UndeclaredCustomType(),
                 new OperandTypeChecker()
         );
     }
