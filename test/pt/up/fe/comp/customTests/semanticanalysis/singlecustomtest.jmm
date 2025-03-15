@@ -18,9 +18,10 @@ class Test {
 
     public static void main(String[] args) {
         B test;
+        void c;
         String a;
         a = "hello";
-        test = new C();
+        test = new B();
         int result = test.add(5, a); // Incorrect: second argument is a String instead of an int
     }
 }
