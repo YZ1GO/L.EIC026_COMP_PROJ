@@ -1,6 +1,15 @@
 import A;
 
 class TestThisUsage extends A{
+    int asd;
+    public TestThisUsage test() {
+        return this;
+    }
+
+    public int test1() {
+        asd = 10;
+        return asd;
+    }
 
     // Case 1: Invalid use of "this" in a static method
     public static void main(String[] args) {
@@ -18,11 +27,7 @@ class TestThisUsage extends A{
         obj = this; // This should be valid since "this" is of the same type as the class.
     }
 
-    // Case 3: Invalid use of "this" as an object
-    public void invalidThisAssignment() {
-        String obj;
-        obj = this; // This should trigger an error because "this" cannot be assigned to a variable of type String.
-    }
+
 
     public void someMethod() {
         // Some method logic

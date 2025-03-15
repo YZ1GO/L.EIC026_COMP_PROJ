@@ -82,13 +82,13 @@ public class ReturnChecker extends AnalysisVisitor {
             JmmNode exprNode = returnStmt.getChildren().getFirst();
             Type exprType = typeUtils.getExprType(exprNode);
 
-            /*if (exprNode.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
+            if (exprNode.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
                 String varName = exprNode.get("name");
 
                 // Check if the variable is initialized
                 JmmNode methodNode = returnStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
                 if (methodNode != null && !isVariableInitialized(varName, methodNode)) {
-                    addReport(Report.newError(
+                    addReport(Report.newWarn(
                             Stage.SEMANTIC,
                             returnStmt.getLine(),
                             returnStmt.getColumn(),
@@ -97,7 +97,7 @@ public class ReturnChecker extends AnalysisVisitor {
                     );
                     return null;
                 }
-            }*/
+            }
 
             if (exprType == null) {
                 addReport(Report.newError(
