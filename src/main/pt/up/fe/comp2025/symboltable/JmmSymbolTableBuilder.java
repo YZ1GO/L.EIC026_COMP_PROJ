@@ -151,14 +151,12 @@ public class JmmSymbolTableBuilder {
     }
 
     private List<String> buildImports(JmmNode root) {
-        List<String> imports = new ArrayList<>();
-        for (JmmNode importNode : root.getChildren(IMPORT_DECL)) {
-            StringBuilder importPath = new StringBuilder(importNode.get("name"));
-            for (JmmNode part : importNode.getChildren(ID)) {
-                importPath.append(".").append(part.get("name"));
-            }
-            imports.add(importPath.toString());
-        }
+        List<String> imports = root.getChildren(IMPORT_DECL).stream()
+                .map(importNode -> importNode.get("name"))
+                .toList();
+
+        System.out.println("Imports: " + imports);
+
         return imports;
     }
 
