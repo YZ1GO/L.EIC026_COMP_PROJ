@@ -72,8 +72,6 @@ stmt
     | 'while' '(' expr ')' stmt #WhileStmt
     | 'System.out.println' '(' expr ')' ';' #PrintStmt
     | expr ';' #ExprStmt
-    | type name=ID '=' expr ';' #VarDeclStmt
-    | type name=ID '[' expr ']' '=' expr ';' #ArrayDeclStmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     | name=ID '.' name=ID '=' expr ';' #FieldAssignStmt
     | expr '=' expr ';' #AssignStmt
