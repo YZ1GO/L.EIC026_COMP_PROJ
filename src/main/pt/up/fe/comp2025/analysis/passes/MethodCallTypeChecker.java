@@ -10,7 +10,6 @@ import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,82 +27,82 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
     }
 
     private Void visitMethodCall(JmmNode methodCallNode, SymbolTable table) {
-        var methodName = methodCallNode.get("name");
+        String methodName = methodCallNode.get("name");
+        JmmNode receiverNode = methodCallNode.getChild(0);
+        Type receiverType = typeUtils.getExprType(receiverNode);
 
-        Type objectType = typeUtils.getExprType(methodCallNode.getChild(0));
+        // Skip checks for imported classes
 
-        if(table.getImports().stream()
-                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                .anyMatch(importName -> importName.trim().equals(objectType.getName()))){
-
-            return null;
-        }
-    
-        // Check if the method exists in the class
-        List<Symbol> methodParameters = table.getParameters(methodName);
-        if (methodParameters == null) {
-            // Check if the class extends another class
-            String superClassName = table.getSuper();
-            if (superClassName == null || superClassName.isEmpty()) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        methodCallNode.getLine(),
-                        methodCallNode.getColumn(),
-                        String.format("Method '%s' is not declared in the class and the class does not extend another class.", methodName),
-                        null)
-                );
-                return null;
-            } else {
-                // Assume the method exists in the superclass
-                return null;
-            }
-        }
-
-        // Get the argument types of the method call
-        List<Type> argumentTypes = methodCallNode.getChildren().subList(1, methodCallNode.getNumChildren()).stream()
-                .map(arg -> typeUtils.getExprType(arg))
-                .collect(Collectors.toList());
-
-        // Check if the number of arguments matches the method signature
-        if (argumentTypes.size() != methodParameters.size()) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    methodCallNode.getLine(),
-                    methodCallNode.getColumn(),
-                    String.format("Method '%s' expects %d arguments, but %d were provided.",
-                            methodName, methodParameters.size(), argumentTypes.size()),
-                    null)
-            );
+        if (table.getImports().contains(receiverType.getName())) {
             return null;
         }
 
-        // Check if each argument type is compatible with the corresponding parameter type
-        for (int i = 0; i < argumentTypes.size(); i++) {
-            Type argumentType = argumentTypes.get(i);
-            Type parameterType = methodParameters.get(i).getType();
-
-            if (!isTypeCompatible(argumentType, parameterType)) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        methodCallNode.getLine(),
-                        methodCallNode.getColumn(),
-                        String.format("Argument %d of method '%s' is of type '%s', but expected type '%s'.",
-                                i + 1, methodName, formatType(argumentType), formatType(parameterType)),
-                        null)
-                );
-                return null;
+        List<Symbol> methodParams = table.getParameters(methodName);
+        if (methodParams == null) {
+            if (table.getSuper() == null) {
+                addReport(Report.newError(Stage.SEMANTIC, methodCallNode.getLine(), methodCallNode.getColumn(),
+                        "Method '" + methodName + "' is undefined.", null));
             }
+            return null;
+        }
+
+        List<Type> argTypes = methodCallNode.getChildren().subList(1, methodCallNode.getNumChildren())
+                .stream().map(typeUtils::getExprType).collect(Collectors.toList());
+
+        boolean isVarArgs = !methodParams.isEmpty() && isLastParamVarArgs(methodParams);
+
+        if (isVarArgs) {
+            handleVarArgsCall(methodCallNode, methodName, methodParams, argTypes);
+        } else {
+            handleNormalCall(methodCallNode, methodName, methodParams, argTypes);
         }
 
         return null;
     }
 
-    private boolean isTypeCompatible(Type argumentType, Type parameterType) {
-        return argumentType.getName().equals(parameterType.getName()) && argumentType.isArray() == parameterType.isArray();
+    private boolean isLastParamVarArgs(List<Symbol> params) {
+        Symbol lastParam = params.getLast();
+        return lastParam.getType().isArray() && lastParam.getType().getName().equals("int");
     }
 
-    private String formatType(Type type) {
-        // Format the type to include array information
-        return type.getName() + (type.isArray() ? "[]" : "");
+    private void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
+        int fixedParams = params.size() - 1;
+        if (args.size() < fixedParams) {
+            addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
+                    "Insufficient arguments for method '" + methodName + "'.", null));
+            return;
+        }
+
+        // Check fixed parameters
+        for (int i = 0; i < fixedParams; i++) {
+            checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
+        }
+
+        // Check varargs (must be int)
+        for (int i = fixedParams; i < args.size(); i++) {
+            if (!args.get(i).getName().equals("int") || args.get(i).isArray()) {
+                addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
+                        "Varargs argument " + (i - fixedParams + 1) + " must be of type 'int'.", null));
+            }
+        }
+    }
+
+    private void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
+        if (params.size() != args.size()) {
+            addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
+                    "Method '" + methodName + "' expects " + params.size() + " arguments but got " + args.size() + ".", null));
+            return;
+        }
+
+        for (int i = 0; i < params.size(); i++) {
+            checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
+        }
+    }
+
+    private void checkTypeMatch(JmmNode node, String methodName, Type argType, Type paramType, int pos) {
+        if (!argType.equals(paramType)) {
+            addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
+                    "Argument " + pos + " of '" + methodName + "' expects type " + paramType + " but got " + argType + ".", null));
+        }
     }
 }
