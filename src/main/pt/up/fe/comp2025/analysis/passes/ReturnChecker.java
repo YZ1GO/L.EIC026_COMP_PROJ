@@ -9,9 +9,6 @@ import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
-/**
- * Ensures that methods have return statements that match their declared return type.
- */
 public class ReturnChecker extends AnalysisVisitor {
 
     private String currentMethod;
@@ -70,7 +67,6 @@ public class ReturnChecker extends AnalysisVisitor {
         return null;
     }
 
-    // TODO: check String return type
     private Void visitReturnStmt(JmmNode returnStmt, SymbolTable table) {
         if (returnType.getName().equals("void")) {
             addReport(Report.newError(
@@ -83,7 +79,16 @@ public class ReturnChecker extends AnalysisVisitor {
         } else {
             JmmNode exprNode = returnStmt.getChildren().getFirst();
             Type exprType = typeUtils.getExprType(exprNode);
-            if (!returnType.equals(exprType)) {
+
+            if (exprType == null) {
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        returnStmt.getLine(),
+                        returnStmt.getColumn(),
+                        String.format("Class '%s' is not declared, imported, or part of the class hierarchy.", exprNode.get("name")),
+                        null)
+                );
+            } else if (!returnType.equals(exprType)) {
                 addReport(Report.newError(
                         Stage.SEMANTIC,
                         returnStmt.getLine(),
