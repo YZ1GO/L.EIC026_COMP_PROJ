@@ -32,6 +32,10 @@ public class TypeUtils {
     public static Type newBooleanType() {
         return new Type("boolean", false);
     }
+
+    public static Type newStringType() {
+        return new Type("String", false);
+    }
     
     public static Type convertType(JmmNode typeNode) {
 
@@ -71,6 +75,10 @@ public class TypeUtils {
                     return new Type(className, false);
                 }
 
+                if (className.equals("String")) {
+                    return newStringType();
+                }
+
                 return null;
             }
 
@@ -78,7 +86,7 @@ public class TypeUtils {
                 return newIntType();
 
             case STRING_LITERAL:
-                return new Type("String", false);
+                return newStringType();
 
             case METHOD_CALL_EXPR: {
                 Type objectType = getExprType(expr.getChild(0));
@@ -95,7 +103,7 @@ public class TypeUtils {
                 return new Type(table.getClassName(), false);
 
             case UNARY_NOT_EXPR, BOOLEAN_LITERAL:
-                return new Type("boolean", false);
+                return newBooleanType();
 
             case BINARY_EXPR: {
                 String op = expr.get("op");
