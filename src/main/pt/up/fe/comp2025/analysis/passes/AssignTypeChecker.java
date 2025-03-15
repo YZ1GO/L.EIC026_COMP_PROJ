@@ -34,9 +34,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
         Type assignedType = typeUtils.getExprType(expr);
     
         if (!isTypeCompatible(declaredType, assignedType)) {
-            String declaredTypeStr = declaredType.getName() + (declaredType.isArray() ? "[]" : "");
-            String assignedTypeStr = assignedType.getName() + (assignedType.isArray() ? "[]" : "");
-    
+            String declaredTypeStr = formatType(declaredType);
+            String assignedTypeStr = formatType(assignedType);
+
             addReport(Report.newError(
                     Stage.SEMANTIC,
                     assignStmt.getLine(),
@@ -45,32 +45,32 @@ public class AssignTypeChecker extends AnalysisVisitor {
                     null)
             );
         }
-    
+
         return null;
     }
 
-private boolean isTypeCompatible(Type declaredType, Type assignedType) {
-    if (declaredType.isArray() != assignedType.isArray()) {
+    private boolean isTypeCompatible(Type declaredType, Type assignedType) {
+        if (declaredType.isArray() != assignedType.isArray()) {
+            return false;
+        }
+
+        if (declaredType.equals(assignedType)) {
+            return true;
+        }
+
+        boolean declaredIsImported = isImported(declaredType.getName());
+        boolean assignedIsImported = isImported(assignedType.getName());
+
+        if (declaredIsImported && assignedIsImported) {
+            return true;
+        }
+
+        if (isSubclass(assignedType.getName(), declaredType.getName())) {
+            return true;
+        }
+
         return false;
     }
-    
-    if (declaredType.equals(assignedType)) {
-        return true;
-    }
-
-    boolean declaredIsImported = isImported(declaredType.getName());
-    boolean assignedIsImported = isImported(assignedType.getName());
-
-    if (declaredIsImported && assignedIsImported) {
-        return true;
-    }
-
-    if (isSubclass(assignedType.getName(), declaredType.getName())) {
-        return true;
-    }
-
-    return false;
-}
     
     private boolean isImported(String typeName) {
         return symbolTable.getImports().stream()
@@ -110,5 +110,9 @@ private boolean isTypeCompatible(Type declaredType, Type assignedType) {
 
 
         return null;
+    }
+
+    private String formatType(Type type) {
+        return type.getName() + (type.isArray() ? "[]" : "");
     }
 }
