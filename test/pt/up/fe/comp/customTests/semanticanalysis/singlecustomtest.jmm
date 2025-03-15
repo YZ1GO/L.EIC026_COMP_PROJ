@@ -1,27 +1,11 @@
 import B;
 
 class Test {
-    public int add(int a, String b) {
-        return a + 3;
-    }
-
-    public int test() {
-        int asd;
-        return asd;
-    }
+    int asd;
 
     public int[] test1() {
         int[] asd;
         asd = new int[1];
         return asd;
-    }
-
-    public static void main(String[] args) {
-        B test;
-        void c;
-        String a;
-        a = "hello";
-        test = new B();
-        int result = test.add(5, a); // Incorrect: second argument is a String instead of an int
     }
 }

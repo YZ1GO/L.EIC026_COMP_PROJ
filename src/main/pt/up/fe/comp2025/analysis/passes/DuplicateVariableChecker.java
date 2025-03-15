@@ -35,7 +35,6 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
             for (var param : table.getParameters(currentMethod)) {
                 String paramName = param.getName();
                 if (parameterNames.contains(paramName)) {
-                    // Report duplicate parameter error
                     addReport(Report.newError(
                             Stage.SEMANTIC,
                             method.getLine(),
@@ -56,7 +55,6 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
     }
 
     private Void visitVarDeclStmt(JmmNode varDeclStmt, SymbolTable table) {
-        // Get the name of the variable being declared
         String varName = varDeclStmt.get("name");
 
         // Check for duplicate declarations in the current scope

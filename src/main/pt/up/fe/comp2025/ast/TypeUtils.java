@@ -135,15 +135,15 @@ public class TypeUtils {
     }
 
     private Type resolveVariableType(String varName, String currentMethod) {
-        // Check fields (class-level variables)
-        Optional<Type> fieldType = table.getFields().stream()
-                .filter(field -> field.getName().equals(varName))
+        // Check local variables of the current method
+        Optional<Type> localType = table.getLocalVariables(currentMethod).stream()
+                .filter(local -> local.getName().equals(varName))
                 .findFirst()
                 .map(Symbol::getType);
 
-        if (fieldType.isPresent()) {
-            //System.out.println("Resolved as field: " + varName + " -> " + fieldType.get().getName());
-            return fieldType.get();
+        if (localType.isPresent()) {
+            //System.out.println("Resolved as local variable: " + varName + " -> " + localType.get().getName());
+            return localType.get();
         }
 
         // Check parameters of the current method
@@ -157,15 +157,15 @@ public class TypeUtils {
             return paramType.get();
         }
 
-        // Check local variables of the current method
-        Optional<Type> localType = table.getLocalVariables(currentMethod).stream()
-                .filter(local -> local.getName().equals(varName))
+        // Check fields (class-level variables)
+        Optional<Type> fieldType = table.getFields().stream()
+                .filter(field -> field.getName().equals(varName))
                 .findFirst()
                 .map(Symbol::getType);
 
-        if (localType.isPresent()) {
-            //System.out.println("Resolved as local variable: " + varName + " -> " + localType.get().getName());
-            return localType.get();
+        if (fieldType.isPresent()) {
+            //System.out.println("Resolved as field: " + varName + " -> " + fieldType.get().getName());
+            return fieldType.get();
         }
 
         // Check if the variable matches an imported class

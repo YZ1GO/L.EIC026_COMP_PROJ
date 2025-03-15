@@ -9,6 +9,8 @@ import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
+import java.util.List;
+
 public class ReturnChecker extends AnalysisVisitor {
 
     private String currentMethod;
@@ -80,6 +82,23 @@ public class ReturnChecker extends AnalysisVisitor {
             JmmNode exprNode = returnStmt.getChildren().getFirst();
             Type exprType = typeUtils.getExprType(exprNode);
 
+            if (exprNode.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
+                String varName = exprNode.get("name");
+
+                // Check if the variable is initialized
+                JmmNode methodNode = returnStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
+                if (methodNode != null && !isVariableInitialized(varName, methodNode)) {
+                    addReport(Report.newError(
+                            Stage.SEMANTIC,
+                            returnStmt.getLine(),
+                            returnStmt.getColumn(),
+                            String.format("Variable '%s' is not initialized before being returned.", varName),
+                            null)
+                    );
+                    return null;
+                }
+            }
+
             if (exprType == null) {
                 addReport(Report.newError(
                         Stage.SEMANTIC,
@@ -99,5 +118,29 @@ public class ReturnChecker extends AnalysisVisitor {
             }
         }
         return null;
+    }
+
+    private boolean isVariableInitialized(String varName, JmmNode methodNode) {
+        List<JmmNode> statements = methodNode.getChildren();
+
+        boolean isInitialized = false;
+
+        for (JmmNode statement : statements) {
+            if (statement.getKind().equals(Kind.ASSIGN_STMT.toString())) {
+                JmmNode varRef = statement.getChild(0);
+
+                // Check if the assignment is to the variable we're tracking
+                if (varRef.getKind().equals(Kind.VAR_REF_EXPR.toString()) && varRef.get("name").equals(varName)) {
+                    isInitialized = true;
+                }
+            }
+
+            // If we encounter the return statement, stop checking further
+            if (statement.getKind().equals(Kind.RETURN_STMT.toString())) {
+                break;
+            }
+        }
+
+        return isInitialized;
     }
 }
