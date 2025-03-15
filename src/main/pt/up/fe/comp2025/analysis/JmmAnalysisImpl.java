@@ -35,6 +35,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new DuplicateVariableChecker(),
                 new UndeclaredVariable(),
                 new UndeclaredCustomType(),
+                new VoidTypeChecker(),
                 new ConditionTypeChecker(table),
                 new ArrayInitChecker(table),
                 new ArrayLiteralChecker(),
