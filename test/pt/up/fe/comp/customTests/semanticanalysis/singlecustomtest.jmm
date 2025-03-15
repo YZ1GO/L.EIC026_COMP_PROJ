@@ -1,4 +1,4 @@
-import Test;
+import Test.A;
 import B;
 
 class Test extends B {
