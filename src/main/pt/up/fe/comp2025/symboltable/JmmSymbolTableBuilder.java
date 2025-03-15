@@ -155,7 +155,7 @@ public class JmmSymbolTableBuilder {
                 .map(importNode -> importNode.get("name"))
                 .toList();
 
-        System.out.println("Imports: " + imports);
+        //System.out.println("Imports: " + imports);
 
         return imports;
     }
