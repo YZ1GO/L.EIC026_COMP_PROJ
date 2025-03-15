@@ -10,6 +10,7 @@ import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,9 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
         Type receiverType = typeUtils.getExprType(receiverNode);
 
         // Skip checks for imported classes
-        if (table.getImports().contains(receiverType.getName())) {
+        if (table.getImports().stream()
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .anyMatch(importName -> importName.trim().equals(receiverType.getName()))) {
             return null;
         }
 

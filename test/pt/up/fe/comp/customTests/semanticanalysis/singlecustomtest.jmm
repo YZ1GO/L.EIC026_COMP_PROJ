@@ -11,25 +11,7 @@ class TestThisUsage extends A{
         return asd;
     }
 
-    // Case 1: Invalid use of "this" in a static method
-    public static void main(String[] args) {
-        //this.someMethod(); // This should trigger an error: "'this' cannot be used in a static method."
-    }
-
-    // Case 2: Valid use of "this" as an object
-    public void validThisAssignment() {
-        TestThisUsage obj;
-        obj = this; // This should be valid since "this" is of the same type as the class.
-    }
-
-    public void validThisAssignment2() {
-        A obj;
-        obj = this; // This should be valid since "this" is of the same type as the class.
-    }
-
-
-
     public void someMethod() {
-        // Some method logic
+
     }
 }
