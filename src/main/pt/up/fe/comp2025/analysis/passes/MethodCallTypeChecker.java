@@ -32,7 +32,6 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
         Type receiverType = typeUtils.getExprType(receiverNode);
 
         // Skip checks for imported classes
-
         if (table.getImports().contains(receiverType.getName())) {
             return null;
         }
