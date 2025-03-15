@@ -164,7 +164,6 @@ public class JmmSymbolTableBuilder {
         return classDecl.getChildren(VAR_DECL).stream()
             .map(varDecl -> {
                 Symbol symbol = new Symbol(convertType(varDecl.getChild(0)), varDecl.get("name"));
-                // Debugging output
                 // System.out.println("Field: " + symbol.getName() + " (Type: " + symbol.getType() + ")");
                 return symbol;
             })
