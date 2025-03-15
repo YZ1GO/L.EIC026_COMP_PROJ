@@ -50,7 +50,11 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
 
         for (int i = 0; i < methodParams.size(); i++) {
             Symbol param = methodParams.get(i);
-            if (param.getType().isArray() && param.getType().getName().equals("int")) {
+
+            Object isVarArgsObject = param.getType().getObject("isVarArgs");
+            boolean isVarArgs = isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
+
+            if (isVarArgs) {
                 if (i != methodParams.size() - 1) {
                     addReport(Report.newError(Stage.SEMANTIC, 
                             methodCallNode.getLine(), 
@@ -76,8 +80,12 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
     }
 
     private boolean isLastParamVarArgs(List<Symbol> params) {
-        Symbol lastParam = params.getLast();
-        return lastParam.getType().isArray() && lastParam.getType().getName().equals("int");
+        Symbol lastParam = params.get(params.size() - 1);
+
+        Object isVarArgsObject = lastParam.getType().getObject("isVarArgs");
+        boolean isVarArgs = isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
+
+        return isVarArgs;
     }
 
     private void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {

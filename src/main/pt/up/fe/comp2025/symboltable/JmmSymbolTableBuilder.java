@@ -76,6 +76,10 @@ public class JmmSymbolTableBuilder {
             if (method.getNumChildren() > 0) {
                 var returnTypeNode = method.getChild(0);
                 var returnType = TypeUtils.convertType(returnTypeNode);
+
+                boolean isVarArgs = isVarArgs(returnTypeNode);
+                returnType.putObject("isVarArgs", isVarArgs);
+
                 map.put(name, returnType);
             } else {
                 map.put(name, new Type("void", false));
@@ -83,9 +87,10 @@ public class JmmSymbolTableBuilder {
         }
 
         // Debug statement to print return types
-        /*for (var entry : map.entrySet()) {
-            System.out.println("Method: " + entry.getKey() + ", Return Type: " + entry.getValue());
-        }*/
+        /*map.forEach((methodName, returnType) -> {
+            System.out.println("Method: " + methodName + ", Return Type: " + returnType +
+                    " (isVarArgs: " + returnType.getObject("isVarArgs") + ")");
+        });*/
 
         return map;
     }
@@ -102,15 +107,21 @@ public class JmmSymbolTableBuilder {
                     .map(param -> {
                         JmmNode typeNode = param.getChild(0);
                         Type type = TypeUtils.convertType(typeNode);
-                        if (typeNode.get("isVarArgs") != null && typeNode.get("isVarArgs").equals("true")) {
-                            type = new Type(type.getName(), true); // Mark as array
-                        }
+
+                        boolean isVarArgs = isVarArgs(typeNode);
+                        type.putObject("isVarArgs", isVarArgs);
+
                         return new Symbol(type, param.get("name"));
                     })
                     .toList();
 
             // Debug statement to print parameters
-            // System.out.println("Method: " + name + ", Params: " + params);
+            /*System.out.println("Method: " + name + ", Params:");
+            params.forEach(param -> {
+                System.out.println("  Param: " + param.getName() +
+                        " (Type: " + param.getType() + ")" +
+                        " (isVarArgs: " + param.getType().getObject("isVarArgs") + ")");
+            });*/
 
             map.put(name, params);
         }
@@ -130,6 +141,10 @@ public class JmmSymbolTableBuilder {
                     .map(varDecl -> {
                         var typeNode = varDecl.getChild(0);
                         var type = TypeUtils.convertType(typeNode);
+
+                        boolean isVarArgs = isVarArgs(typeNode);
+                        type.putObject("isVarArgs", isVarArgs);
+                        
                         return new Symbol(type, varDecl.get("name"));
                     })
                     .toList();
@@ -137,7 +152,7 @@ public class JmmSymbolTableBuilder {
             // Debug statement to print local variables
             /*System.out.println("Method: " + name);
             locals.forEach(local ->
-                    System.out.println("  Local: " + local.getName() + " (Type: " + local.getType() + ")")
+                    System.out.println("  Local: " + local.getName() + " (Type: " + local.getType() + ") " + "(isVarArgs:" + local.getType().getObject("isVarArgs") + ")")
             );*/
 
             map.put(name, locals);
@@ -166,10 +181,22 @@ public class JmmSymbolTableBuilder {
     private List<Symbol> buildFields(JmmNode classDecl) {
         return classDecl.getChildren(VAR_DECL).stream()
             .map(varDecl -> {
-                Symbol symbol = new Symbol(convertType(varDecl.getChild(0)), varDecl.get("name"));
-                // System.out.println("Field: " + symbol.getName() + " (Type: " + symbol.getType() + ")");
+                JmmNode typeNode = varDecl.getChild(0);
+                Type type = convertType(typeNode);
+
+                boolean isVarArgs = isVarArgs(typeNode);
+                type.putObject("isVarArgs", isVarArgs);    
+
+                Symbol symbol = new Symbol(type, varDecl.get("name"));
+                
+                //System.out.println("Field: " + symbol.getName() + " (Type: " + symbol.getType() + ") (isVarArgs: " + symbol.getType().getObject("isVarArgs") + ")");
+
                 return symbol;
             })
             .collect(Collectors.toList());
+    }
+
+    private boolean isVarArgs(JmmNode typeNode) {
+        return typeNode.hasAttribute("isVarArgs") && Boolean.parseBoolean(typeNode.get("isVarArgs"));
     }
 }

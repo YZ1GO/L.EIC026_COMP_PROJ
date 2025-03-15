@@ -1,7 +1,7 @@
 import A;
 
 class TestThisUsage extends A{
-    int asd;
+    //int asd;
     public TestThisUsage test() {
         return this;
     }

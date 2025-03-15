@@ -35,6 +35,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new DuplicateVariableChecker(),
                 new UndeclaredVariable(),
                 new UndeclaredCustomType(),
+                new ReturnChecker(table),
                 new VoidTypeChecker(),
                 new VarargsDeclarationChecker(),
                 new ConditionTypeChecker(table),
@@ -43,8 +44,7 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new AssignTypeChecker(table),
                 new ArrayAccessChecker(),
                 new MethodCallTypeChecker(table),
-                new OperandTypeChecker(),
-                new ReturnChecker(table)
+                new OperandTypeChecker()
         );
     }
 

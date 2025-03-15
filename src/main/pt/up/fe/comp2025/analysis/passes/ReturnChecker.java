@@ -32,6 +32,17 @@ public class ReturnChecker extends AnalysisVisitor {
         JmmNode returnTypeNode = method.getChildren().getFirst();
         returnType = TypeUtils.convertType(returnTypeNode);
 
+        // Check if the return type is varargs
+        if (isVarargs(returnTypeNode)) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    method.getLine(),
+                    method.getColumn(),
+                    "Method '" + currentMethod + "' cannot have a varargs return type.",
+                    null)
+            );
+        }
+
         // Check if the method has a return statement if it's not void
         if (!returnType.getName().equals("void")) {
             if (method.getChildren(Kind.RETURN_STMT).isEmpty()) {
@@ -142,5 +153,10 @@ public class ReturnChecker extends AnalysisVisitor {
         }
 
         return isInitialized;
+    }
+
+    private boolean isVarargs(JmmNode typeNode) {
+        Object isVarArgsObject = typeNode.getObject("isVarArgs");
+        return isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
     }
 }
