@@ -82,7 +82,7 @@ public class ReturnChecker extends AnalysisVisitor {
             JmmNode exprNode = returnStmt.getChildren().getFirst();
             Type exprType = typeUtils.getExprType(exprNode);
 
-            if (exprNode.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
+            /*if (exprNode.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
                 String varName = exprNode.get("name");
 
                 // Check if the variable is initialized
@@ -97,7 +97,7 @@ public class ReturnChecker extends AnalysisVisitor {
                     );
                     return null;
                 }
-            }
+            }*/
 
             if (exprType == null) {
                 addReport(Report.newError(
