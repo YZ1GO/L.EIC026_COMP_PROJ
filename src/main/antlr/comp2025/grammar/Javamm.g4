@@ -27,7 +27,7 @@ program
     ;
 
 importDecl
-    : 'import' name=ID ( '.' ID )* ';'
+    : 'import' name+=ID ( '.' name+=ID )* ';'
     ;
 
 classDecl

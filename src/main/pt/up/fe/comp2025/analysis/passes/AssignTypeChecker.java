@@ -9,6 +9,8 @@ import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
+import java.util.Arrays;
+
 public class AssignTypeChecker extends AnalysisVisitor {
 
     private final TypeUtils typeUtils;
@@ -71,7 +73,9 @@ private boolean isTypeCompatible(Type declaredType, Type assignedType) {
 }
     
     private boolean isImported(String typeName) {
-        return symbolTable.getImports().stream().anyMatch(imported -> imported.endsWith(typeName));
+        return symbolTable.getImports().stream()
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .anyMatch(importName -> importName.trim().equals(typeName));
     }
 
     private boolean isSubclass(String subclassName, String superclassName) {
@@ -98,11 +102,12 @@ private boolean isTypeCompatible(Type declaredType, Type assignedType) {
         }
 
         // Check if the className matches any imported class
-        for (String importedClass : symbolTable.getImports()) {
-            if (importedClass.endsWith(className)) {
-                return null;
-            }
+        if (symbolTable.getImports().stream()
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .anyMatch(importName -> importName.trim().equals(className))) {
+            return null;
         }
+
 
         return null;
     }

@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.symboltable.JmmSymbolTable;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,7 +64,9 @@ public class TypeUtils {
                     return new Type(className, false);
                 }
 
-                if (table.getImports().stream().anyMatch(imported -> imported.endsWith(className))) {
+                if(table.getImports().stream()
+                        .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                        .anyMatch(importName -> importName.trim().equals(className))){
                     return new Type(className, false);
                 }
 
@@ -158,7 +161,9 @@ public class TypeUtils {
 
         // Check if the variable matches an imported class
         Optional<String> importedClass = table.getImports().stream()
-                .filter(imported -> imported.endsWith(varName))
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .map(String::trim)
+                .filter(imported -> imported.equals(varName))
                 .findFirst();
 
         if (importedClass.isPresent()) {
