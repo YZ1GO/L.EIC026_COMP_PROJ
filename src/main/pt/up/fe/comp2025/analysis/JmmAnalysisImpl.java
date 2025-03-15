@@ -28,20 +28,21 @@ public class JmmAnalysisImpl implements JmmAnalysis {
      */
     private List<AnalysisVisitor> buildPasses(SymbolTable table) {
         return List.of(
-                new UndeclaredVariable(),
+                new ClassNameConflictChecker(),
+                new ClassExtendsChecker(),
                 new MainDeclarationChecker(),
-                new ReturnChecker(table),
+                new DuplicateMethodChecker(),
+                new DuplicateVariableChecker(),
+                new UndeclaredVariable(),
+                new UndeclaredCustomType(),
                 new ConditionTypeChecker(table),
                 new ArrayInitChecker(),
                 new ArrayLiteralChecker(),
-                new DuplicateVariableChecker(),
-                new DuplicateMethodChecker(),
                 new AssignTypeChecker(table),
                 new ArrayAccessChecker(),
-                new ClassExtendsChecker(),
-                new ClassNameConflictChecker(),
-                new UndeclaredCustomType(),
-                new OperandTypeChecker()
+                new MethodCallTypeChecker(table),
+                new OperandTypeChecker(),
+                new ReturnChecker(table)
         );
     }
 

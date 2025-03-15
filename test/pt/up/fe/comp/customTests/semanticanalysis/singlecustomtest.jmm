@@ -1,9 +1,21 @@
-import A;
 import B;
-import C;
 
-class Test extends B {
+class Test {
+    public int add(int a, String b) {
+        return a + 3;
+    }
+
+    public int test() {
+        int asd;
+        asd = new int();
+        return asd;
+    }
+
     public static void main(String[] args) {
-        int a;
+        Test test;
+        String a;
+        a = "hello";
+        test = new Test();
+        int result = test.add(5, a); // Incorrect: second argument is a String instead of an int
     }
 }
