@@ -89,7 +89,7 @@ expr
     | expr '.' name=ID '(' ( expr ( ',' expr )* )? ')' #MethodCallExpr
     | 'this' #ThisExpr
     | op='!' expr #UnaryNotExpr
-    | expr op=('*' | '/') expr #BinaryExpr  // Changing 'Binary' will fail initial tests
+    | expr op=('*' | '/') expr #BinaryExpr
     | expr op=('+' | '-') expr #BinaryExpr
     | expr op=('<' | '>' | '<=' | '>=') expr #BinaryExpr
     | expr op=('==' | '!=') expr #BinaryExpr
