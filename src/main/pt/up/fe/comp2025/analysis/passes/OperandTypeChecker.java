@@ -13,6 +13,7 @@ public class OperandTypeChecker extends AnalysisVisitor {
     @Override
     protected void buildVisitor() {
         addVisit(Kind.BINARY_EXPR, this::visitBinaryExpr);
+        addVisit(Kind.UNARY_NOT_EXPR, this::visitUnaryNotExpr);
     }
 
     private Void visitBinaryExpr(JmmNode binaryExpr, SymbolTable table) {
@@ -51,6 +52,26 @@ public class OperandTypeChecker extends AnalysisVisitor {
                     null)
             );
             return null;
+        }
+
+        return null;
+    }
+
+    private Void visitUnaryNotExpr(JmmNode unaryNotExpr, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
+        var operand = unaryNotExpr.getChild(0);
+
+        var operandType = typeUtils.getExprType(operand);
+
+        // ! operator only works on booleans
+        if (!operandType.getName().equals("boolean")) {
+            addReport(Report.newError(
+                    Stage.SEMANTIC,
+                    unaryNotExpr.getLine(),
+                    unaryNotExpr.getColumn(),
+                    "Logical NOT operator '!' requires a boolean operand, but found '" + operandType.getName() + "'",
+                    null)
+            );
         }
 
         return null;
