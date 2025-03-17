@@ -92,11 +92,31 @@ public class TypeUtils {
                 Type objectType = getExprType(expr.getChild(0));
                 String methodName = expr.get("name");
 
-                Type returnType = table.getReturnType(methodName);
-                if (returnType == null) {
-                    throw new RuntimeException("Method '" + methodName + "' not found in class " + objectType.getName());
+                // Check if the object's type is imported
+                boolean isImported = !objectType.getName().equals(table.getClassName()) &&
+                        table.getImports().stream()
+                                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                                .map(String::trim)
+                                .anyMatch(imported -> imported.equals(objectType.getName()));
+
+            if (isImported) {
+                    // Assume the method returns the same type as the enclosing method's return type
+                    Optional<JmmNode> methodDeclOpt = expr.getAncestor(METHOD_DECL);
+                    if (methodDeclOpt.isPresent()) {
+                        JmmNode methodDecl = methodDeclOpt.get();
+                        JmmNode returnTypeNode = methodDecl.getChildren().getFirst();
+                        return convertType(returnTypeNode);
+                    } else {
+                        throw new RuntimeException("Method call on imported class outside of method declaration");
+                    }
+                } else {
+                    // For non-imported classes
+                    Type returnType = table.getReturnType(methodName);
+                    if (returnType == null) {
+                        throw new RuntimeException("Method '" + methodName + "' not found in class " + objectType.getName());
+                    }
+                    return returnType;
                 }
-                return returnType;
             }
 
             case THIS_EXPR:

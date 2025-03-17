@@ -45,7 +45,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
             return null;
         }
 
-        if (!isTypeCompatible(declaredType, assignedType)) {
+        boolean isImportedMethodCall = isMethodCallOnImported(expr);
+
+        if (!isImportedMethodCall && !isTypeCompatible(declaredType, assignedType)) {
             String declaredTypeStr = formatType(declaredType);
             String assignedTypeStr = formatType(assignedType);
 
@@ -61,6 +63,29 @@ public class AssignTypeChecker extends AnalysisVisitor {
         return null;
     }
 
+    private boolean isMethodCallOnImported(JmmNode expr) {
+        if (!expr.getKind().equals(Kind.METHOD_CALL_EXPR.toString())) {
+            return false;
+        }
+
+        JmmNode objectNode = expr.getChild(0);
+        Type objectType = typeUtils.getExprType(objectNode);
+
+        if (objectType == null) {
+            return false;
+        }
+
+        String className = objectType.getName();
+        return isImported(className);
+    }
+    
+    private boolean isImported(String className) {
+        return symbolTable.getImports().stream()
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .map(String::trim)
+                .anyMatch(imported -> imported.equals(className));
+    }
+    
     private boolean isTypeCompatible(Type declaredType, Type assignedType) {
         if (declaredType.isArray() != assignedType.isArray()) {
             return false;
@@ -82,12 +107,6 @@ public class AssignTypeChecker extends AnalysisVisitor {
         }
 
         return false;
-    }
-    
-    private boolean isImported(String typeName) {
-        return symbolTable.getImports().stream()
-                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                .anyMatch(importName -> importName.trim().equals(typeName));
     }
 
     private boolean isSubclass(String subclassName, String superclassName) {
