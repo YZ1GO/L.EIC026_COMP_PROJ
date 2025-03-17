@@ -9,6 +9,7 @@ import pt.up.fe.comp2025.ast.Kind;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class ClassExtendsChecker extends AnalysisVisitor {
 
@@ -18,9 +19,13 @@ public class ClassExtendsChecker extends AnalysisVisitor {
     }
 
     private Void visitClassDecl(JmmNode classDecl, SymbolTable table) {
-        String extendedClass = table.getSuper();
+        Optional<String> extendedClassOpt = Optional.ofNullable(table.getSuper());
+    
+        if (extendedClassOpt.isEmpty()) {
+            return null;
+        }
 
-        if (extendedClass == null) return null;
+        String extendedClass = extendedClassOpt.get();
 
         if(table.getImports().stream()
                 .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))

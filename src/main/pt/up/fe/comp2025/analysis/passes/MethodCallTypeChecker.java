@@ -12,6 +12,7 @@ import pt.up.fe.comp2025.ast.TypeUtils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MethodCallTypeChecker extends AnalysisVisitor {
@@ -39,15 +40,18 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             return null;
         }
 
-        List<Symbol> methodParams = table.getParameters(methodName);
-        if (methodParams == null) {
-            if (table.getSuper() == null) {
+        Optional<List<Symbol>> methodParamsOpt = Optional.ofNullable(table.getParameters(methodName));
+
+        if (methodParamsOpt.isEmpty()) {
+            Optional<String> superClassOpt = Optional.ofNullable(table.getSuper());
+            if (superClassOpt.isEmpty()) {
                 addReport(Report.newError(Stage.SEMANTIC, methodCallNode.getLine(), methodCallNode.getColumn(),
                         "Method '" + methodName + "' is undefined.", null));
             }
             return null;
         }
 
+        List<Symbol> methodParams = methodParamsOpt.get();
         boolean foundVarArgs = false;
 
         for (Symbol param : methodParams) {

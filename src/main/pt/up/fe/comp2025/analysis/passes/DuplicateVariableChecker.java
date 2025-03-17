@@ -1,5 +1,6 @@
 package pt.up.fe.comp2025.analysis.passes;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
@@ -8,6 +9,8 @@ import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class DuplicateVariableChecker extends AnalysisVisitor {
@@ -29,10 +32,12 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
         currentMethod = method.get("name");
         declaredVariables.clear(); // Clear the set for the new method
 
+        Optional<List<Symbol>> parametersOpt = Optional.ofNullable(table.getParameters(currentMethod));
+
         // Check for duplicate parameter names
-        if (table.getParameters(currentMethod) != null) {
+        if (parametersOpt.isPresent()) {
             Set<String> parameterNames = new HashSet<>();
-            for (var param : table.getParameters(currentMethod)) {
+            for (var param : parametersOpt.get()) {
                 String paramName = param.getName();
                 if (parameterNames.contains(paramName)) {
                     addReport(Report.newError(

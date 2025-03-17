@@ -10,6 +10,7 @@ import pt.up.fe.comp2025.ast.TypeUtils;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class AssignTypeChecker extends AnalysisVisitor {
 
@@ -33,6 +34,7 @@ public class AssignTypeChecker extends AnalysisVisitor {
     
         Type declaredType = typeUtils.getExprType(varRef);
         Type assignedType = typeUtils.getExprType(expr);
+
 
         if (assignedType == null) {
             addReport(Report.newError(
@@ -85,7 +87,7 @@ public class AssignTypeChecker extends AnalysisVisitor {
                 .map(String::trim)
                 .anyMatch(imported -> imported.equals(className));
     }
-    
+
     private boolean isTypeCompatible(Type declaredType, Type assignedType) {
         if (declaredType.isArray() != assignedType.isArray()) {
             return false;
@@ -149,16 +151,19 @@ public class AssignTypeChecker extends AnalysisVisitor {
 
     private Void visitThisExpr(JmmNode thisExpr, SymbolTable table) {
         // Check if the "this" expression is used in a static context
-        JmmNode parentMethod = thisExpr.getAncestor(Kind.METHOD_DECL).orElse(null);
-        if (parentMethod != null && parentMethod.get("isStatic").equals("true")) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    thisExpr.getLine(),
-                    thisExpr.getColumn(),
-                    "'this' cannot be used in a static method.",
-                    null)
-            );
-            return null;
+        Optional<JmmNode> parentMethodOpt = thisExpr.getAncestor(Kind.METHOD_DECL);
+
+        if (parentMethodOpt.isPresent()) {
+            JmmNode parentMethod = parentMethodOpt.get();
+            if (parentMethod.get("isStatic").equals("true")) {
+                addReport(Report.newError(
+                        Stage.SEMANTIC,
+                        thisExpr.getLine(),
+                        thisExpr.getColumn(),
+                        "'this' cannot be used in a static method.",
+                        null)
+                );
+            }
         }
 
         return null;
