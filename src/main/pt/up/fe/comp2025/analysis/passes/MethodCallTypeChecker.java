@@ -108,14 +108,14 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
         return isVarArgs;
     }
 
-    private void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
+    private Void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
         int fixedParams = params.size() - 1;
         if (args.size() < fixedParams) {
             addReport(newError(
                     node,
                     "Insufficient arguments for method '" + methodName + "'.")
             );
-            return;
+            return null;
         }
 
         // Check fixed parameters
@@ -123,36 +123,55 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
         }
 
-        // Check varargs (must be int or int[])
+        // Check if varargs parameter is single int array
+        if (args.get(0).isArray() && args.get(0).getName().equals("int")) {
+            if (args.size() != 1) {
+                addReport(newError(
+                        node,
+                        "Varargs argument can either one array of type 'int' or various integers.")
+                );
+            }
+            return null;
+        }
+
+        // Check if all elements are integers
         for (int i = fixedParams; i < args.size(); i++) {
             Type argType = args.get(i);
-            if (!argType.getName().equals("int") && !(argType.getName().equals("int") && argType.isArray())) {
-                addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
-                        "Varargs argument " + (i - fixedParams + 1) + " must be of type 'int' or 'int[]'.", null));
+
+            if (!argType.getName().equals("int") || argType.isArray()) {
+                addReport(newError(
+                        node,
+                        "Varargs argument can either one array of type 'int' or various integers.")
+                );
             }
         }
+        
+        return null;
     }
 
-    private void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
+    private Void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
         if (params.size() != args.size()) {
             addReport(newError(
                     node,
                     "Method '" + methodName + "' expects " + params.size() + " arguments but got " + args.size() + ".")
             );
-            return;
+            return null;
         }
 
         for (int i = 0; i < params.size(); i++) {
             checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
         }
+
+        return null;
     }
 
-    private void checkTypeMatch(JmmNode node, String methodName, Type argType, Type paramType, int pos) {
+    private Void checkTypeMatch(JmmNode node, String methodName, Type argType, Type paramType, int pos) {
         if (!argType.equals(paramType)) {
             addReport(newError(
                     node,
                     "Argument " + pos + " of '" + methodName + "' expects type " + paramType + " but got " + argType + ".")
             );
         }
+        return null;
     }
 }
