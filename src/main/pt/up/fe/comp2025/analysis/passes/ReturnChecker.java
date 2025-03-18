@@ -81,18 +81,23 @@ public class ReturnChecker extends AnalysisVisitor {
             if (exprNode.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
                 String varName = exprNode.get("name");
 
-                // Check if the variable is initialized
-                JmmNode methodNode = returnStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
-                if (methodNode != null && !isVariableInitialized(varName, methodNode)) {
-                    // todo: newWarn need to change
-                    addReport(Report.newWarn(
-                            Stage.SEMANTIC,
-                            returnStmt.getLine(),
-                            returnStmt.getColumn(),
-                            String.format("Variable '%s' is not initialized before being returned.", varName),
-                            null)
-                    );
-                    return null;
+                // Check if the variable is a parameter or a field
+                boolean isParameter = table.getParameters(currentMethod).stream()
+                        .anyMatch(param -> param.getName().equals(varName));
+                boolean isField = table.getFields().stream()
+                        .anyMatch(field -> field.getName().equals(varName));
+    
+                // If the variable is not a parameter or a field, check if it is initialized in the method
+                if (!isParameter && !isField) {
+                    JmmNode methodNode = returnStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
+                    if (methodNode != null && !isVariableInitialized(varName, methodNode)) {
+                        addReport(newError(
+                                returnStmt,
+                                String.format("Variable '%s' is not initialized before being returned.", varName)
+                                )
+                        );
+                        return null;
+                    }
                 }
             }
 

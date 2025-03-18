@@ -1,17 +1,15 @@
-import A;
+class VarargsWrong {
 
-class TestThisUsage extends A{
-    //int asd;
-    public TestThisUsage test() {
-        return this;
+    public int foo() {
+        int[] a;
+        boolean b;
+        b = false;
+        a = [10, 20, 30];
+        this.varargs(a, 1);
+        return 0;
     }
 
-    public int test1() {
-        asd = 10;
-        return asd;
-    }
-
-    public void someMethod() {
-
+    public int varargs(int... a) {
+        return a[0];
     }
 }
