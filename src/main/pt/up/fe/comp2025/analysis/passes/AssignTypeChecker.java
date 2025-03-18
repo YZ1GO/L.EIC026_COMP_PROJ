@@ -98,6 +98,10 @@ public class AssignTypeChecker extends AnalysisVisitor {
             return true;
         }
 
+        if (declaredIsImported && (assignedType.getName().equals(symbolTable.getClassName())) && (symbolTable.getSuper() != null)) {
+            return true;
+        }
+
         if (isSubclass(assignedType.getName(), declaredType.getName())) {
             return true;
         }
