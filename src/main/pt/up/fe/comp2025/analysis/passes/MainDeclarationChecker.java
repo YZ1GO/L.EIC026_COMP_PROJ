@@ -38,7 +38,7 @@ public class MainDeclarationChecker extends AnalysisVisitor {
 
             var params = table.getParameters(methodName);
             if (params.size() == 1) {
-                var paramType = params.get(0).getType();
+                var paramType = params.getFirst().getType();
 
                 // Check if it is "String[]"
                 if (!paramType.isArray() || !paramType.getName().equals("String")) {

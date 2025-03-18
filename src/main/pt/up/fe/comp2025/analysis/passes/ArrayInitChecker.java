@@ -51,12 +51,9 @@ public class ArrayInitChecker extends AnalysisVisitor {
     private Void visitNewIntArrayExpr(JmmNode newArrayExpr, SymbolTable table) {
         // Ensure the array size is provided and is of type `int`
         if (newArrayExpr.getNumChildren() != 1) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    newArrayExpr.getLine(),
-                    newArrayExpr.getColumn(),
-                    "Array size must be specified as a single integer inside the brackets.",
-                    null)
+            addReport(newError(
+                    newArrayExpr,
+                    "Array size must be specified as a single integer inside the brackets.")
             );
             return null;
         }
@@ -65,12 +62,9 @@ public class ArrayInitChecker extends AnalysisVisitor {
         var sizeType = typeUtils.getExprType(sizeExpr);
 
         if (!sizeType.getName().equals("int") || sizeType.isArray()) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    sizeExpr.getLine(),
-                    sizeExpr.getColumn(),
-                    "Array size must be of type 'int'.",
-                    null)
+            addReport(newError(
+                    sizeExpr,
+                    "Array size must be of type 'int'.")
             );
         }
 

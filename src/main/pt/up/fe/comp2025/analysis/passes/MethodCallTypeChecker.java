@@ -59,10 +59,10 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
 
             if (isVarArgs) {
                 if (foundVarArgs) {
-                    addReport(Report.newError(Stage.SEMANTIC,
-                            methodCallNode.getLine(),
-                            methodCallNode.getColumn(),
-                            "Only one parameter can be declared as varargs.", null));
+                    addReport(newError(
+                            methodCallNode,
+                            "Only one parameter can be declared as varargs.")
+                    );
                     return null;
                 }
 
@@ -77,10 +77,10 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             boolean isLastVarArgs = isLastVarArgsObject instanceof Boolean && (Boolean) isLastVarArgsObject;
         
             if (!isLastVarArgs) {
-                addReport(Report.newError(Stage.SEMANTIC, 
-                        methodCallNode.getLine(), 
-                        methodCallNode.getColumn(),
-                        "Varargs parameter must be the last parameter in the method signature.", null));
+                addReport(newError(
+                        methodCallNode,
+                        "Varargs parameter must be the last parameter in the method signature.")
+                );
                 return null;
             }
         }
@@ -100,7 +100,7 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
     }
 
     private boolean isLastParamVarArgs(List<Symbol> params) {
-        Symbol lastParam = params.get(params.size() - 1);
+        Symbol lastParam = params.getLast();
 
         Object isVarArgsObject = lastParam.getType().getObject("isVarArgs");
         boolean isVarArgs = isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
@@ -111,10 +111,10 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
     private void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
         int fixedParams = params.size() - 1;
         if (args.size() < fixedParams) {
-            addReport(Report.newError(Stage.SEMANTIC, 
-                    node.getLine(), 
-                    node.getColumn(),
-                    "Insufficient arguments for method '" + methodName + "'.", null));
+            addReport(newError(
+                    node,
+                    "Insufficient arguments for method '" + methodName + "'.")
+            );
             return;
         }
 
@@ -135,8 +135,10 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
 
     private void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
         if (params.size() != args.size()) {
-            addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
-                    "Method '" + methodName + "' expects " + params.size() + " arguments but got " + args.size() + ".", null));
+            addReport(newError(
+                    node,
+                    "Method '" + methodName + "' expects " + params.size() + " arguments but got " + args.size() + ".")
+            );
             return;
         }
 
@@ -147,8 +149,10 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
 
     private void checkTypeMatch(JmmNode node, String methodName, Type argType, Type paramType, int pos) {
         if (!argType.equals(paramType)) {
-            addReport(Report.newError(Stage.SEMANTIC, node.getLine(), node.getColumn(),
-                    "Argument " + pos + " of '" + methodName + "' expects type " + paramType + " but got " + argType + ".", null));
+            addReport(newError(
+                    node,
+                    "Argument " + pos + " of '" + methodName + "' expects type " + paramType + " but got " + argType + ".")
+            );
         }
     }
 }

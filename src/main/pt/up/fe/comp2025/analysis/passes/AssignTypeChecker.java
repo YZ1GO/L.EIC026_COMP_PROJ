@@ -50,12 +50,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
             String declaredTypeStr = formatType(declaredType);
             String assignedTypeStr = formatType(assignedType);
 
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    assignStmt.getLine(),
-                    assignStmt.getColumn(),
-                    String.format("Type mismatch: cannot assign '%s' to variable '%s' of type '%s'.", assignedTypeStr, varRef.get("name"), declaredTypeStr),
-                    null)
+            addReport(newError(
+                    assignStmt,
+                    String.format("Type mismatch: cannot assign '%s' to variable '%s' of type '%s'.", assignedTypeStr, varRef.get("name"), declaredTypeStr))
             );
         }
 
@@ -153,12 +150,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
         if (parentMethodOpt.isPresent()) {
             JmmNode parentMethod = parentMethodOpt.get();
             if (parentMethod.get("isStatic").equals("true")) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        thisExpr.getLine(),
-                        thisExpr.getColumn(),
-                        "'this' cannot be used in a static method.",
-                        null)
+                addReport(newError(
+                        thisExpr,
+                        "'this' cannot be used in a static method.")
                 );
             }
         }
