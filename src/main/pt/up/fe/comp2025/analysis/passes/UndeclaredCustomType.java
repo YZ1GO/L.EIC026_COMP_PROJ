@@ -52,12 +52,9 @@ public class UndeclaredCustomType extends AnalysisVisitor {
             return null;
         }
 
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                varDecl.getLine(),
-                varDecl.getColumn(),
-                String.format("Custom type '%s' is not declared, imported, or part of the class hierarchy.", typeName),
-                null)
+        addReport(newError(
+                varDecl,
+                String.format("Custom type '%s' is not declared, imported, or part of the class hierarchy.", typeName))
         );
 
         return null;

@@ -30,7 +30,7 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
         currentMethod = method.get("name");
-        declaredVariables.clear(); // Clear the set for the new method
+        declaredVariables.clear();
 
         Optional<List<Symbol>> parametersOpt = Optional.ofNullable(table.getParameters(currentMethod));
 
@@ -40,12 +40,9 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
             for (var param : parametersOpt.get()) {
                 String paramName = param.getName();
                 if (parameterNames.contains(paramName)) {
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            method.getLine(),
-                            method.getColumn(),
-                            String.format("Duplicate parameter declaration: '%s' is already declared in method '%s'.", paramName, currentMethod),
-                            null)
+                    addReport(newError(
+                            method,
+                            String.format("Duplicate parameter declaration: '%s' is already declared in method '%s'.", paramName, currentMethod))
                     );
                 } else {
                     parameterNames.add(paramName);
@@ -64,12 +61,9 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
 
         // Check for duplicate declarations in the current scope
         if (declaredVariables.contains(varName)) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    varDeclStmt.getLine(),
-                    varDeclStmt.getColumn(),
-                    String.format("Duplicate variable declaration: '%s' is already declared in this scope.", varName),
-                    null)
+            addReport(newError(
+                    varDeclStmt,
+                    String.format("Duplicate variable declaration: '%s' is already declared in this scope.", varName))
             );
         } else {
             // Add the variable to the set of declared variables

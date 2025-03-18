@@ -45,8 +45,7 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
         if (methodParamsOpt.isEmpty()) {
             Optional<String> superClassOpt = Optional.ofNullable(table.getSuper());
             if (superClassOpt.isEmpty()) {
-                addReport(Report.newError(Stage.SEMANTIC, methodCallNode.getLine(), methodCallNode.getColumn(),
-                        "Method '" + methodName + "' is undefined.", null));
+                addReport(newError(methodCallNode, "Method '" + methodName + "' is undefined."));
             }
             return null;
         }

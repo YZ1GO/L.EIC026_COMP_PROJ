@@ -33,13 +33,10 @@ public class ClassExtendsChecker extends AnalysisVisitor {
             return null;
         }
 
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                        classDecl.getLine(),
-                        classDecl.getColumn(),
-                        String.format("Class '%s' extends '%s', but '%s' is not imported.", classDecl.get("name"), extendedClass, extendedClass),
-                        null)
-                );
+        addReport(newError(
+                classDecl,
+                String.format("Class '%s' extends '%s', but '%s' is not imported.", classDecl.get("name"), extendedClass, extendedClass))
+        );
 
         return null;
     }

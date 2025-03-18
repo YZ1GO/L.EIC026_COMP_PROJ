@@ -18,12 +18,9 @@ public class VoidTypeChecker extends AnalysisVisitor {
         String typeName = varDecl.getChild(0).get("name");
 
         if (typeName.equals("void")) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    varDecl.getLine(),
-                    varDecl.getColumn(),
-                    "Variables cannot be declared with type 'void'.",
-                    null)
+            addReport(newError(
+                    varDecl,
+                    "Variables cannot be declared with type 'void'.")
             );
         }
 

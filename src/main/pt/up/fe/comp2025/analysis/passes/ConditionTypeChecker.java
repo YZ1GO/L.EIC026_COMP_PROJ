@@ -29,12 +29,9 @@ public class ConditionTypeChecker extends AnalysisVisitor {
         Type conditionType = typeUtils.getExprType(conditionExpr);
 
         if (!conditionType.getName().equals("boolean") || conditionType.isArray()) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    conditionStmt.getLine(),
-                    conditionStmt.getColumn(),
-                    String.format("Type mismatch: condition expression must be of type 'boolean', but found '%s'.", conditionType.getName()),
-                    null)
+            addReport(newError(
+                    conditionStmt,
+                    String.format("Type mismatch: condition expression must be of type 'boolean', but found '%s'.", conditionType.getName()))
             );
         }
 

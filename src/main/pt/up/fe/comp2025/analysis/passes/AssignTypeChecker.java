@@ -37,12 +37,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
 
 
         if (assignedType == null) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    expr.getLine(),
-                    expr.getColumn(),
-                    String.format("Class '%s' is not declared, imported, or part of the class hierarchy.", expr.get("name")),
-                    null)
+            addReport(newError(
+                    expr,
+                    String.format("Class '%s' is not declared, imported, or part of the class hierarchy.", expr.get("name")))
             );
             return null;
         }

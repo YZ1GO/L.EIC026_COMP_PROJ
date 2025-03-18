@@ -27,12 +27,9 @@ public class DuplicateMethodChecker extends AnalysisVisitor {
         String methodName = method.get("name");
 
         if (methodNames.contains(methodName)) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    method.getLine(),
-                    method.getColumn(),
-                    String.format("Duplicate method declaration: '%s' is already defined in this class.", methodName),
-                    null)
+            addReport(newError(
+                    method,
+                    String.format("Duplicate method declaration: '%s' is already defined in this class.", methodName))
             );
         } else {
             methodNames.add(methodName);

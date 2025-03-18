@@ -43,13 +43,10 @@ public class OperandTypeChecker extends AnalysisVisitor {
         if ((operator.equals("+") || operator.equals("-") ||
                 operator.equals("*") || operator.equals("/")) &&
                 (!op1_type.getName().equals("int") || !op2_type.getName().equals("int"))) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    binaryExpr.getLine(),
-                    binaryExpr.getColumn(),
+            addReport(newError(
+                    binaryExpr,
                     "Arithmetic operator '" + operator + "' requires integer operands, but found '" +
-                            op1_type.getName() + "' and '" + op2_type.getName() + "'",
-                    null)
+                            op1_type.getName() + "' and '" + op2_type.getName() + "'")
             );
             return null;
         }
@@ -65,12 +62,9 @@ public class OperandTypeChecker extends AnalysisVisitor {
 
         // ! operator only works on booleans
         if (!operandType.getName().equals("boolean")) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    unaryNotExpr.getLine(),
-                    unaryNotExpr.getColumn(),
-                    "Logical NOT operator '!' requires a boolean operand, but found '" + operandType.getName() + "'",
-                    null)
+            addReport(newError(
+                    unaryNotExpr,
+                    "Logical NOT operator '!' requires a boolean operand, but found '" + operandType.getName() + "'")
             );
         }
 

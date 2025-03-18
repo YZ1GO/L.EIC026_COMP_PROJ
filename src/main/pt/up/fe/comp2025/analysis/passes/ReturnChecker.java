@@ -34,33 +34,24 @@ public class ReturnChecker extends AnalysisVisitor {
 
         // Check if the return type is varargs
         if (isVarargs(returnTypeNode)) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    method.getLine(),
-                    method.getColumn(),
-                    "Method '" + currentMethod + "' cannot have a varargs return type.",
-                    null)
+            addReport(newError(
+                    method,
+                    "Method '" + currentMethod + "' cannot have a varargs return type.")
             );
         }
 
         // Check if the method has a return statement if it's not void
         if (!returnType.getName().equals("void")) {
             if (method.getChildren(Kind.RETURN_STMT).isEmpty()) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        method.getLine(),
-                        method.getColumn(),
-                        "Non-void method '" + currentMethod + "' must have a return statement.",
-                        null)
+                addReport(newError(
+                        method,
+                        "Non-void method '" + currentMethod + "' must have a return statement.")
                 );
             }
             if (method.getChildren(Kind.RETURN_STMT).size() > 1) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        method.getLine(),
-                        method.getColumn(),
-                        "Method '" + currentMethod + "' must have only one return statement.",
-                        null)
+                addReport(newError(
+                        method,
+                        "Method '" + currentMethod + "' must have only one return statement.")
                 );
             }
         }
@@ -68,12 +59,9 @@ public class ReturnChecker extends AnalysisVisitor {
         // Check if the return statement is the last statement in the method
         JmmNode lastChild = method.getChildren().getLast();
         if (!lastChild.getKind().equals(Kind.RETURN_STMT.toString()) && !returnType.getName().equals("void")) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    lastChild.getLine(),
-                    lastChild.getColumn(),
-                    "Return statement in method '" + currentMethod + "' must be the last statement.",
-                    null)
+            addReport(newError(
+                    lastChild,
+                    "Return statement in method '" + currentMethod + "' must be the last statement.")
             );
         }
 
@@ -82,12 +70,9 @@ public class ReturnChecker extends AnalysisVisitor {
 
     private Void visitReturnStmt(JmmNode returnStmt, SymbolTable table) {
         if (returnType.getName().equals("void")) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    returnStmt.getLine(),
-                    returnStmt.getColumn(),
-                    "Void method '" + currentMethod + "' should not have a return statement.",
-                    null)
+            addReport(newError(
+                    returnStmt,
+                    "Void method '" + currentMethod + "' should not have a return statement.")
             );
         } else {
             JmmNode exprNode = returnStmt.getChildren().getFirst();
@@ -99,6 +84,7 @@ public class ReturnChecker extends AnalysisVisitor {
                 // Check if the variable is initialized
                 JmmNode methodNode = returnStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
                 if (methodNode != null && !isVariableInitialized(varName, methodNode)) {
+                    // todo: newWarn need to change
                     addReport(Report.newWarn(
                             Stage.SEMANTIC,
                             returnStmt.getLine(),
@@ -111,20 +97,14 @@ public class ReturnChecker extends AnalysisVisitor {
             }
 
             if (exprType == null) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        returnStmt.getLine(),
-                        returnStmt.getColumn(),
-                        String.format("Class '%s' is not declared, imported, or part of the class hierarchy.", exprNode.get("name")),
-                        null)
+                addReport(newError(
+                        returnStmt,
+                        String.format("Class '%s' is not declared, imported, or part of the class hierarchy.", exprNode.get("name")))
                 );
             } else if (!returnType.equals(exprType)) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        returnStmt.getLine(),
-                        returnStmt.getColumn(),
-                        "Return type of method '" + currentMethod + "' does not match the declared return type. Expected: " + returnType + ", found: " + exprType,
-                        null)
+                addReport(newError(
+                        returnStmt,
+                        "Return type of method '" + currentMethod + "' does not match the declared return type. Expected: " + returnType + ", found: " + exprType)
                 );
             }
         }

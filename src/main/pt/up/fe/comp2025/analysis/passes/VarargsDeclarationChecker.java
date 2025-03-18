@@ -16,13 +16,10 @@ public class VarargsDeclarationChecker extends AnalysisVisitor {
 
     private Void visitVarDecl(JmmNode varDeclNode, SymbolTable table) {
         if (isVarargs(varDeclNode)) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    varDeclNode.getLine(),
-                    varDeclNode.getColumn(),
-                    "Variables cannot be declared as varargs.",
-                    null
-            ));
+            addReport(newError(
+                    varDeclNode,
+                    "Variables cannot be declared as varargs.")
+            );
         }
         return null;
     }

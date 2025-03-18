@@ -39,12 +39,9 @@ public class ArrayInitChecker extends AnalysisVisitor {
         }
 
         if (!isAllInt) {
-            addReport(Report.newError(
-                    Stage.SEMANTIC,
-                    arrayInit.getLine(),
-                    arrayInit.getColumn(),
-                    "Array initialization contains non-integer types.",
-                    null)
+            addReport(newError(
+                    arrayInit,
+                    "Array initialization contains non-integer types.")
             );
         }
 

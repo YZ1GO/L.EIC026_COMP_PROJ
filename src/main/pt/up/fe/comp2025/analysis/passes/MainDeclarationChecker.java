@@ -29,12 +29,9 @@ public class MainDeclarationChecker extends AnalysisVisitor {
 
             // Check if the method is public, static, and returns void
             if (!isPublic || !isStatic || !returnType.equals("void")) {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        method.getLine(),
-                        method.getColumn(),
-                        "Main method must be declared as 'public static void main(String[] args)'.",
-                        null)
+                addReport(newError(
+                        method,
+                        "Main method must be declared as 'public static void main(String[] args)'.")
                 );
                 return null;
             }
@@ -45,21 +42,15 @@ public class MainDeclarationChecker extends AnalysisVisitor {
 
                 // Check if it is "String[]"
                 if (!paramType.isArray() || !paramType.getName().equals("String")) {
-                    addReport(Report.newError(
-                            Stage.SEMANTIC,
-                            method.getLine(),
-                            method.getColumn(),
-                            "Main method parameter must be of type 'String[]'.",
-                            null)
+                    addReport(newError(
+                            method,
+                            "Main method parameter must be of type 'String[]'.")
                     );
                 }
             } else {
-                addReport(Report.newError(
-                        Stage.SEMANTIC,
-                        method.getLine(),
-                        method.getColumn(),
-                        "Main method must have exactly one parameter of type 'String[]'.",
-                        null)
+                addReport(newError(
+                        method,
+                        "Main method must have exactly one parameter of type 'String[]'.")
                 );
             }
         }
