@@ -4,8 +4,6 @@ import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
@@ -16,19 +14,13 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MethodCallTypeChecker extends AnalysisVisitor {
-
-    private final TypeUtils typeUtils;
-
-    public MethodCallTypeChecker(SymbolTable table) {
-        this.typeUtils = new TypeUtils(table);
-    }
-
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_CALL_EXPR, this::visitMethodCall);
     }
 
     private Void visitMethodCall(JmmNode methodCallNode, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
         String methodName = methodCallNode.get("name");
         JmmNode receiverNode = methodCallNode.getChild(0);
         Type receiverType = typeUtils.getExprType(receiverNode);
@@ -108,14 +100,14 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
         return isVarArgs;
     }
 
-    private Void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
+    private void handleVarArgsCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
         int fixedParams = params.size() - 1;
         if (args.size() < fixedParams) {
             addReport(newError(
                     node,
                     "Insufficient arguments for method '" + methodName + "'.")
             );
-            return null;
+            return;
         }
 
         // Check fixed parameters
@@ -131,7 +123,7 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
                         "Varargs argument can either one array of type 'int' or various integers.")
                 );
             }
-            return null;
+            return;
         }
 
         // Check if all elements are integers
@@ -145,33 +137,30 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
                 );
             }
         }
-        
-        return null;
+
     }
 
-    private Void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
+    private void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
         if (params.size() != args.size()) {
             addReport(newError(
                     node,
                     "Method '" + methodName + "' expects " + params.size() + " arguments but got " + args.size() + ".")
             );
-            return null;
+            return;
         }
 
         for (int i = 0; i < params.size(); i++) {
             checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
         }
 
-        return null;
     }
 
-    private Void checkTypeMatch(JmmNode node, String methodName, Type argType, Type paramType, int pos) {
+    private void checkTypeMatch(JmmNode node, String methodName, Type argType, Type paramType, int pos) {
         if (!argType.equals(paramType)) {
             addReport(newError(
                     node,
                     "Argument " + pos + " of '" + methodName + "' expects type " + paramType + " but got " + argType + ".")
             );
         }
-        return null;
     }
 }

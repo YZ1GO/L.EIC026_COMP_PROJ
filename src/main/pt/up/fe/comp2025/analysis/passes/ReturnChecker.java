@@ -15,11 +15,6 @@ public class ReturnChecker extends AnalysisVisitor {
 
     private String currentMethod;
     private Type returnType;
-    private final TypeUtils typeUtils;
-
-    public ReturnChecker(SymbolTable symbolTable) {
-        this.typeUtils = new TypeUtils(symbolTable);
-    }
 
     @Override
     public void buildVisitor() {
@@ -69,6 +64,7 @@ public class ReturnChecker extends AnalysisVisitor {
     }
 
     private Void visitReturnStmt(JmmNode returnStmt, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
         if (returnType.getName().equals("void")) {
             addReport(newError(
                     returnStmt,

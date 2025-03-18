@@ -10,13 +10,6 @@ import pt.up.fe.comp2025.ast.TypeUtils;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 
 public class ConditionTypeChecker extends AnalysisVisitor {
-
-    private final TypeUtils typeUtils;
-
-    public ConditionTypeChecker(SymbolTable table) {
-        this.typeUtils = new TypeUtils(table);
-    }
-
     @Override
     public void buildVisitor() {
         addVisit(Kind.IF_STMT, this::visitConditionStmt);
@@ -24,6 +17,7 @@ public class ConditionTypeChecker extends AnalysisVisitor {
     }
 
     private Void visitConditionStmt(JmmNode conditionStmt, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
         JmmNode conditionExpr = conditionStmt.getChild(0);
 
         Type conditionType = typeUtils.getExprType(conditionExpr);

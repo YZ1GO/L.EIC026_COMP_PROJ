@@ -9,13 +9,6 @@ import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
 public class ArrayInitChecker extends AnalysisVisitor {
-
-    private final TypeUtils typeUtils;
-
-    public ArrayInitChecker(SymbolTable table) {
-        this.typeUtils = new TypeUtils(table);
-    }
-
     @Override
     protected void buildVisitor() {
         addVisit(Kind.ARRAY_INIT, this::visitArrayInit);
@@ -23,6 +16,7 @@ public class ArrayInitChecker extends AnalysisVisitor {
     }
 
     private Void visitArrayInit(JmmNode arrayInit, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
         // Check if all elements in the array initialization are integers
         if (arrayInit.getChildren().stream()
                 .allMatch(c -> c.getKind().equals(Kind.INTEGER_LITERAL.toString()))) {
@@ -49,6 +43,7 @@ public class ArrayInitChecker extends AnalysisVisitor {
     }
 
     private Void visitNewIntArrayExpr(JmmNode newArrayExpr, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
         // Ensure the array size is provided and is of type `int`
         if (newArrayExpr.getNumChildren() != 1) {
             addReport(newError(

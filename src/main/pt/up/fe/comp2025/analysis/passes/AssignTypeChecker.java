@@ -1,5 +1,6 @@
 package pt.up.fe.comp2025.analysis.passes;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.report.Report;
@@ -13,15 +14,6 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class AssignTypeChecker extends AnalysisVisitor {
-
-    private final TypeUtils typeUtils;
-    private final SymbolTable symbolTable;
-
-    public AssignTypeChecker(SymbolTable table) {
-        this.typeUtils = new TypeUtils(table);
-        this.symbolTable = table;
-    }
-
     @Override
     public void buildVisitor() {
         addVisit(Kind.ASSIGN_STMT, this::visitAssignStmt);
@@ -29,6 +21,7 @@ public class AssignTypeChecker extends AnalysisVisitor {
     }
 
     private Void visitAssignStmt(JmmNode assignStmt, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
         JmmNode varRef = assignStmt.getChild(0);
         JmmNode expr = assignStmt.getChild(1);
     
@@ -44,9 +37,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
             return null;
         }
 
-        boolean isImportedMethodCall = isMethodCallOnImported(expr);
+        boolean isImportedMethodCall = isMethodCallOnImported(expr, table);
 
-        if (!isImportedMethodCall && !isTypeCompatible(declaredType, assignedType)) {
+        if (!isImportedMethodCall && !isTypeCompatible(declaredType, assignedType, table)) {
             String declaredTypeStr = formatType(declaredType);
             String assignedTypeStr = formatType(assignedType);
 
@@ -59,7 +52,8 @@ public class AssignTypeChecker extends AnalysisVisitor {
         return null;
     }
 
-    private boolean isMethodCallOnImported(JmmNode expr) {
+    private boolean isMethodCallOnImported(JmmNode expr, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
         if (!expr.getKind().equals(Kind.METHOD_CALL_EXPR.toString())) {
             return false;
         }
@@ -72,17 +66,17 @@ public class AssignTypeChecker extends AnalysisVisitor {
         }
 
         String className = objectType.getName();
-        return isImported(className);
+        return isImported(className, table);
     }
     
-    private boolean isImported(String className) {
-        return symbolTable.getImports().stream()
+    private boolean isImported(String className, SymbolTable table) {
+        return table.getImports().stream()
                 .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
                 .map(String::trim)
                 .anyMatch(imported -> imported.equals(className));
     }
 
-    private boolean isTypeCompatible(Type declaredType, Type assignedType) {
+    private boolean isTypeCompatible(Type declaredType, Type assignedType, SymbolTable table) {
         if (declaredType.isArray() != assignedType.isArray()) {
             return false;
         }
@@ -91,25 +85,25 @@ public class AssignTypeChecker extends AnalysisVisitor {
             return true;
         }
 
-        boolean declaredIsImported = isImported(declaredType.getName());
-        boolean assignedIsImported = isImported(assignedType.getName());
+        boolean declaredIsImported = isImported(declaredType.getName(), table);
+        boolean assignedIsImported = isImported(assignedType.getName(), table);
 
         if (declaredIsImported && assignedIsImported) {
             return true;
         }
 
-        if (declaredIsImported && (assignedType.getName().equals(symbolTable.getClassName())) && (symbolTable.getSuper() != null)) {
+        if (declaredIsImported && (assignedType.getName().equals(table.getClassName())) && (table.getSuper() != null)) {
             return true;
         }
 
-        if (isSubclass(assignedType.getName(), declaredType.getName())) {
+        if (isSubclass(assignedType.getName(), declaredType.getName(), table)) {
             return true;
         }
 
         return false;
     }
 
-    private boolean isSubclass(String subclassName, String superclassName) {
+    private boolean isSubclass(String subclassName, String superclassName, SymbolTable table) {
         if (subclassName.equals(superclassName)) {
             return true;
         }
@@ -121,19 +115,19 @@ public class AssignTypeChecker extends AnalysisVisitor {
                 return true;
             }
 
-            currentClass = getParentClass(currentClass);
+            currentClass = getParentClass(currentClass, table);
         }
 
         return false;
     }
 
-    private String getParentClass(String className) {
-        if (className.equals(symbolTable.getClassName())) {
-            return symbolTable.getSuper();
+    private String getParentClass(String className, SymbolTable table) {
+        if (className.equals(table.getClassName())) {
+            return table.getSuper();
         }
 
         // Check if the className matches any imported class
-        if (symbolTable.getImports().stream()
+        if (table.getImports().stream()
                 .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
                 .anyMatch(importName -> importName.trim().equals(className))) {
             return null;

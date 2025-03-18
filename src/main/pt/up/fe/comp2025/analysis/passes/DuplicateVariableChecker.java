@@ -15,8 +15,7 @@ import java.util.Set;
 
 public class DuplicateVariableChecker extends AnalysisVisitor {
 
-    private String currentMethod;
-    private Set<String> declaredVariables;
+    private final Set<String> declaredVariables;
 
     public DuplicateVariableChecker() {
         this.declaredVariables = new HashSet<>();
@@ -29,7 +28,7 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
-        currentMethod = method.get("name");
+        String currentMethod = method.get("name");
         declaredVariables.clear();
 
         Optional<List<Symbol>> parametersOpt = Optional.ofNullable(table.getParameters(currentMethod));
