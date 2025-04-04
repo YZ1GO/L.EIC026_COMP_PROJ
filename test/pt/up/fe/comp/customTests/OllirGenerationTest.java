@@ -30,4 +30,14 @@ public class OllirGenerationTest {
     public void testBasicClass() {
         assertTrue(testOllirGeneration("BasicClass.jmm", "BasicClass.ollir"));
     }
+
+    @Test
+    public void testClassField1() {
+        assertTrue(testOllirGeneration("ClassField.jmm", "ClassField.ollir"));
+    }
+
+    @Test
+    public void testClassField2() {
+        assertTrue(testOllirGeneration("ClassField2.jmm", "ClassField2.ollir"));
+    }
 }

@@ -53,6 +53,8 @@ public class OptUtils {
 
         String type = "." + switch (typeName) {
             case "int" -> "i32";
+            case "boolean" -> "bool";
+            case "String" -> "String";
             default -> throw new NotImplementedException(typeName);
         };
 
