@@ -38,8 +38,22 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(INTEGER_LITERAL, this::visitInteger);
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
         addVisit(PARENT_EXPR, this::visitParentExpr);
+        addVisit(NEW_OBJECT_EXPR, this::visitNewObject);
 
 //        setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitNewObject(JmmNode node, Void unused) {
+        String className = node.get("name");
+        String tempVar = ollirTypes.nextTemp();
+        Type type = new Type(className, false);
+        String ollirType = ollirTypes.toOllirType(type);
+
+        return new OllirExprResult(
+            tempVar + "." + ollirType + " = new " + className + ";\n" + 
+            "invokespecial(" + tempVar + ", \"<init>\").V;\n",
+            tempVar
+        );
     }
 
     private OllirExprResult visitParentExpr(JmmNode node, Void unused) {
