@@ -6,7 +6,8 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
-import java.util.Optional;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static pt.up.fe.comp2025.ast.Kind.*;
@@ -50,10 +51,29 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
+
+        addVisit(VAR_DECL, this::visitVarDecl);
+        addVisit(IMPORT_DECL, this::visitImportDecl);
+
         addVisit(BLOCK_STMT, this::visitBlockStmt);
         addVisit(IF_STMT, this::visitIfStmt);
 
 //        setDefaultVisit(this::defaultVisit);
+    }
+
+    private String visitImportDecl(JmmNode node, Void unused) {
+        String name = node.get("name");
+
+        // Remove brackets from the name (e.g., "[java, util, List]" -> "java, util, List")
+        name = name.substring(1, name.length() - 1);
+
+        List<String> importNames = Arrays.stream(name.split(","))
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        String importPath = String.join(".", importNames);
+
+        return "import " + importPath + ";\n";
     }
 
     private String visitVarDecl(JmmNode node, Void unused) {
@@ -100,21 +120,20 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitReturn(JmmNode node, Void unused) {
         // TODO: Hardcoded for int type, needs to be expanded
-        Type retType = TypeUtils.newIntType();
-
-
         StringBuilder code = new StringBuilder();
-
 
         var expr = node.getNumChildren() > 0 ? exprVisitor.visit(node.getChild(0)) : OllirExprResult.EMPTY;
 
+        Type retType = expr != OllirExprResult.EMPTY ? types.getExprType(node.getChild(0)) : TypeUtils.newVoidType();
 
         code.append(expr.getComputation());
         code.append("ret");
         code.append(ollirTypes.toOllirType(retType));
         code.append(SPACE);
 
-        code.append(expr.getCode());
+        if (expr != OllirExprResult.EMPTY) {
+            code.append(expr.getCode());
+        }
 
         code.append(END_STMT);
 
@@ -162,7 +181,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         // type
         // TODO: Hardcoded for int, needs to be expanded
-        var retType = ".i32";
+        // DONE: Expanded to handle multiple types
+        Type returnType = TypeUtils.convertType(node.getChild(0));
+        String retType = ollirTypes.toOllirType(returnType);
         code.append(retType);
         code.append(L_BRACKET);
 
@@ -173,6 +194,13 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                 .collect(Collectors.joining("\n   ", "   ", ""));
 
         code.append(stmtsCode);
+
+        // Add default return statement if the method is void and no explicit return is present
+        if (returnType.getName().equals("void") && node.getChildren(STMT).stream()
+                .noneMatch(stmt -> stmt.getKind().equals(RETURN_STMT))) {
+            code.append("   ret.V;\n");
+        }
+
         code.append(R_BRACKET);
         code.append(NL);
 

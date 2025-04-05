@@ -67,4 +67,13 @@ public class OllirGenerationTest {
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 3 gotos", gotos.size() >= 3, result);
     }
+
+    @Test
+    public void testBooleanLiteral() {assertTrue(testOllirGeneration("BooleanLiteral.jmm", "BooleanLiteral.ollir"));}
+
+    @Test
+    public void testParentExpr() {assertTrue(testOllirGeneration("ParentExpr.jmm", "ParentExpr.ollir"));}
+
+    @Test
+    public void testImport() {assertTrue(testOllirGeneration("Import.jmm", "Import.ollir"));}
 }
