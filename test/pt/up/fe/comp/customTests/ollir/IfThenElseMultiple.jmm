@@ -1,5 +1,5 @@
 class MyClass {
-    public int findSmallest(int a, int b, int c, int d) {
+    public int func(int a, int b, int c, int d) {
         int res;
 
         if (a < b && a < c && a < d) {
