@@ -159,7 +159,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         // type
         // TODO: Hardcoded for int, needs to be expanded
-        var retType = ".i32";
+        // DONE: Expanded to handle multiple types
+        Type returnType = TypeUtils.convertType(node.getChild(0));
+        String retType = ollirTypes.toOllirType(returnType);
         code.append(retType);
         code.append(L_BRACKET);
 
