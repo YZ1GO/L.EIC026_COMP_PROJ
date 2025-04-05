@@ -215,6 +215,11 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(NL);
         code.append(table.getClassName());
         
+        String superClass = table.getSuper();
+        if (superClass != null && !superClass.isEmpty()) {
+            code.append(" extends ").append(superClass);
+        }
+
         code.append(L_BRACKET);
         code.append(NL);
         code.append(NL);

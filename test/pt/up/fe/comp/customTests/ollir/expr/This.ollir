@@ -1,0 +1,16 @@
+ThisTest {
+
+
+.field public x.i32;
+
+.construct ThisTest().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public assignThis().i32 {
+   a.ThisTest :=.ThisTest this.ThisTest;
+
+   ret.i32 0.i32;
+}
+
+}

@@ -1,0 +1,10 @@
+class ThisTest {
+    int x;
+
+    public int assignThis() {
+        ThisTest a;
+        a = this;
+
+        return 0;
+    }
+}

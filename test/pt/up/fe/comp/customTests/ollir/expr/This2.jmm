@@ -1,0 +1,12 @@
+import B;
+
+class ThisTest extends B{
+    int x;
+
+    public int assignThis() {
+        B b;
+        b = this;
+
+        return 0;
+    }
+}
