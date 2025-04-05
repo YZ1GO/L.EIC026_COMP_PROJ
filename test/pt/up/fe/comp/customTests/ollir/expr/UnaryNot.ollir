@@ -1,0 +1,17 @@
+UnaryNotTest {
+
+
+
+
+.construct UnaryNotTest().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public negateBoolean(input.bool).bool {
+   tmp0.bool :=.bool !.bool input.bool;
+result.bool :=.bool tmp0.bool;
+
+   ret.bool result.bool;
+}
+
+}

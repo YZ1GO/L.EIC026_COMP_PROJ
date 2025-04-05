@@ -41,10 +41,10 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(NEW_OBJECT_EXPR, this::visitNewObject);
         //addVisit(ARRAY_ACCESS_EXPR, this::visitArrayAccess);
         //addVisit(LENGTH_EXPR, this::visitLength);
-        //addVisit(STRING_LITERAL, this::visitString);
+        addVisit(STRING_LITERAL, this::visitString);
         //addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
         addVisit(THIS_EXPR, this::visitThis);
-        //addVisit(UNARY_NOT_EXPR, this::visitUnaryNot);
+        addVisit(UNARY_NOT_EXPR, this::visitUnaryNot);
         //addVisit(BINARY_EXPR, this::visitBinExpr);
         //addVisit(ARRAY_INIT_EXPR, this::visitArrayInit);
         //addVisit(NEW_INT_ARRAY_EXPR, this::visitNewIntArray);
@@ -53,8 +53,30 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 //        setDefaultVisit(this::defaultVisit);
     }
 
+    private OllirExprResult visitUnaryNot(JmmNode node, Void unused) {
+        OllirExprResult exprResult = visit(node.getChild(0));
+
+        Type exprType = types.getExprType(node);
+        String ollirType = ollirTypes.toOllirType(exprType);
+
+        String tempVar = ollirTypes.nextTemp();
+        String tempVarWithType = tempVar + ollirType;
+
+        String computation = exprResult.getComputation() +
+                             tempVarWithType + " :=.bool !" + ollirType + " " + exprResult.getCode() + ";\n";
+
+        return new OllirExprResult(tempVarWithType, computation);
+    }
+
     private OllirExprResult visitThis(JmmNode node, Void unused) {
         String code = "this." + table.getClassName();
+        return new OllirExprResult(code);
+    }
+
+    private OllirExprResult visitString(JmmNode node, Void unused) {
+        var stringType = TypeUtils.newStringType();
+        String ollirStringType = ollirTypes.toOllirType(stringType);
+        String code = node.get("value") + ollirStringType;
         return new OllirExprResult(code);
     }
 
