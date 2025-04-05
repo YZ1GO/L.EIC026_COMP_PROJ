@@ -69,6 +69,16 @@ public class OllirGenerationTest {
     }
 
     @Test
+    public void testIf() {
+        assertTrue(testOllirGeneration("If.jmm", "If.ollir"));
+    }
+
+    @Test
+    public void testIf2() {
+        assertTrue(testOllirGeneration("If2.jmm", "If2.ollir"));
+    }
+
+    @Test
     public void testBooleanLiteral() {assertTrue(testOllirGeneration("BooleanLiteral.jmm", "BooleanLiteral.ollir"));}
 
     @Test

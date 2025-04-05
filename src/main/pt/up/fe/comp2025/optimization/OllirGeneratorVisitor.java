@@ -278,32 +278,30 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     private String visitIfStmt(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
 
-        // Get the labels for the if statement
         var label = OptUtils.getIfLabels();
         var thenL = label.get(0);
         var endifL = label.get(1);
 
-        // Visit the condition node and generate the computation and condition code
         var cond = exprVisitor.visit(node.getChild(0));
         var thenStmt = node.getChild(1);
-        var elseStmt = node.getChild(2);
+        var elseStmt = node.getChildren().size() > 2 ? node.getChild(2) : null;
 
-        // Temporary variable for the condition evaluation
         code.append(cond.getComputation());
 
-        // Generate the OLLIR for the condition and if statement
         code.append("if (").append(cond.getCode()).append(") goto ").append(thenL).append(END_STMT);
 
-        // Generate the OLLIR for the else block
-        code.append(visit(elseStmt)); // Else block execution
-        code.append(NL);
-        code.append("goto ").append(endifL).append(END_STMT); // Skip the then block if else is executed
+        // else block
+        if (elseStmt != null) {
+            code.append(visit(elseStmt));
 
-        // Generate the OLLIR for the then block
+        }
+
+        code.append("goto ").append(endifL).append(END_STMT);
+
+        // then block
         code.append(thenL).append(":").append(NL);
-        code.append(visit(thenStmt)); // Then block execution
+        code.append(visit(thenStmt));
 
-        // Add the endif label to mark the end of the if-else structure
 
         code.append(endifL).append(":").append(NL);
 
