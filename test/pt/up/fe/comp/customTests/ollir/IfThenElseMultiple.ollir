@@ -1,0 +1,46 @@
+MyClass {
+
+
+
+
+.construct MyClass().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public findSmallest(a.i32, b.i32, c.i32, d.i32).i32 {
+   tmp0.bool :=.bool a.i32 <.bool b.i32;
+tmp1.bool :=.bool a.i32 <.bool c.i32;
+tmp2.bool :=.bool tmp0.bool &&.bool tmp1.bool;
+tmp5.bool :=.bool a.i32 <.bool d.i32;
+tmp6.bool :=.bool tmp2.bool &&.bool tmp5.bool;
+if (tmp6.bool) goto then0;
+tmp13.bool :=.bool b.i32 <.bool a.i32;
+tmp14.bool :=.bool b.i32 <.bool c.i32;
+tmp15.bool :=.bool tmp13.bool &&.bool tmp14.bool;
+tmp18.bool :=.bool b.i32 <.bool d.i32;
+tmp19.bool :=.bool tmp15.bool &&.bool tmp18.bool;
+if (tmp19.bool) goto then1;
+tmp26.bool :=.bool c.i32 <.bool a.i32;
+tmp27.bool :=.bool c.i32 <.bool b.i32;
+tmp28.bool :=.bool tmp26.bool &&.bool tmp27.bool;
+tmp31.bool :=.bool c.i32 <.bool d.i32;
+tmp32.bool :=.bool tmp28.bool &&.bool tmp31.bool;
+if (tmp32.bool) goto then2;
+res.i32 :=.i32 d.i32;
+goto endif2;
+then2:
+res.i32 :=.i32 c.i32;
+endif2:
+goto endif1;
+then1:
+res.i32 :=.i32 b.i32;
+endif1:
+goto endif0;
+then0:
+res.i32 :=.i32 a.i32;
+endif0:
+
+   ret.i32 res.i32;
+}
+
+}

@@ -6,6 +6,7 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static pt.up.fe.comp2025.ast.Kind.*;
@@ -48,7 +49,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(PARAM, this::visitParam);
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
-        addVisit(VAR_DECL, this::visitVarDecl);
+
+        addVisit(BLOCK_STMT, this::visitBlockStmt);
+        addVisit(IF_STMT, this::visitIfStmt);
 
 //        setDefaultVisit(this::defaultVisit);
     }
@@ -233,6 +236,53 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         return code.toString();
     }
+
+    private String visitBlockStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        for (var v : node.getChildren()) {
+            code.append(visit(v));
+        }
+
+        return code.toString();
+    }
+
+    private String visitIfStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        // Get the labels for the if statement
+        var label = OptUtils.getIfLabels();
+        var thenL = label.get(0);
+        var endifL = label.get(1);
+
+        // Visit the condition node and generate the computation and condition code
+        var cond = exprVisitor.visit(node.getChild(0));
+        var thenStmt = node.getChild(1);
+        var elseStmt = node.getChild(2);
+
+        // Temporary variable for the condition evaluation
+        code.append(cond.getComputation());
+
+        // Generate the OLLIR for the condition and if statement
+        code.append("if (").append(cond.getCode()).append(") goto ").append(thenL).append(END_STMT);
+
+        // Generate the OLLIR for the else block
+        code.append(visit(elseStmt)); // Else block execution
+        code.append(NL);
+        code.append("goto ").append(endifL).append(END_STMT); // Skip the then block if else is executed
+
+        // Generate the OLLIR for the then block
+        code.append(thenL).append(":").append(NL);
+        code.append(visit(thenStmt)); // Then block execution
+
+        // Add the endif label to mark the end of the if-else structure
+
+        code.append(endifL).append(":").append(NL);
+
+
+        return code.toString();
+    }
+
 
     /**
      * Default visitor. Visits every child node and return an empty string.

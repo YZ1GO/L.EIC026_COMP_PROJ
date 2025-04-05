@@ -1,0 +1,17 @@
+class MyClass {
+    public int findSmallest(int a, int b, int c, int d) {
+        int res;
+
+        if (a < b && a < c && a < d) {
+            res = a;
+        } else if (b < a && b < c && b < d) {
+            res = b;
+        } else if (c < a && c < b && c < d) {
+            res = c;
+        } else {
+            res = d;
+        }
+
+        return res;
+    }
+}

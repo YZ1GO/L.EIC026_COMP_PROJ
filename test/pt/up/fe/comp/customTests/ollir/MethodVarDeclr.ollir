@@ -1,0 +1,16 @@
+MyClass {
+
+
+
+
+.construct MyClass().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public a(a.i32, b.i32).i32 {
+   res.i32 :=.i32 0.i32;
+
+   ret.i32 res.i32;
+}
+
+}
