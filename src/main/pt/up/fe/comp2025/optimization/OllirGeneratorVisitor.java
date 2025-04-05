@@ -48,10 +48,20 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(PARAM, this::visitParam);
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
+        addVisit(VAR_DECL, this::visitVarDecl);
 
 //        setDefaultVisit(this::defaultVisit);
     }
 
+    private String visitVarDecl(JmmNode node, Void unused) {
+
+        var varName = node.get("name");
+
+        JmmNode typeNode = node.getChild(0);
+        String typeCode = ollirTypes.toOllirType(TypeUtils.convertType(typeNode));
+
+        return varName + typeCode + ";\n";
+    }
 
     private String visitAssignStmt(JmmNode node, Void unused) {
 
@@ -125,19 +135,27 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder(".method ");
 
         boolean isPublic = node.getBoolean("isPublic", false);
-
         if (isPublic) {
             code.append("public ");
         }
 
+        boolean isStatic = node.getBoolean("isStatic", false);
+        if (isStatic) {
+            code.append("static ");
+        }
+        
         // name
         var name = node.get("name");
         code.append(name);
 
         // params
         // TODO: Hardcoded for a single parameter, needs to be expanded
-        var paramsCode = visit(node.getChild(1));
-        code.append("(" + paramsCode + ")");
+        // DONE: Expanded to handle multiple parameters
+        var params = node.getChildren(PARAM);
+        String paramsCode = params.isEmpty() ? "" : params.stream()
+                .map(this::visit)
+                .collect(Collectors.joining(", "));
+        code.append("(").append(paramsCode).append(")");
 
         // type
         // TODO: Hardcoded for int, needs to be expanded
