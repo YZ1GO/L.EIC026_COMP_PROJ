@@ -87,11 +87,11 @@ public class ReturnChecker extends AnalysisVisitor {
                 if (!isParameter && !isField) {
                     JmmNode methodNode = returnStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
                     if (methodNode != null && !isVariableInitialized(varName, methodNode)) {
-                        addReport(newError(
+                        /*addReport(newError(
                                 returnStmt,
                                 String.format("Variable '%s' is not initialized before being returned.", varName)
                                 )
-                        );
+                        );*/
                         return null;
                     }
                 }

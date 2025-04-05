@@ -79,4 +79,11 @@ public class ReturnTypeSemanticAnalysisTest {
         TestUtils.mustFail(result);
         System.out.println(result.getReports());
     }
+
+    @Test
+    public void returnUndeclared() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/returntype/ReturnUndeclared.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
 }

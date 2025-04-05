@@ -50,8 +50,13 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(PARAM, this::visitParam);
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
+
+
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(IMPORT_DECL, this::visitImportDecl);
+
+        addVisit(BLOCK_STMT, this::visitBlockStmt);
+        addVisit(IF_STMT, this::visitIfStmt);
 
 //        setDefaultVisit(this::defaultVisit);
     }
@@ -259,6 +264,51 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         return code.toString();
     }
+
+    private String visitBlockStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        for (var v : node.getChildren()) {
+            code.append(visit(v));
+        }
+
+        return code.toString();
+    }
+
+    private String visitIfStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var label = OptUtils.getIfLabels();
+        var thenL = label.get(0);
+        var endifL = label.get(1);
+
+        var cond = exprVisitor.visit(node.getChild(0));
+        var thenStmt = node.getChild(1);
+        var elseStmt = node.getChildren().size() > 2 ? node.getChild(2) : null;
+
+        code.append(cond.getComputation());
+
+        code.append("if (").append(cond.getCode()).append(") goto ").append(thenL).append(END_STMT);
+
+        // else block
+        if (elseStmt != null) {
+            code.append(visit(elseStmt));
+
+        }
+
+        code.append("goto ").append(endifL).append(END_STMT);
+
+        // then block
+        code.append(thenL).append(":").append(NL);
+        code.append(visit(thenStmt));
+
+
+        code.append(endifL).append(":").append(NL);
+
+
+        return code.toString();
+    }
+
 
     /**
      * Default visitor. Visits every child node and return an empty string.

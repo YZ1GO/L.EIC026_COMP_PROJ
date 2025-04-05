@@ -33,6 +33,7 @@ public enum Kind {
     NEW_INT_ARRAY_EXPR,
     ARRAY_ACCESS_EXPR,
     VAR_DECL_STMT,
+    BLOCK_STMT,
     IF_STMT,
     WHILE_STMT,
     PARENT_EXPR,

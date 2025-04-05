@@ -6,6 +6,9 @@ import pt.up.fe.comp2025.ast.TypeUtils;
 import pt.up.fe.specs.util.collections.AccumulatorMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static pt.up.fe.comp2025.ast.Kind.TYPE;
 
 /**
@@ -13,6 +16,7 @@ import static pt.up.fe.comp2025.ast.Kind.TYPE;
  */
 public class OptUtils {
 
+    private static final AtomicInteger ifLabelCounter = new AtomicInteger();
 
     private final AccumulatorMap<String> temporaries;
 
@@ -23,20 +27,20 @@ public class OptUtils {
         this.temporaries = new AccumulatorMap<>();
     }
 
-
     public String nextTemp() {
-
         return nextTemp("tmp");
     }
 
     public String nextTemp(String prefix) {
-
-        // Subtract 1 because the base is 1
         var nextTempNum = temporaries.add(prefix) - 1;
 
         return prefix + nextTempNum;
     }
 
+    public static List<String> getIfLabels() {
+        int id = ifLabelCounter.getAndIncrement();
+        return List.of("then" + id, "endif" + id);
+    }
 
     public String toOllirType(JmmNode typeNode) {
 
