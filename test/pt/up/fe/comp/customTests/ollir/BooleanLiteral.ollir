@@ -1,0 +1,11 @@
+BooleanTest {
+    .construct BooleanTest().V {
+        invokespecial(this, "<init>").V;
+    }
+
+    .method public static main(args.array.String).V {
+        a.bool :=.bool 1.bool;
+        b.bool :=.bool 0.bool;
+        ret.V;
+    }
+}

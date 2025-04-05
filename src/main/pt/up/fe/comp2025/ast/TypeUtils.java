@@ -37,6 +37,10 @@ public class TypeUtils {
         return new Type("String", false);
     }
     
+    public static Type newVoidType() {
+        return new Type("void", false);
+    }
+    
     public static Type convertType(JmmNode typeNode) {
 
         // TODO: When you support new types, this must be updated
