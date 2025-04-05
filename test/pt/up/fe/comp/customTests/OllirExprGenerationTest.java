@@ -32,4 +32,9 @@ public class OllirExprGenerationTest {
     @Test
     public void testParentExpr() {assertTrue(testOllirExprGeneration("ParentExpr.jmm", "ParentExpr.ollir"));}
 
+    @Test
+    public void testNewObjectExpr() {assertTrue(testOllirExprGeneration("NewObject.jmm", "NewObject.ollir"));}
+
+    @Test
+    public void testNewObjectExpr2() {assertTrue(testOllirExprGeneration("NewObject2.jmm", "NewObject2.ollir"));}
 }

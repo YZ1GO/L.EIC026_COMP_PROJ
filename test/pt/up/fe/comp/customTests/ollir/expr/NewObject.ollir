@@ -1,0 +1,20 @@
+import MyClass;
+
+NewObjectTest {
+
+
+
+
+.construct NewObjectTest().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public static main(args.array.String).V {
+   tmp0.MyClass :=.MyClass new(MyClass).MyClass;
+invokespecial(tmp0.MyClass, "<init>").V;
+obj.MyClass :=.MyClass tmp0.MyClass;
+
+ret.V;
+}
+
+}

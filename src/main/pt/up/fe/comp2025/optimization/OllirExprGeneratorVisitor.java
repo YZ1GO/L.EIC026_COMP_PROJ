@@ -48,12 +48,17 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String tempVar = ollirTypes.nextTemp();
         Type type = new Type(className, false);
         String ollirType = ollirTypes.toOllirType(type);
+    
+        String assignment = String.format("%s%s :=%s new(%s)%s;\n", 
+            tempVar, ollirType, ollirType, className, ollirType);
+    
+        String constructorCall = String.format("invokespecial(%s%s, \"<init>\").V;\n",
+            tempVar, ollirType);
 
-        return new OllirExprResult(
-            tempVar + "." + ollirType + " = new " + className + ";\n" + 
-            "invokespecial(" + tempVar + ", \"<init>\").V;\n",
-            tempVar
-        );
+        String computation = assignment + constructorCall;
+        String code = tempVar + ollirType;
+    
+        return new OllirExprResult(code, computation);
     }
 
     private OllirExprResult visitParentExpr(JmmNode node, Void unused) {
