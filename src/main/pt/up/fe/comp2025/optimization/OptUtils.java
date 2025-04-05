@@ -53,7 +53,18 @@ public class OptUtils {
 
         String type = "." + switch (typeName) {
             case "int" -> "i32";
-            default -> throw new NotImplementedException(typeName);
+            case "boolean" -> "bool";
+            case "void" -> "V";
+            default -> {
+                if (typeName.endsWith("[]")) {
+                    String baseType = typeName.substring(0, typeName.length() - 2);
+                    yield toOllirType(baseType) + "[]";
+                }
+                if (typeName.matches("[a-zA-Z_$][a-zA-Z0-9_$]*")) {
+                    yield typeName;
+                }
+                throw new NotImplementedException("Unsupported type: " + typeName);
+            }
         };
 
         return type;
