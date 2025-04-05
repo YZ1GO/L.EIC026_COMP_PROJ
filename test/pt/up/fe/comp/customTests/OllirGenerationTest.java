@@ -91,6 +91,20 @@ public class OllirGenerationTest {
     }
 
     @Test
+    public void testIf3() {
+        OllirResult result = getOllirResult("If3.jmm");
+        var method = CpUtils.getMethod(result, "func");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(result.getOllirCode());
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 3 gotos", gotos.size() >= 3, result);
+
+        //assertTrue(testOllirGeneration("If3.jmm", "If3.ollir")); // can be ran individually
+    }
+
+    @Test
     public void testBooleanLiteral() {assertTrue(testOllirGeneration("BooleanLiteral.jmm", "BooleanLiteral.ollir"));}
 
     @Test
