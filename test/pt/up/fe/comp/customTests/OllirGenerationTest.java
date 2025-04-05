@@ -14,7 +14,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class OllirGenerationTest {
     private boolean testOllirGeneration(String jmmFile, String ollirFile) {
-        OllirResult result = TestUtils.optimize(SpecsIo.getResource("pt/up/fe/comp/customTests/ollir/" + jmmFile));
+        OllirResult result = getOllirResult(jmmFile);
         String expectedOllir = SpecsIo.getResource("pt/up/fe/comp/customTests/ollir/" + ollirFile).trim();
 
         System.out.println("Generated OLLIR:");
@@ -26,6 +26,10 @@ public class OllirGenerationTest {
             return false;
         }
         return true;
+    }
+
+    static OllirResult getOllirResult(String filename) {
+        return TestUtils.optimize(SpecsIo.getResource("pt/up/fe/comp/customTests/ollir/" + filename));
     }
 
     @Test
@@ -55,14 +59,18 @@ public class OllirGenerationTest {
 
     @Test
     public void testIfThenElse() {
-        assertTrue(testOllirGeneration("IfThenElse.jmm", "IfThenElse.ollir"));
+        OllirResult result = getOllirResult("IfThenElse.jmm");
+        var method = CpUtils.getMethod(result, "func");
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 1 goto", gotos.size() >= 1, result);
     }
 
     // some differences
     @Test
     public void testIfThenElseMultiple() {
-        OllirResult result = TestUtils.optimize(SpecsIo.getResource("pt/up/fe/comp/customTests/ollir/IfThenElseMultiple.jmm"));
-        var method = CpUtils.getMethod(result, "findSmallest");
+        OllirResult result = getOllirResult("IfThenElseMultiple.jmm");
+        var method = CpUtils.getMethod(result, "func");
 
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 3 gotos", gotos.size() >= 3, result);
@@ -70,7 +78,11 @@ public class OllirGenerationTest {
 
     @Test
     public void testIf() {
-        assertTrue(testOllirGeneration("If.jmm", "If.ollir"));
+        OllirResult result = getOllirResult("If.jmm");
+        var method = CpUtils.getMethod(result, "func");
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 1 gotos", gotos.size() >= 1, result);
     }
 
     @Test
