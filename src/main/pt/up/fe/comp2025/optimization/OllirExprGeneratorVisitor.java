@@ -39,18 +39,78 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
         addVisit(PARENT_EXPR, this::visitParentExpr);
         addVisit(NEW_OBJECT_EXPR, this::visitNewObject);
-        //addVisit(ARRAY_ACCESS_EXPR, this::visitArrayAccess);
         //addVisit(LENGTH_EXPR, this::visitLength);
         addVisit(STRING_LITERAL, this::visitString);
         //addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
         addVisit(THIS_EXPR, this::visitThis);
         addVisit(UNARY_NOT_EXPR, this::visitUnaryNot);
         //addVisit(BINARY_EXPR, this::visitBinExpr);
-        //addVisit(ARRAY_INIT_EXPR, this::visitArrayInit);
-        //addVisit(NEW_INT_ARRAY_EXPR, this::visitNewIntArray);
+        addVisit(ARRAY_INIT, this::visitArrayInit);
+        addVisit(NEW_INT_ARRAY_EXPR, this::visitNewIntArray);
+        addVisit(ARRAY_ACCESS_EXPR, this::visitArrayAccess);
 
 
 //        setDefaultVisit(this::defaultVisit);
+    }
+
+    private OllirExprResult visitArrayAccess(JmmNode node, Void unused) {
+        OllirExprResult arrayResult = visit(node.getChild(0));
+        OllirExprResult indexResult = visit(node.getChild(1));
+
+        Type elementType = types.getExprType(node);
+        String ollirElementType = ollirTypes.toOllirType(elementType);
+
+        String tempVar = ollirTypes.nextTemp();
+        String tempVarWithType = tempVar + ollirElementType;
+
+        String computation = arrayResult.getComputation() +
+                indexResult.getComputation() +
+                tempVarWithType + SPACE + ASSIGN + ollirElementType + SPACE +
+                arrayResult.getCode() + "[" + indexResult.getCode() + "]" + ollirElementType + END_STMT;
+
+        return new OllirExprResult(tempVarWithType, computation);
+    }
+
+    private OllirExprResult visitNewIntArray(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
+
+        OllirExprResult sizeResult = visit(node.getChild(0));
+
+        String tempVar = ollirTypes.nextTemp();
+        String ollirArrayType = ollirTypes.toOllirType(new Type("int", true));
+        String tempVarWithType = tempVar + ollirArrayType;
+
+        computation.append(sizeResult.getComputation());
+        computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirArrayType).append(SPACE)
+                .append("new(array, ").append(sizeResult.getCode()).append(")").append(ollirArrayType)
+                .append(END_STMT);
+
+        return new OllirExprResult(tempVarWithType, computation.toString());
+    }
+
+    private OllirExprResult visitArrayInit(JmmNode node, Void unused) {
+        StringBuilder computation = new StringBuilder();
+        String tempVar = ollirTypes.nextTemp();
+
+        Type elementType = types.getExprType(node.getChild(0));
+        String ollirArrayType = ollirTypes.toOllirType(new Type(elementType.getName(), true));
+        String ollirElementType = ollirTypes.toOllirType(elementType);
+
+        String tempVarWithType = tempVar + ollirArrayType;
+
+        computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirArrayType).append(SPACE)
+                .append("new(array, ").append(node.getNumChildren()).append(".i32)").append(ollirArrayType)
+                .append(END_STMT);
+
+        for (int i = 0; i < node.getNumChildren(); i++) {
+            OllirExprResult elementResult = visit(node.getChild(i));
+            computation.append(elementResult.getComputation());
+            computation.append(tempVar).append("[").append(i).append(".i32]").append(ollirElementType)
+                    .append(SPACE).append(ASSIGN).append(ollirElementType).append(SPACE)
+                    .append(elementResult.getCode()).append(END_STMT);
+        }
+
+        return new OllirExprResult(tempVarWithType, computation.toString());
     }
 
     private OllirExprResult visitUnaryNot(JmmNode node, Void unused) {
@@ -63,7 +123,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String tempVarWithType = tempVar + ollirType;
 
         String computation = exprResult.getComputation() +
-                             tempVarWithType + " :=.bool !" + ollirType + " " + exprResult.getCode() + ";\n";
+                tempVarWithType + SPACE + ASSIGN + ollirType + SPACE + "!" + ollirType + SPACE + exprResult.getCode() + END_STMT;
 
         return new OllirExprResult(tempVarWithType, computation);
     }
@@ -86,11 +146,9 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         Type type = new Type(className, false);
         String ollirType = ollirTypes.toOllirType(type);
 
-        String assignment = String.format("%s%s :=%s new(%s)%s;\n", 
-            tempVar, ollirType, ollirType, className, ollirType);
+        String assignment = tempVar + ollirType + SPACE + ASSIGN + ollirType + SPACE + "new(" + className + ")" + ollirType + END_STMT;
 
-        String constructorCall = String.format("invokespecial(%s%s, \"<init>\").V;\n",
-            tempVar, ollirType);
+        String constructorCall = "invokespecial(" + tempVar + ollirType + ", \"<init>\").V" + END_STMT;
 
         String computation = assignment + constructorCall;
         String code = tempVar + ollirType;

@@ -1,0 +1,17 @@
+NewIntArrayTest {
+
+
+
+
+.construct NewIntArrayTest().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public static main(args.array.String).V {
+   tmp0.array.i32 :=.array.i32 new(array, 5.i32).array.i32;
+numbers.array.i32 :=.array.i32 tmp0.array.i32;
+
+ret.V;
+}
+
+}
