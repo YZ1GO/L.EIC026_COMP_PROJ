@@ -54,6 +54,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(IMPORT_DECL, this::visitImportDecl);
+        addVisit(WHILE_STMT, this::visitWhileStmt);
 
         addVisit(BLOCK_STMT, this::visitBlockStmt);
         addVisit(IF_STMT, this::visitIfStmt);
@@ -309,6 +310,34 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
         code.append(endifL).append(":").append(NL);
+
+
+        return code.toString();
+    }
+
+    private String visitWhileStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var label = OptUtils.getWhileLabels();
+        var whileL = label.get(0);
+        var endWhileL = label.get(1);
+
+        code.append(whileL).append(":").append(NL);
+
+        var cond = exprVisitor.visit(node.getChild(0));
+        var body = node.getChild(1);
+
+        code.append(cond.getComputation());
+
+        code.append("if (!.bool ").append(cond.getCode()).append(") goto ").append(endWhileL).append(END_STMT);
+
+        code.append(visit(body));
+
+        code.append("goto ").append(whileL).append(END_STMT);
+
+
+        // end while block
+        code.append(endWhileL).append(":").append(NL);
 
 
         return code.toString();
