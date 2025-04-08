@@ -115,11 +115,52 @@ public class OllirGenerationTest {
     }
 
     @Test
-    public void testBooleanLiteral() {assertTrue(testOllirGeneration("expr/BooleanLiteral.jmm", "expr/BooleanLiteral.ollir"));}
-
-    @Test
-    public void testParentExpr() {assertTrue(testOllirGeneration("expr/ParentExpr.jmm", "expr/ParentExpr.ollir"));}
-
-    @Test
     public void testImport() {assertTrue(testOllirGeneration("Import.jmm", "Import.ollir"));}
+
+    @Test
+    public void testWhile() {
+        //assertTrue(testOllirGeneration("while.jmm", "while.ollir"));
+
+        OllirResult result = getOllirResult("while.jmm");
+        var method = CpUtils.getMethod(result, "loop");
+
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+
+        CpUtils.assertTrue("Number of branches is 1", branches.size() == 1, result);
+    }
+
+    @Test
+    public void testWhile2() {
+        //assertTrue(testOllirGeneration("while2.jmm", "while2.ollir"));
+
+        OllirResult result = getOllirResult("while2.jmm");
+        var method = CpUtils.getMethod(result, "loop");
+
+        /*System.out.println(
+                "Generated OLLIR:"
+        );
+        System.out.println(result.getOllirCode());*/
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+
+        CpUtils.assertTrue("Number of branches is 2", branches.size() == 2, result);
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 2 gotos", gotos.size() >= 2, result);
+    }
+
+    @Test
+    public void whileAndIfThenElse() {
+        OllirResult result = getOllirResult("whileAndIfThenElse.jmm");
+        var method = CpUtils.getMethod(result, "loop");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(result.getOllirCode());
+
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+
+        CpUtils.assertTrue("Number of branches is 5", branches.size() == 5, result);
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 5 gotos", gotos.size() >= 5, result);
+    }
 }

@@ -18,6 +18,8 @@ public class OptUtils {
 
     private static final AtomicInteger ifLabelCounter = new AtomicInteger();
 
+    private static final AtomicInteger whileLabelCounter = new AtomicInteger();
+
     private final AccumulatorMap<String> temporaries;
 
     private final TypeUtils types;
@@ -40,6 +42,11 @@ public class OptUtils {
     public static List<String> getIfLabels() {
         int id = ifLabelCounter.getAndIncrement();
         return List.of("then" + id, "endif" + id);
+    }
+
+    public static List<String> getWhileLabels() {
+        int id = whileLabelCounter.getAndIncrement();
+        return List.of("while" + id, "endWhile" + id);
     }
 
     public String toOllirType(JmmNode typeNode) {
