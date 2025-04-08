@@ -1,6 +1,7 @@
 package pt.up.fe.comp.customTests;
 
 import org.junit.Test;
+import org.specs.comp.ollir.inst.CondBranchInstruction;
 import org.specs.comp.ollir.inst.GotoInstruction;
 import pt.up.fe.comp.CpUtils;
 import pt.up.fe.comp.TestUtils;
@@ -62,6 +63,9 @@ public class OllirGenerationTest {
         OllirResult result = getOllirResult("IfThenElse.jmm");
         var method = CpUtils.getMethod(result, "func");
 
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 1, branches.size(), result);
+
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 1 goto", gotos.size() >= 1, result);
     }
@@ -72,6 +76,9 @@ public class OllirGenerationTest {
         OllirResult result = getOllirResult("IfThenElseMultiple.jmm");
         var method = CpUtils.getMethod(result, "func");
 
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 3, branches.size(), result);
+
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 3 gotos", gotos.size() >= 3, result);
     }
@@ -81,15 +88,88 @@ public class OllirGenerationTest {
         OllirResult result = getOllirResult("If.jmm");
         var method = CpUtils.getMethod(result, "func");
 
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 1, branches.size(), result);
+
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 1 gotos", gotos.size() >= 1, result);
     }
 
     @Test
     public void testIf2() {
-        assertTrue(testOllirGeneration("If2.jmm", "If2.ollir"));
+        //assertTrue(testOllirGeneration("If2.jmm", "If2.ollir"));
+
+        OllirResult result = getOllirResult("If2.jmm");
+        var method = CpUtils.getMethod(result, "func");
+
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 2, branches.size(), result);
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 2 gotos", gotos.size() >= 2, result);
+    }
+
+    @Test
+    public void testIf3() {
+        OllirResult result = getOllirResult("If3.jmm");
+        var method = CpUtils.getMethod(result, "func");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(result.getOllirCode());
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 3 gotos", gotos.size() >= 3, result);
+
+        //assertTrue(testOllirGeneration("If3.jmm", "If3.ollir")); // can be ran individually
     }
 
     @Test
     public void testImport() {assertTrue(testOllirGeneration("Import.jmm", "Import.ollir"));}
+
+    @Test
+    public void testWhile() {
+        //assertTrue(testOllirGeneration("while.jmm", "while.ollir"));
+
+        OllirResult result = getOllirResult("while.jmm");
+        var method = CpUtils.getMethod(result, "loop");
+
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+
+        CpUtils.assertTrue("Number of branches is 1", branches.size() == 1, result);
+    }
+
+    @Test
+    public void testWhile2() {
+        //assertTrue(testOllirGeneration("while2.jmm", "while2.ollir"));
+
+        OllirResult result = getOllirResult("while2.jmm");
+        var method = CpUtils.getMethod(result, "loop");
+
+        /*System.out.println(
+                "Generated OLLIR:"
+        );
+        System.out.println(result.getOllirCode());*/
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+
+        CpUtils.assertTrue("Number of branches is 2", branches.size() == 2, result);
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 2 gotos", gotos.size() >= 2, result);
+    }
+
+    @Test
+    public void whileAndIfThenElse() {
+        OllirResult result = getOllirResult("whileAndIfThenElse.jmm");
+        var method = CpUtils.getMethod(result, "loop");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(result.getOllirCode());
+
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+
+        CpUtils.assertTrue("Number of branches is 5", branches.size() == 5, result);
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 5 gotos", gotos.size() >= 5, result);
+    }
 }

@@ -1,0 +1,24 @@
+MyClass {
+
+
+
+
+.construct MyClass().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public loop().i32 {
+   a.i32 :=.i32 5.i32;
+
+   while0:
+tmp0.bool :=.bool a.i32 <.bool 0.i32;
+if (!.bool tmp0.bool) goto endWhile0;
+a.i32 :=.i32 10.i32;
+
+goto while0;
+endWhile0:
+
+   ret.i32 a.i32;
+}
+
+}

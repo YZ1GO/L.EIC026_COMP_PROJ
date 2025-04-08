@@ -1,0 +1,15 @@
+class MyClass {
+    public int loop(){
+        int a;
+        a = 5;
+        while (a < 0) {
+            a = 10;
+            while (a < 1) {
+                a = 5;
+            }
+        }
+
+
+        return a;
+      }
+}

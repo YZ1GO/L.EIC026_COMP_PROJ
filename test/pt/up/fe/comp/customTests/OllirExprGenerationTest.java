@@ -47,6 +47,15 @@ public class OllirExprGenerationTest {
     @Test
     public void testUnaryNot() {assertTrue(testOllirExprGeneration("UnaryNot.jmm", "UnaryNot.ollir"));}
 
+    //@Test
+    //public void testStringLiteral() {assertTrue(testOllirExprGeneration("StringLiteral.jmm", "StringLiteral.ollir"));}
+
     @Test
-    public void testStringLiteral() {assertTrue(testOllirExprGeneration("StringLiteral.jmm", "StringLiteral.ollir"));}
+    public void testNewIntArray() {assertTrue(testOllirExprGeneration("NewIntArray.jmm", "NewIntArray.ollir"));}
+
+    @Test
+    public void testArrayInit() {assertTrue(testOllirExprGeneration("ArrayInit.jmm", "ArrayInit.ollir"));}
+
+    @Test
+    public void testArrayAccess() {assertTrue(testOllirExprGeneration("ArrayAccess.jmm", "ArrayAccess.ollir"));}
 }

@@ -51,9 +51,10 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
-
+        addVisit(EXPR, this::visitExprStmt);
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(IMPORT_DECL, this::visitImportDecl);
+        addVisit(WHILE_STMT, this::visitWhileStmt);
 
         addVisit(BLOCK_STMT, this::visitBlockStmt);
         addVisit(IF_STMT, this::visitIfStmt);
@@ -315,6 +316,44 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return code.toString();
     }
 
+    private String visitWhileStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var label = OptUtils.getWhileLabels();
+        var whileL = label.get(0);
+        var endWhileL = label.get(1);
+
+        code.append(whileL).append(":").append(NL);
+
+        var cond = exprVisitor.visit(node.getChild(0));
+        var body = node.getChild(1);
+
+        code.append(cond.getComputation());
+
+        code.append("if (!.bool ").append(cond.getCode()).append(") goto ").append(endWhileL).append(END_STMT);
+
+        code.append(visit(body));
+
+        code.append("goto ").append(whileL).append(END_STMT);
+
+
+        // end while block
+        code.append(endWhileL).append(":").append(NL);
+
+
+        return code.toString();
+    }
+
+    private String visitExprStmt(JmmNode node, Void unused) {
+
+        var expr = exprVisitor.visit(node.getChild(0));
+        StringBuilder code = new StringBuilder();
+
+        code.append(expr.getComputation());
+
+        return code.toString();
+    }
+
     private String visitArithmeticExpr(JmmNode node, Void unused) {
         var lhs = exprVisitor.visit(node.getChild(0));
         var rhs = exprVisitor.visit(node.getChild(1));
@@ -348,13 +387,13 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
 
-    /**
-     * Default visitor. Visits every child node and return an empty string.
-     *
-     * @param node
-     * @param unused
-     * @return
-     */
+        /**
+         * Default visitor. Visits every child node and return an empty string.
+         *
+         * @param node
+         * @param unused
+         * @return
+         */
     private String defaultVisit(JmmNode node, Void unused) {
 
         for (var child : node.getChildren()) {

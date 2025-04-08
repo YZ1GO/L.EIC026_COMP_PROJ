@@ -1,0 +1,42 @@
+MyClass {
+
+
+
+
+.construct MyClass().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public func(a.i32, b.i32).i32 {
+   res.i32 :=.i32 b.i32;
+
+   tmp0.bool :=.bool a.i32 <.bool b.i32;
+if (tmp0.bool) goto then0;
+
+goto endif0;
+then0:
+res.i32 :=.i32 a.i32;
+tmp1.bool :=.bool a.i32 <.bool b.i32;
+if (tmp1.bool) goto then1;
+res.i32 :=.i32 b.i32;
+tmp2.bool :=.bool a.i32 <.bool b.i32;
+if (tmp2.bool) goto then2;
+
+goto endif2;
+then2:
+res.i32 :=.i32 a.i32;
+
+endif2:
+
+goto endif1;
+then1:
+res.i32 :=.i32 a.i32;
+
+endif1:
+
+endif0:
+
+   ret.i32 res.i32;
+}
+
+}
