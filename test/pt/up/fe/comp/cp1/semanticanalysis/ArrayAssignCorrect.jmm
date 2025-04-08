@@ -1,0 +1,18 @@
+class ArrayAssignCorrect {
+
+    public static void main(String[] args) {
+
+    }
+
+    public int foo() {
+        int[] a;
+        int value;
+
+        a = new int[2];
+        value = 42;
+
+        a[1] = value; // Correct: value is of type int
+
+        return 0;
+    }
+}

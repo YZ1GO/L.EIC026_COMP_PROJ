@@ -40,7 +40,7 @@ public class TypeUtils {
     public static Type newVoidType() {
         return new Type("void", false);
     }
-    
+
     public static Type convertType(JmmNode typeNode) {
 
         // TODO: When you support new types, this must be updated
@@ -152,6 +152,17 @@ public class TypeUtils {
             case ARRAY_INIT, NEW_INT_ARRAY_EXPR: {
                 return new Type("int", true);
             }
+
+            case ARRAY_ASSIGN_STMT: {
+                String arrayVarName = expr.get("name");
+
+                String methodName = expr.getAncestor(Kind.METHOD_DECL)
+                        .map(method -> method.get("name"))
+                        .orElseThrow(() -> new RuntimeException("Cannot determine method context for array assignment."));
+
+                return resolveVariableType(arrayVarName, methodName);
+            }
+
 
             default:
                 throw new UnsupportedOperationException("Unhandled expression type: " + expr.getKind());

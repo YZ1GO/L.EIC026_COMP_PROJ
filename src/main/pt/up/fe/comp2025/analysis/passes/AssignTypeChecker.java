@@ -18,6 +18,47 @@ public class AssignTypeChecker extends AnalysisVisitor {
     public void buildVisitor() {
         addVisit(Kind.ASSIGN_STMT, this::visitAssignStmt);
         addVisit(Kind.THIS_EXPR, this::visitThisExpr);
+        addVisit(Kind.ARRAY_ASSIGN_STMT, this::visitArrayAssignStmt);
+    }
+
+    private Void visitArrayAssignStmt(JmmNode arrayAssignStmt, SymbolTable table) {
+        var typeUtils = new TypeUtils(table);
+
+        String arrayVarName = arrayAssignStmt.get("name");
+
+        JmmNode indexExpr = arrayAssignStmt.getChild(0);
+        JmmNode valueExpr = arrayAssignStmt.getChild(1);
+
+        Type arrayType = typeUtils.getExprType(arrayAssignStmt);
+        Type indexType = typeUtils.getExprType(indexExpr);
+        Type valueType = typeUtils.getExprType(valueExpr);
+
+        if (!arrayType.isArray()) {
+            addReport(newError(
+                    arrayAssignStmt,
+                    String.format("Variable '%s' is not an array but is used in an array assignment.", arrayVarName)
+            ));
+            return null;
+        }
+
+        if (!indexType.equals(TypeUtils.newIntType())) {
+            addReport(newError(
+                    indexExpr,
+                    String.format("Index expression must be of type 'int' but found '%s'.", formatType(indexType))
+            ));
+        }
+
+        Type baseArrayType = new Type(arrayType.getName(), false);
+
+        if (!isTypeCompatible(baseArrayType, valueType, table)) {
+            addReport(newError(
+                    valueExpr,
+                    String.format("Type mismatch: cannot assign '%s' to array of '%s'.",
+                            formatType(valueType), formatType(baseArrayType))
+            ));
+        }
+
+        return null;
     }
 
     private Void visitAssignStmt(JmmNode assignStmt, SymbolTable table) {
