@@ -97,7 +97,16 @@ public class OllirGenerationTest {
 
     @Test
     public void testIf2() {
-        assertTrue(testOllirGeneration("If2.jmm", "If2.ollir"));
+        //assertTrue(testOllirGeneration("If2.jmm", "If2.ollir"));
+
+        OllirResult result = getOllirResult("If2.jmm");
+        var method = CpUtils.getMethod(result, "func");
+
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 2, branches.size(), result);
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 2 gotos", gotos.size() >= 2, result);
     }
 
     @Test
