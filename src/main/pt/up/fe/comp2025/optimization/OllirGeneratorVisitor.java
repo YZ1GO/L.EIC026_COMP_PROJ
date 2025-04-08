@@ -51,7 +51,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
-
+        addVisit(EXPR, this::visitExprStmt);
         addVisit(VAR_DECL, this::visitVarDecl);
         addVisit(IMPORT_DECL, this::visitImportDecl);
         addVisit(WHILE_STMT, this::visitWhileStmt);
@@ -343,14 +343,24 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return code.toString();
     }
 
+    private String visitExprStmt(JmmNode node, Void unused) {
 
-    /**
-     * Default visitor. Visits every child node and return an empty string.
-     *
-     * @param node
-     * @param unused
-     * @return
-     */
+        var expr = exprVisitor.visit(node.getChild(0));
+        StringBuilder code = new StringBuilder();
+
+        code.append(expr.getComputation());
+
+        return code.toString();
+    }
+
+
+        /**
+         * Default visitor. Visits every child node and return an empty string.
+         *
+         * @param node
+         * @param unused
+         * @return
+         */
     private String defaultVisit(JmmNode node, Void unused) {
 
         for (var child : node.getChildren()) {
