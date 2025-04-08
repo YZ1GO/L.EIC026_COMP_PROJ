@@ -32,4 +32,21 @@ public class OllirExprGenerationTest {
     @Test
     public void testParentExpr() {assertTrue(testOllirExprGeneration("ParentExpr.jmm", "ParentExpr.ollir"));}
 
+    @Test
+    public void testNewObjectExpr() {assertTrue(testOllirExprGeneration("NewObject.jmm", "NewObject.ollir"));}
+
+    @Test
+    public void testNewObjectExpr2() {assertTrue(testOllirExprGeneration("NewObject2.jmm", "NewObject2.ollir"));}
+
+    @Test
+    public void testThisExpr() {assertTrue(testOllirExprGeneration("This.jmm", "This.ollir"));}
+
+    @Test
+    public void testThisExpr2() {assertTrue(testOllirExprGeneration("This2.jmm", "This2.ollir"));}
+
+    @Test
+    public void testUnaryNot() {assertTrue(testOllirExprGeneration("UnaryNot.jmm", "UnaryNot.ollir"));}
+
+    @Test
+    public void testStringLiteral() {assertTrue(testOllirExprGeneration("StringLiteral.jmm", "StringLiteral.ollir"));}
 }

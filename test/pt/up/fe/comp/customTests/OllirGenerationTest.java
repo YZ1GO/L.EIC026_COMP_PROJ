@@ -1,6 +1,7 @@
 package pt.up.fe.comp.customTests;
 
 import org.junit.Test;
+import org.specs.comp.ollir.inst.CondBranchInstruction;
 import org.specs.comp.ollir.inst.GotoInstruction;
 import pt.up.fe.comp.CpUtils;
 import pt.up.fe.comp.TestUtils;
@@ -62,6 +63,9 @@ public class OllirGenerationTest {
         OllirResult result = getOllirResult("IfThenElse.jmm");
         var method = CpUtils.getMethod(result, "func");
 
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 1, branches.size(), result);
+
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 1 goto", gotos.size() >= 1, result);
     }
@@ -72,6 +76,9 @@ public class OllirGenerationTest {
         OllirResult result = getOllirResult("IfThenElseMultiple.jmm");
         var method = CpUtils.getMethod(result, "func");
 
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 3, branches.size(), result);
+
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 3 gotos", gotos.size() >= 3, result);
     }
@@ -80,6 +87,9 @@ public class OllirGenerationTest {
     public void testIf() {
         OllirResult result = getOllirResult("If.jmm");
         var method = CpUtils.getMethod(result, "func");
+
+        var branches = CpUtils.assertInstExists(CondBranchInstruction.class, method, result);
+        CpUtils.assertEquals("Number of branches", 1, branches.size(), result);
 
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 1 gotos", gotos.size() >= 1, result);
@@ -105,10 +115,10 @@ public class OllirGenerationTest {
     }
 
     @Test
-    public void testBooleanLiteral() {assertTrue(testOllirGeneration("BooleanLiteral.jmm", "BooleanLiteral.ollir"));}
+    public void testBooleanLiteral() {assertTrue(testOllirGeneration("expr/BooleanLiteral.jmm", "expr/BooleanLiteral.ollir"));}
 
     @Test
-    public void testParentExpr() {assertTrue(testOllirGeneration("ParentExpr.jmm", "ParentExpr.ollir"));}
+    public void testParentExpr() {assertTrue(testOllirGeneration("expr/ParentExpr.jmm", "expr/ParentExpr.ollir"));}
 
     @Test
     public void testImport() {assertTrue(testOllirGeneration("Import.jmm", "Import.ollir"));}
