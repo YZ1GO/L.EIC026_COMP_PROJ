@@ -172,4 +172,7 @@ public class OllirGenerationTest {
         var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
         CpUtils.assertTrue("Has at least 5 gotos", gotos.size() >= 5, result);
     }
+
+    @Test
+    public void testArrayAssignStmt() {assertTrue(testOllirGeneration("ArrayAssignStmt.jmm", "ArrayAssignStmt.ollir"));}
 }
