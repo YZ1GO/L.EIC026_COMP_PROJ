@@ -57,6 +57,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         addVisit(BLOCK_STMT, this::visitBlockStmt);
         addVisit(IF_STMT, this::visitIfStmt);
+        addVisit(BINARY_EXPR, this::visitArithmeticExpr);
 
 //        setDefaultVisit(this::defaultVisit);
     }
@@ -312,6 +313,38 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
 
         return code.toString();
+    }
+
+    private String visitArithmeticExpr(JmmNode node, Void unused) {
+        var lhs = exprVisitor.visit(node.getChild(0));
+        var rhs = exprVisitor.visit(node.getChild(1));
+
+        StringBuilder computation = new StringBuilder();
+
+        computation.append(lhs.getComputation());
+        computation.append(rhs.getComputation());
+
+        // Generate code for the arithmetic operation
+        Type resultType = types.getExprType(node);
+        String resultOllirType = ollirTypes.toOllirType(resultType);
+        String tempVar = ollirTypes.nextTemp();
+        String tempVarWithType = tempVar + resultOllirType;
+
+        computation.append(tempVarWithType)
+                .append(SPACE)
+                .append(ASSIGN)
+                .append(SPACE)
+                .append(resultOllirType)
+                .append(SPACE)
+                .append(lhs.getCode())
+                .append(SPACE)
+                .append(node.get("op"))
+                .append(resultOllirType)
+                .append(SPACE)
+                .append(rhs.getCode())
+                .append(END_STMT);
+
+        return computation.toString();
     }
 
 
