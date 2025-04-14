@@ -39,7 +39,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
         addVisit(PARENT_EXPR, this::visitParentExpr);
         addVisit(NEW_OBJECT_EXPR, this::visitNewObject);
-        addVisit(LENGTH_EXPR, this::visitLength); //arraylenth in Ollir
+        addVisit(LENGTH_EXPR, this::visitLength);
         addVisit(STRING_LITERAL, this::visitString);
         addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
         addVisit(THIS_EXPR, this::visitThis);

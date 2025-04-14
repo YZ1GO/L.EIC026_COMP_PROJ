@@ -16,15 +16,19 @@ import java.util.Set;
 public class DuplicateVariableChecker extends AnalysisVisitor {
 
     private final Set<String> declaredVariables;
+    private final Set<String> declaredImports;
 
     public DuplicateVariableChecker() {
+
         this.declaredVariables = new HashSet<>();
+        this.declaredImports = new HashSet<>();
     }
 
     @Override
     public void buildVisitor() {
         addVisit(Kind.METHOD_DECL, this::visitMethodDecl);
         addVisit(Kind.VAR_DECL, this::visitVarDeclStmt);
+        addVisit(Kind.IMPORT_DECL, this::visitImportDecl);
     }
 
     private Void visitMethodDecl(JmmNode method, SymbolTable table) {
@@ -67,6 +71,23 @@ public class DuplicateVariableChecker extends AnalysisVisitor {
         } else {
             // Add the variable to the set of declared variables
             declaredVariables.add(varName);
+        }
+
+        return null;
+    }
+
+    private Void visitImportDecl(JmmNode importDecl, SymbolTable table) {
+        String importName = importDecl.get("name");
+
+        // Check for duplicate imports
+        if (declaredImports.contains(importName)) {
+            addReport(newError(
+                    importDecl,
+                    String.format("Duplicate import declaration: '%s' is already imported.", importName))
+            );
+        } else {
+            // Add the import to the set of declared imports
+            declaredImports.add(importName);
         }
 
         return null;
