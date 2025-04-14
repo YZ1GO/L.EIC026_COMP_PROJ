@@ -44,7 +44,8 @@ public class JmmAnalysisImpl implements JmmAnalysis {
                 new ArrayInitChecker(),
                 new ArrayLiteralChecker(),
                 new AssignTypeChecker(),
-                new ArrayAccessChecker()
+                new ArrayAccessChecker(),
+                new LengthExprChecker()
         );
     }
 
