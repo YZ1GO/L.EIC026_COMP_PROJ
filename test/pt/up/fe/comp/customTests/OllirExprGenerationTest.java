@@ -58,4 +58,7 @@ public class OllirExprGenerationTest {
 
     @Test
     public void testArrayAccess() {assertTrue(testOllirExprGeneration("ArrayAccess.jmm", "ArrayAccess.ollir"));}
+
+    @Test
+    public void testLengthExpr() {assertTrue(testOllirExprGeneration("LengthExpr.jmm", "LengthExpr.ollir"));}
 }
