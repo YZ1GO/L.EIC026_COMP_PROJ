@@ -41,7 +41,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(NEW_OBJECT_EXPR, this::visitNewObject);
         addVisit(LENGTH_EXPR, this::visitLength); //arraylenth in Ollir
         addVisit(STRING_LITERAL, this::visitString);
-        //addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
+        addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
         addVisit(THIS_EXPR, this::visitThis);
         addVisit(UNARY_NOT_EXPR, this::visitUnaryNot);
         addVisit(ARRAY_INIT, this::visitArrayInit);
@@ -130,6 +130,47 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     private OllirExprResult visitThis(JmmNode node, Void unused) {
         String code = "this." + table.getClassName();
         return new OllirExprResult(code);
+    }
+
+    private OllirExprResult visitMethodCall(JmmNode node, Void unused) {
+        String methodName = node.get("name");
+
+        // Visit the object on which the method is called
+        OllirExprResult objectResult = visit(node.getChild(0));
+
+        // Arguments computation
+        StringBuilder computation = new StringBuilder(objectResult.getComputation());
+        StringBuilder argsCode = new StringBuilder();
+        for (int i = 1; i < node.getNumChildren(); i++) {
+            OllirExprResult argResult = visit(node.getChild(i));
+            computation.append(argResult.getComputation());
+            argsCode.append(argResult.getCode());
+            if (i < node.getNumChildren() - 1) {
+                argsCode.append(", ");
+            }
+        }
+
+        // Return type of the method
+        Type returnType = types.getExprType(node);
+        String ollirReturnType = ollirTypes.toOllirType(returnType);
+
+        // Generate the method call code
+        String methodCall = "invokevirtual(" + objectResult.getCode() + ", \"" + methodName + "\", " + argsCode + ")" + ollirReturnType;
+
+        // Check if the method call is part of an assignment
+        JmmNode parent = node.getParent();
+        if (parent != null && (parent.getKind().equals("ArrayAssignStmt")
+                || parent.getKind().equals("AssignStmt"))) {
+            // Don't generate assignment to prevent double-assignment
+            return new OllirExprResult(methodCall, computation.toString());
+        }
+
+        // If not part of an assignment, assign to a temp
+        String tempVar = ollirTypes.nextTemp();
+        String tempVarWithType = tempVar + ollirReturnType;
+        computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirReturnType).append(SPACE)
+                .append(methodCall).append(END_STMT);
+        return new OllirExprResult(tempVarWithType, computation.toString());
     }
 
     private OllirExprResult visitString(JmmNode node, Void unused) {

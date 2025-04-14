@@ -61,4 +61,13 @@ public class OllirExprGenerationTest {
 
     @Test
     public void testLengthExpr() {assertTrue(testOllirExprGeneration("LengthExpr.jmm", "LengthExpr.ollir"));}
+
+    @Test
+    public void testMethodCall() {assertTrue(testOllirExprGeneration("MethodCall.jmm", "MethodCall.ollir"));}
+
+    @Test
+    public void testMethodCall2() {assertTrue(testOllirExprGeneration("MethodCall2.jmm", "MethodCall2.ollir"));}
+
+    @Test
+    public void testMethodCall3() {assertTrue(testOllirExprGeneration("MethodCall3.jmm", "MethodCall3.ollir"));}
 }
