@@ -6,8 +6,10 @@ import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp2025.utils.VariableInitializationUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class AssignTypeChecker extends AnalysisVisitor {
@@ -26,6 +28,40 @@ public class AssignTypeChecker extends AnalysisVisitor {
         JmmNode indexExpr = arrayAssignStmt.getChild(0);
         JmmNode valueExpr = arrayAssignStmt.getChild(1);
 
+        // Check if the array variable is initialized before being used
+        JmmNode methodNode = arrayAssignStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
+        if (methodNode != null && !VariableInitializationUtils.isVariableInitialized(arrayVarName, methodNode)) {
+            addReport(newError(
+                    arrayAssignStmt,
+                    String.format("Array variable '%s' is used before being initialized.", arrayVarName)
+            ));
+        }
+
+        // Check if variables in the index expression are initialized
+        List<JmmNode> indexVars = indexExpr.getDescendants(Kind.VAR_REF_EXPR.toString());
+        for (JmmNode var : indexVars) {
+            String usedVarName = var.get("name");
+            if (methodNode != null && !VariableInitializationUtils.isVariableInitialized(usedVarName, methodNode)) {
+                addReport(newError(
+                        var,
+                        String.format("Variable '%s' is used in the array index before being initialized.", usedVarName)
+                ));
+            }
+        }
+
+        // Check if variables in the value expression are initialized
+        List<JmmNode> valueVars = valueExpr.getDescendants(Kind.VAR_REF_EXPR.toString());
+        for (JmmNode var : valueVars) {
+            String usedVarName = var.get("name");
+            if (methodNode != null && !VariableInitializationUtils.isVariableInitialized(usedVarName, methodNode)) {
+                addReport(newError(
+                        var,
+                        String.format("Variable '%s' is used in the array value before being initialized.", usedVarName)
+                ));
+            }
+        }
+
+        // Type checking logic
         Type arrayType = typeUtils.getExprType(arrayAssignStmt);
         Type indexType = typeUtils.getExprType(indexExpr);
         Type valueType = typeUtils.getExprType(valueExpr);
@@ -62,7 +98,35 @@ public class AssignTypeChecker extends AnalysisVisitor {
         var typeUtils = new TypeUtils(table);
         JmmNode varRef = assignStmt.getChild(0);
         JmmNode expr = assignStmt.getChild(1);
-    
+
+        // Check if the left-hand side variable is initialized before being used
+        String varName = varRef.get("name");
+        JmmNode methodNode = assignStmt.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
+
+        if (methodNode != null && expr.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
+            String rhsVarName = expr.get("name");
+            if (rhsVarName.equals(varName) && !VariableInitializationUtils.isVariableInitialized(varName, methodNode)) {
+                addReport(newError(
+                        varRef,
+                        String.format("Variable '%s' is used before being initialized.", varName)
+                ));
+            }
+        }
+
+        // Check for uninitialized variables in the right-hand side
+        List<JmmNode> usedVars = expr.getDescendants(Kind.VAR_REF_EXPR.toString());
+        for (JmmNode var : usedVars) {
+            String usedVarName = var.get("name");
+
+            if (methodNode != null && !VariableInitializationUtils.isVariableInitialized(usedVarName, methodNode)) {
+                addReport(newError(
+                        var,
+                        String.format("Variable '%s' is used before being initialized.", usedVarName)
+                ));
+            }
+        }
+
+        // Type checking logic
         Type declaredType = typeUtils.getExprType(varRef);
         Type assignedType = typeUtils.getExprType(expr);
 

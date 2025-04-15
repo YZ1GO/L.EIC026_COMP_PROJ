@@ -2,9 +2,10 @@ class VariableInitialize {
 
     public int foo() {
         int s;
-        int i;
-        i = 0;
-        s = s;
+        boolean a;
+        a = true;
+        if (a) s = 1;
+        else s = 2;
         return s;
     }
 }
