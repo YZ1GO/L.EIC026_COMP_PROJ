@@ -4,9 +4,21 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 
 import java.util.List;
 
+import static pt.up.fe.comp2025.ast.Kind.PARAM;
+
 public class VariableInitializationUtils {
 
+    private static boolean isMethodParameter(String varName, JmmNode methodNode) {
+        List<JmmNode> params = methodNode.getChildren(PARAM);
+
+        return params.stream()
+                .anyMatch(param -> param.get("name").equals(varName));
+    }
+
     public static boolean isVariableInitialized(String varName, JmmNode methodNode) {
+        if (isMethodParameter(varName, methodNode)) {
+            return true;
+        }
         return isVariableInitializedInStatements(varName, methodNode.getChildren());
     }
 

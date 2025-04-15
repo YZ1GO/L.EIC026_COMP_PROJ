@@ -8,8 +8,8 @@ public class SingleTest {
     @Test
     public void customTest() {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/singlecustomtest.jmm"));
-        //TestUtils.mustFail(result);
-        TestUtils.noErrors(result);
+        TestUtils.mustFail(result);
+        //TestUtils.noErrors(result);
         System.out.println(result.getReports());
         // Print AST
         System.out.println("AST:");

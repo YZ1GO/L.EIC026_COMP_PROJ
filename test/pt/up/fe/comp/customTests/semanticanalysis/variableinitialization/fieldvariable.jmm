@@ -1,0 +1,14 @@
+class FieldVariable {
+    int d;
+
+	int foo(int a) {
+		int b;
+		int c;
+        //d = 1;
+		b = 9;
+		c = a + b * 8 + d;
+
+		return c;
+	}
+
+}
