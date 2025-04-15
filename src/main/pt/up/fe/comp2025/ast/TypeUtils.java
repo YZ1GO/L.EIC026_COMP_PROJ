@@ -23,9 +23,7 @@ public class TypeUtils {
         this.table = (JmmSymbolTable) table;
     }
 
-    public static Type newIntType() {
-        return new Type("int", false);
-    }
+    public static Type newIntType() { return new Type("int", false); }
 
     public static Type newBooleanType() {
         return new Type("boolean", false);

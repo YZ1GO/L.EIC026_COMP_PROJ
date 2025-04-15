@@ -1,10 +1,7 @@
 package pt.up.fe.comp2025.analysis.passes;
 
-import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.ast.JmmNode;
-import pt.up.fe.comp.jmm.report.Report;
-import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
@@ -69,7 +66,6 @@ public class AssignTypeChecker extends AnalysisVisitor {
         Type declaredType = typeUtils.getExprType(varRef);
         Type assignedType = typeUtils.getExprType(expr);
 
-
         if (assignedType == null) {
             addReport(newError(
                     expr,
@@ -78,9 +74,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
             return null;
         }
 
-        boolean isImportedMethodCall = isMethodCallOnImported(expr, table);
+        boolean isAssumedMethodCall = isMethodCallOnAssumedType(expr, typeUtils);
 
-        if (!isImportedMethodCall && !isTypeCompatible(declaredType, assignedType, table)) {
+        if (!isAssumedMethodCall && !isTypeCompatible(declaredType, assignedType, table)) {
             String declaredTypeStr = formatType(declaredType);
             String assignedTypeStr = formatType(assignedType);
 
@@ -93,23 +89,17 @@ public class AssignTypeChecker extends AnalysisVisitor {
         return null;
     }
 
-    private boolean isMethodCallOnImported(JmmNode expr, SymbolTable table) {
-        var typeUtils = new TypeUtils(table);
+    private boolean isMethodCallOnAssumedType(JmmNode expr, TypeUtils typeUtils) {
         if (!expr.getKind().equals(Kind.METHOD_CALL_EXPR.toString())) {
             return false;
         }
 
-        JmmNode objectNode = expr.getChild(0);
-        Type objectType = typeUtils.getExprType(objectNode);
+        JmmNode receiverNode = expr.getChild(0);
+        Type receiverType = typeUtils.getExprType(receiverNode);
 
-        if (objectType == null) {
-            return false;
-        }
-
-        String className = objectType.getName();
-        return isImported(className, table);
+        return receiverType != null && typeUtils.isImportedOrExtendedOrInherited(receiverType);
     }
-    
+
     private boolean isImported(String className, SymbolTable table) {
         return table.getImports().stream()
                 .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))

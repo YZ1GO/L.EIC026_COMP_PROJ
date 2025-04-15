@@ -10,10 +10,12 @@ class CallToUndeclaredMethod extends A {
         CallToUndeclaredMethod a;
         int b;
         boolean c;
+        int[] arr;
         a = new CallToUndeclaredMethod();
 
         b = a.bar();
         c = a.br();
+        arr = a.arrayTest();
         return 0;
     }
 }
