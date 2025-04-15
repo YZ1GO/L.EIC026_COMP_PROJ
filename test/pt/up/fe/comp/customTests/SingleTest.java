@@ -11,6 +11,10 @@ public class SingleTest {
         //TestUtils.mustFail(result);
         TestUtils.noErrors(result);
         System.out.println(result.getReports());
+        // Print AST
+        System.out.println("AST:");
+        System.out.println(result.getRootNode().toTree());
+
     }
 }
 
