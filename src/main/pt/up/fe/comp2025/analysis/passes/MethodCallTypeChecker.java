@@ -145,29 +145,34 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
         }
 
+        List<Type> varargsArgs = args.subList(fixedParams, args.size());
+
+        if (varargsArgs.isEmpty()) {
+            return;
+        }
+
         // Check if varargs parameter is single int array
-        if (args.get(0).isArray() && args.get(0).getName().equals("int")) {
-            if (args.size() != 1) {
+        if (varargsArgs.size() == 1 && varargsArgs.getFirst().isArray()) {
+            Type arrayType = varargsArgs.getFirst();
+            if (!arrayType.getName().equals("int") || !arrayType.isArray()) {
                 addReport(newError(
                         node,
-                        "Varargs argument can either one array of type 'int' or various integers.")
+                        "Varargs argument must be an array of type 'int'.")
                 );
             }
             return;
         }
 
         // Check if all elements are integers
-        for (int i = fixedParams; i < args.size(); i++) {
-            Type argType = args.get(i);
-
+        for (Type argType : varargsArgs) {
             if (!argType.getName().equals("int") || argType.isArray()) {
                 addReport(newError(
                         node,
-                        "Varargs argument can either one array of type 'int' or various integers.")
+                        "Varargs argument must be either a single array of type 'int' or multiple integers.")
                 );
+                return;
             }
         }
-
     }
 
     private void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {
