@@ -75,7 +75,8 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
         List<Symbol> methodParams = methodParamsOpt.get();
         boolean foundVarArgs = false;
 
-        for (Symbol param : methodParams) {
+        for (int i = 0; i < methodParams.size(); i++) {
+            Symbol param = methodParams.get(i);
             Object isVarArgsObject = param.getType().getObject("isVarArgs");
             boolean isVarArgs = isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
 
@@ -89,21 +90,15 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
                 }
 
                 foundVarArgs = true;
-            }
-        }
-        
-        // After ensuring only one varargs parameter exists, check if it is the last parameter
-        if (foundVarArgs) {
-            Symbol lastParam = methodParams.getLast();
-            Object isLastVarArgsObject = lastParam.getType().getObject("isVarArgs");
-            boolean isLastVarArgs = isLastVarArgsObject instanceof Boolean && (Boolean) isLastVarArgsObject;
-        
-            if (!isLastVarArgs) {
-                addReport(newError(
-                        methodCallNode,
-                        "Varargs parameter must be the last parameter in the method signature.")
-                );
-                return null;
+
+                // Check if the varargs parameter is not the last parameter
+                if (i != methodParams.size() - 1) {
+                    addReport(newError(
+                            methodCallNode,
+                            "Varargs parameter must be the last parameter in the method signature.")
+                    );
+                    return null;
+                }
             }
         }
 

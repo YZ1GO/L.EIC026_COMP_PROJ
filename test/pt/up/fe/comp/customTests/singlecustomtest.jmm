@@ -1,19 +1,11 @@
-class Varargs {
+class ArrayAccess {
 
     public int foo() {
         int[] s;
         int a;
         s = new int[3];
-        a = s[2];
-        this.varargs(1, s[0], s.length, a);
-        this.varargs(new int[5]);
-        this.varargs(s);
-        this.varargs([1, 2, 3, s[0]]);
-        this.varargs();
-        return 0;
-    }
+        a = s[3];
 
-    public int varargs(int... a) {
-        return a[0];
+        return 0;
     }
 }
