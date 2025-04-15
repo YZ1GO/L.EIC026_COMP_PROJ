@@ -43,6 +43,7 @@ varDecl
 
 type locals[boolean isArray=false, boolean isVarArgs=false]
     : name=INT VARARGS {$isArray=true; $isVarArgs=true;}
+    | name=ID VARARGS {$isArray=true; $isVarArgs=true;}
     | name=INT '[' ']' {$isArray=true;}
     | name=ID '[' ']' {$isArray=true;}
     | name=INT

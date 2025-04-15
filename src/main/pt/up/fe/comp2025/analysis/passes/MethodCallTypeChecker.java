@@ -146,24 +146,28 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             return;
         }
 
-        // Check if varargs parameter is single int array
+        // Get the expected type of the varargs parameter
+        Type varargsType = params.get(fixedParams).getType();
+        String expectedTypeName = varargsType.getName();
+
+        // Check if varargs parameter is a single array of the expected type
         if (varargsArgs.size() == 1 && varargsArgs.getFirst().isArray()) {
             Type arrayType = varargsArgs.getFirst();
-            if (!arrayType.getName().equals("int") || !arrayType.isArray()) {
+            if (!arrayType.getName().equals(expectedTypeName) || !arrayType.isArray()) {
                 addReport(newError(
                         node,
-                        "Varargs argument must be an array of type 'int'.")
+                        "Varargs argument must be an array of type '" + expectedTypeName + "'.")
                 );
             }
             return;
         }
 
-        // Check if all elements are integers
+        // Check if all elements match the expected type
         for (Type argType : varargsArgs) {
-            if (!argType.getName().equals("int") || argType.isArray()) {
+            if (!argType.getName().equals(expectedTypeName) || argType.isArray()) {
                 addReport(newError(
                         node,
-                        "Varargs argument must be either a single array of type 'int' or multiple integers.")
+                        "Varargs argument must be either a single array of type '" + expectedTypeName + "' or multiple elements of type '" + expectedTypeName + "'.")
                 );
                 return;
             }
