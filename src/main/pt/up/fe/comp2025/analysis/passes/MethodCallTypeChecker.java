@@ -22,13 +22,43 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
     private Void visitMethodCall(JmmNode methodCallNode, SymbolTable table) {
         var typeUtils = new TypeUtils(table);
         String methodName = methodCallNode.get("name");
+
+        // Check if the method call has a receiver
+        if (methodCallNode.getNumChildren() == 0) {
+            addReport(newError(methodCallNode, "Method call '" + methodName + "' is missing a receiver object."));
+            return null;
+        }
+
         JmmNode receiverNode = methodCallNode.getChild(0);
         Type receiverType = typeUtils.getExprType(receiverNode);
 
-        // Skip checks for imported classes
-        if (table.getImports().stream()
-                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                .anyMatch(importName -> importName.trim().equals(receiverType.getName()))) {
+        if (receiverType == null) {
+            addReport(newError(methodCallNode, "Receiver object for method call '" + methodName + "' is invalid or undefined."));
+            return null;
+        }
+
+        if (typeUtils.isImportedOrExtendedOrInherited(receiverType)) {
+            // Assume the method returns the same type as the enclosing method's return type
+            Optional<JmmNode> methodDeclOpt = methodCallNode.getAncestor(Kind.METHOD_DECL);
+            if (methodDeclOpt.isPresent()) {
+                JmmNode methodDecl = methodDeclOpt.get();
+                JmmNode returnTypeNode = methodDecl.getChildren().getFirst();
+                TypeUtils.convertType(returnTypeNode);
+            } else {
+                addReport(newError(methodCallNode, "Method call on imported or extended class outside of method declaration."));
+            }
+            return null;
+        }
+
+        // For non-imported and non-extended classes
+        Type returnType = table.getReturnType(methodName);
+        if (returnType == null) {
+            String superClassName = table.getSuper();
+            if (superClassName != null && !superClassName.isEmpty()) {
+                return null;
+            }
+
+            addReport(newError(methodCallNode, "Method '" + methodName + "' not found in class " + receiverType.getName() + "."));
             return null;
         }
 

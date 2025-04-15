@@ -7,10 +7,8 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.symboltable.JmmSymbolTable;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
-import static pt.up.fe.comp2025.ast.Kind.BOOLEAN_LITERAL;
 import static pt.up.fe.comp2025.ast.Kind.METHOD_DECL;
 
 /**
@@ -93,34 +91,30 @@ public class TypeUtils {
                 return newStringType();
 
             case METHOD_CALL_EXPR: {
-                Type objectType = getExprType(expr.getChild(0));
+                Type receiverType = getExprType(expr.getChild(0));
                 String methodName = expr.get("name");
 
-                // Check if the object's type is imported
-                boolean isImported = !objectType.getName().equals(table.getClassName()) &&
-                        table.getImports().stream()
-                                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                                .map(String::trim)
-                                .anyMatch(imported -> imported.equals(objectType.getName()));
-
-            if (isImported) {
+                // Check if the object's type is imported, extended, or inherited
+                if (isImportedOrExtendedOrInherited(receiverType)) {
                     // Assume the method returns the same type as the enclosing method's return type
-                    Optional<JmmNode> methodDeclOpt = expr.getAncestor(METHOD_DECL);
+                    Optional<JmmNode> methodDeclOpt = expr.getAncestor(Kind.METHOD_DECL);
                     if (methodDeclOpt.isPresent()) {
                         JmmNode methodDecl = methodDeclOpt.get();
                         JmmNode returnTypeNode = methodDecl.getChildren().getFirst();
-                        return convertType(returnTypeNode);
+                        return TypeUtils.convertType(returnTypeNode);
                     } else {
-                        throw new RuntimeException("Method call on imported class outside of method declaration");
+                        // Return a generic type for assumed methods
+                        return new Type("unknown", false);
                     }
-                } else {
-                    // For non-imported classes
-                    Type returnType = table.getReturnType(methodName);
-                    if (returnType == null) {
-                        throw new RuntimeException("Method '" + methodName + "' not found in class " + objectType.getName());
-                    }
-                    return returnType;
                 }
+
+                // For non-imported and non-extended classes
+                Type returnType = table.getReturnType(methodName);
+                if (returnType == null) {
+                    // Return a generic type for undefined methods
+                    return new Type("unknown", false);
+                }
+                return returnType;
             }
 
             case THIS_EXPR:
@@ -217,4 +211,13 @@ public class TypeUtils {
         throw new RuntimeException("Variable '" + varName + "' not found");
     }
 
+    public boolean isImportedOrExtendedOrInherited(Type receiverType) {
+        return (!receiverType.getName().equals(table.getClassName()) &&
+                (table.getImports().stream()
+                        .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                        .map(String::trim)
+                        .anyMatch(imported -> imported.equals(receiverType.getName())) ||
+                        receiverType.getName().equals(table.getSuper()))) ||
+                (receiverType.getName().equals(table.getClassName()) && table.getSuper() != null);
+    }
 }
