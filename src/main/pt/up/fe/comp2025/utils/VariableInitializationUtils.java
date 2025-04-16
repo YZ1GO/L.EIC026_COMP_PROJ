@@ -106,13 +106,14 @@ public class VariableInitializationUtils {
     }
 
     public static JmmNode findArrayInitialization(JmmNode methodNode, String arrayName) {
-        // Traverse all children of the method node to find the initialization
+        // Traverse all descendants of the method node to find the initialization
         for (JmmNode child : methodNode.getDescendants()) {
             if (child.getKind().equals(Kind.ASSIGN_STMT.toString())) {
                 JmmNode lhs = child.getChild(0);
                 if (lhs.getKind().equals(Kind.VAR_REF_EXPR.toString()) && lhs.get("name").equals(arrayName)) {
                     JmmNode rhs = child.getChild(1);
-                    if (rhs.getKind().equals(Kind.NEW_INT_ARRAY_EXPR.toString())) {
+                    if (rhs.getKind().equals(Kind.NEW_INT_ARRAY_EXPR.toString()) ||
+                            rhs.getKind().equals(Kind.ARRAY_INIT.toString())) {
                         return rhs;
                     }
                 }
