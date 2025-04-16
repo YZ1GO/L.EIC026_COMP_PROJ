@@ -61,6 +61,23 @@ public class AssignTypeChecker extends AnalysisVisitor {
             }
         }
 
+        // Bounds checking for array index
+        JmmNode initNode = VariableInitializationUtils.findArrayInitialization(methodNode, arrayVarName);
+        if (initNode != null) {
+            JmmNode sizeExpr = initNode.getChild(0);
+            if (indexExpr.getKind().equals(Kind.INTEGER_LITERAL.toString())) {
+                int indexValue = Integer.parseInt(indexExpr.get("value"));
+                int arraySize = Integer.parseInt(sizeExpr.get("value"));
+
+                if (indexValue < 0 || indexValue >= arraySize) {
+                    addReport(newError(
+                            indexExpr,
+                            String.format("Array index %d is out of bounds (size: %d).", indexValue, arraySize)
+                    ));
+                }
+            }
+        }
+
         // Type checking logic
         Type arrayType = typeUtils.getExprType(arrayAssignStmt);
         Type indexType = typeUtils.getExprType(indexExpr);

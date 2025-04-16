@@ -71,4 +71,11 @@ public class ArraysSemanticAnalysisTest {
         var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/arrays/NonArrayAccess.jmm"));
         TestUtils.mustFail(result);
     }
+
+    @Test
+    public void arrayIndexOutOfBounds() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/singlecustomtest.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
 }

@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.comp2025.ast.TypeUtils;
+import pt.up.fe.comp2025.utils.VariableInitializationUtils;
 
 public class ArrayAccessChecker extends AnalysisVisitor {
 
@@ -26,36 +27,37 @@ public class ArrayAccessChecker extends AnalysisVisitor {
             addReport(newError(arrayAccessExpr, String.format("Array index must be an integer, but found '%s'", indexType.getName())));
         }
 
+        // Find the initialization of the array
         var arrayNode = arrayAccessExpr.getChild(0);
-        System.out.println("Array Node: " + arrayNode);
+        String arrayName = arrayNode.get("name");
+        System.out.println("Array name: " + arrayName);
 
-        var arrayInitNodeOpt = arrayNode.getAncestor(Kind.NEW_INT_ARRAY_EXPR);
-        System.out.println("Array Init Node Optional: " + arrayInitNodeOpt);
+        JmmNode methodNode = arrayAccessExpr.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
+        if (methodNode == null) {
+            // Method node not found for array access
+            return null;
+        }
 
-        if (arrayInitNodeOpt.isPresent()) {
-            JmmNode arrayInitNode = arrayInitNodeOpt.get();
-            System.out.println("Array Init Node: " + arrayInitNode);
+        JmmNode initNode = VariableInitializationUtils.findArrayInitialization(methodNode, arrayName);
+        if (initNode == null) {
+            // Array initialization not found
+            return null;
+        }
 
-            JmmNode sizeExpr = arrayInitNode.getChild(0);
-            System.out.println("Size Expression Node: " + sizeExpr);
 
-            var sizeType = typeUtils.getExprType(sizeExpr);
-            System.out.println("Size Type: " + sizeType);
+        JmmNode sizeExpr = initNode.getChild(0);
+        System.out.println("Array size expression: " + sizeExpr);
 
-            if (sizeType.getName().equals("int")) {
-                int arraySize = Integer.parseInt(sizeExpr.get("value"));
-                System.out.println("Array Size: " + arraySize);
+        // Check if the index is within bounds
+        if (arrayAccessExpr.getChild(1).getKind().equals(Kind.INTEGER_LITERAL.toString())) {
+            int indexValue = Integer.parseInt(arrayAccessExpr.getChild(1).get("value"));
+            System.out.println("Index value: " + indexValue);
 
-                // Retrieve the index value (if it's a literal)
-                if (arrayAccessExpr.getChild(1).getKind().equals(Kind.INTEGER_LITERAL.toString())) {
-                    int indexValue = Integer.parseInt(arrayAccessExpr.getChild(1).get("value"));
-                    System.out.println("Index Value: " + indexValue);
+            int arraySize = Integer.parseInt(sizeExpr.get("value"));
+            System.out.println("Array size: " + arraySize);
 
-                    if (indexValue < 0 || indexValue >= arraySize) {
-                        System.out.println("Index out of bounds: " + indexValue);
-                        addReport(newError(arrayAccessExpr, String.format("Array index %d is out of bounds (size: %d)", indexValue, arraySize)));
-                    }
-                }
+            if (indexValue < 0 || indexValue >= arraySize) {
+                addReport(newError(arrayAccessExpr, String.format("Array index %d is out of bounds (size: %d)", indexValue, arraySize)));
             }
         }
 
