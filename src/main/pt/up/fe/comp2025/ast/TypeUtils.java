@@ -218,4 +218,35 @@ public class TypeUtils {
                         receiverType.getName().equals(table.getSuper()))) ||
                 (receiverType.getName().equals(table.getClassName()) && table.getSuper() != null);
     }
+
+    public boolean isStaticallyEvaluable(JmmNode expr) {
+        switch (Kind.fromString(expr.getKind())) {
+            case INTEGER_LITERAL:
+                return true;
+            case BINARY_EXPR:
+                return isStaticallyEvaluable(expr.getChild(0)) && isStaticallyEvaluable(expr.getChild(1));
+            default:
+                return false;
+        }
+    }
+
+    public int evaluateExpression(JmmNode expr) {
+        switch (Kind.fromString(expr.getKind())) {
+            case INTEGER_LITERAL:
+                return Integer.parseInt(expr.get("value"));
+            case BINARY_EXPR:
+                int left = evaluateExpression(expr.getChild(0));
+                int right = evaluateExpression(expr.getChild(1));
+                String op = expr.get("op");
+                return switch (op) {
+                    case "+" -> left + right;
+                    case "-" -> left - right;
+                    case "*" -> left * right;
+                    case "/" -> left / right;
+                    default -> throw new UnsupportedOperationException("Unsupported operator: " + op);
+                };
+            default:
+                throw new UnsupportedOperationException("Cannot evaluate expression: " + expr.getKind());
+        }
+    }
 }

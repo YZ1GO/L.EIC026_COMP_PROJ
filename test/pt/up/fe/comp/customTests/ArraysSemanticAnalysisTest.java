@@ -74,7 +74,21 @@ public class ArraysSemanticAnalysisTest {
 
     @Test
     public void arrayIndexOutOfBounds() {
-        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/singlecustomtest.jmm"));
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/arrays/ArrayIndexOutOfBounds.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
+
+    @Test
+    public void arrayIndexOutOfBounds2() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/arrays/ArrayIndexOutOfBounds2.jmm"));
+        TestUtils.mustFail(result);
+        System.out.println(result.getReports());
+    }
+
+    @Test
+    public void arrayIndexOutOfBounds3() {
+        var result = TestUtils.analyse(SpecsIo.getResource("pt/up/fe/comp/customTests/semanticanalysis/arrays/ArrayIndexOutOfBounds3.jmm"));
         TestUtils.mustFail(result);
         System.out.println(result.getReports());
     }

@@ -65,8 +65,9 @@ public class AssignTypeChecker extends AnalysisVisitor {
         JmmNode initNode = VariableInitializationUtils.findArrayInitialization(methodNode, arrayVarName);
         if (initNode != null) {
             JmmNode sizeExpr = initNode.getChild(0);
-            if (indexExpr.getKind().equals(Kind.INTEGER_LITERAL.toString())) {
-                int indexValue = Integer.parseInt(indexExpr.get("value"));
+
+            if (typeUtils.isStaticallyEvaluable(indexExpr)) {
+                int indexValue = typeUtils.evaluateExpression(indexExpr);
                 int arraySize = Integer.parseInt(sizeExpr.get("value"));
 
                 if (indexValue < 0 || indexValue >= arraySize) {

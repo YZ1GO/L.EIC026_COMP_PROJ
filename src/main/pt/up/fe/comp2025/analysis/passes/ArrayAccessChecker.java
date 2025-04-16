@@ -30,7 +30,6 @@ public class ArrayAccessChecker extends AnalysisVisitor {
         // Find the initialization of the array
         var arrayNode = arrayAccessExpr.getChild(0);
         String arrayName = arrayNode.get("name");
-        System.out.println("Array name: " + arrayName);
 
         JmmNode methodNode = arrayAccessExpr.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
         if (methodNode == null) {
@@ -49,12 +48,9 @@ public class ArrayAccessChecker extends AnalysisVisitor {
         System.out.println("Array size expression: " + sizeExpr);
 
         // Check if the index is within bounds
-        if (arrayAccessExpr.getChild(1).getKind().equals(Kind.INTEGER_LITERAL.toString())) {
-            int indexValue = Integer.parseInt(arrayAccessExpr.getChild(1).get("value"));
-            System.out.println("Index value: " + indexValue);
-
+        if (typeUtils.isStaticallyEvaluable(arrayAccessExpr.getChild(1))) {
+            int indexValue = typeUtils.evaluateExpression(arrayAccessExpr.getChild(1));
             int arraySize = Integer.parseInt(sizeExpr.get("value"));
-            System.out.println("Array size: " + arraySize);
 
             if (indexValue < 0 || indexValue >= arraySize) {
                 addReport(newError(arrayAccessExpr, String.format("Array index %d is out of bounds (size: %d)", indexValue, arraySize)));

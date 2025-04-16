@@ -4,7 +4,7 @@ class IndexOutOfBounds {
         int[] s;
         s = new int[4];
 
-        s[s.length] = 1;
+        s[1+4/2+1] = 1;
         return 0;
     }
 }
