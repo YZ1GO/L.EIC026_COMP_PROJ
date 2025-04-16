@@ -49,7 +49,6 @@ public class TypeUtils {
 
 
     /**
-     * Gets the {@link Type} of an arbitrary expression.
      *
      * @param expr
      * @return
@@ -245,6 +244,20 @@ public class TypeUtils {
                     case "/" -> left / right;
                     default -> throw new UnsupportedOperationException("Unsupported operator: " + op);
                 };
+            case LENGTH_EXPR:
+                JmmNode arrayExpr = expr.getChild(0);
+                Type arrayType = getExprType(arrayExpr);
+                if (!arrayType.isArray()) {
+                    throw new RuntimeException("Cannot evaluate 'length' on a non-array type.");
+                }
+
+                // Check if the array is initialized with a known size
+                if (arrayExpr.getKind().equals(Kind.NEW_INT_ARRAY_EXPR.toString())) {
+                    JmmNode sizeExpr = arrayExpr.getChild(0);
+                    return evaluateExpression(sizeExpr);
+                }
+
+                throw new UnsupportedOperationException("Array length cannot be determined statically.");
             default:
                 throw new UnsupportedOperationException("Cannot evaluate expression: " + expr.getKind());
         }

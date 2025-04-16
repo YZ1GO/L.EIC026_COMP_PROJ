@@ -76,6 +76,15 @@ public class AssignTypeChecker extends AnalysisVisitor {
                             String.format("Array index %d is out of bounds (size: %d).", indexValue, arraySize)
                     ));
                 }
+            } else if (indexExpr.getKind().equals(Kind.LENGTH_EXPR.toString())) {
+                // Handle cases where the index uses the 'length' property
+                JmmNode arrayExpr = indexExpr.getChild(0);
+
+                if (!typeUtils.getExprType(arrayExpr).isArray()) {
+                    addReport(newError(indexExpr, "'length' can only be used on arrays."));
+                } else {
+                    addReport(newError(indexExpr, "Array index using 'length' is out of bounds (valid range: 0 to length-1)."));
+                }
             }
         }
 

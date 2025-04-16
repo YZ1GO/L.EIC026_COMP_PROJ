@@ -43,7 +43,6 @@ public class ArrayAccessChecker extends AnalysisVisitor {
             return null;
         }
 
-
         JmmNode sizeExpr = initNode.getChild(0);
         System.out.println("Array size expression: " + sizeExpr);
 
@@ -54,6 +53,16 @@ public class ArrayAccessChecker extends AnalysisVisitor {
 
             if (indexValue < 0 || indexValue >= arraySize) {
                 addReport(newError(arrayAccessExpr, String.format("Array index %d is out of bounds (size: %d)", indexValue, arraySize)));
+            }
+        } else if (arrayAccessExpr.getChild(1).getKind().equals(Kind.LENGTH_EXPR.toString())) {
+            // Handle cases where the index uses the 'length' property
+            JmmNode lengthExpr = arrayAccessExpr.getChild(1);
+            JmmNode arrayExpr = lengthExpr.getChild(0);
+
+            if (!typeUtils.getExprType(arrayExpr).isArray()) {
+                addReport(newError(lengthExpr, "'length' can only be used on arrays."));
+            } else {
+                addReport(newError(arrayAccessExpr, "Array index using 'length' is out of bounds (valid range: 0 to length-1)."));
             }
         }
 
