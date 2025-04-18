@@ -43,7 +43,8 @@ public enum Kind {
     UNARY_NOT_EXPR,
     BOOLEAN_LITERAL, 
     STRING_LITERAL,
-    LENGTH_EXPR;
+    LENGTH_EXPR,
+    ARRAY_ASSIGN_STMT;
 
 
     private final String name;

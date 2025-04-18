@@ -1,0 +1,16 @@
+class VariableInitialize {
+
+    public int foo() {
+        int s;
+        int i;
+        s = 0;
+        i = 0;
+
+        while (i < 5) {
+            s = s + i;
+            i = i + 1;
+        }
+
+        return s;
+    }
+}

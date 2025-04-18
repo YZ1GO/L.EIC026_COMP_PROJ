@@ -1,0 +1,11 @@
+class VariableInitialize {
+
+    public int foo() {
+        int s;
+        boolean a;
+        a = true;
+        if (a) s = 1;
+        else s = 2;
+        return s;
+    }
+}

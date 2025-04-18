@@ -1,0 +1,11 @@
+class ArrayLengthTest {
+    public static void main(String[] args) {
+        int[] myArray;
+        int length;
+
+        myArray = new int[5];
+
+        // Get the length of the array
+        length = myArray.length;
+    }
+}

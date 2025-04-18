@@ -43,6 +43,7 @@ varDecl
 
 type locals[boolean isArray=false, boolean isVarArgs=false]
     : name=INT VARARGS {$isArray=true; $isVarArgs=true;}
+    | name=ID VARARGS {$isArray=true; $isVarArgs=true;}
     | name=INT '[' ']' {$isArray=true;}
     | name=ID '[' ']' {$isArray=true;}
     | name=INT
@@ -70,7 +71,6 @@ stmt
     : '{' stmt* '}' #BlockStmt
     | 'if' '(' expr ')' stmt ('else' stmt)? #IfStmt
     | 'while' '(' expr ')' stmt #WhileStmt
-    | 'System.out.println' '(' expr ')' ';' #PrintStmt
     | expr ';' #ExprStmt
     | name=ID '[' expr ']' '=' expr ';' #ArrayAssignStmt
     | name=ID '.' name=ID '=' expr ';' #FieldAssignStmt
@@ -83,7 +83,7 @@ expr
     | 'new' 'int' '[' expr ']' #NewIntArrayExpr
     | 'new' name=ID '(' ( expr ( ',' expr )* )? ')' #NewObjectExpr
     | expr '[' expr ']' #ArrayAccessExpr
-    | expr '.' 'length' #LengthExpr
+    | expr '.' name=ID #LengthExpr
     | expr '.' name=ID '(' ( expr ( ',' expr )* )? ')' #MethodCallExpr
     | 'this' #ThisExpr
     | op='!' expr #UnaryNotExpr

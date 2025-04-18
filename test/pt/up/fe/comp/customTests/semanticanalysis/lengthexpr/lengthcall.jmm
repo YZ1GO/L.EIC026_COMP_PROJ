@@ -1,0 +1,9 @@
+class LengthCallExample {
+    public static void main(String[] args) {
+        int[] numbers;
+        int arrayLength;
+
+        numbers = new int[5];
+        arrayLength = numbers.length;
+    }
+}

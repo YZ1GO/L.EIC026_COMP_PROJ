@@ -24,7 +24,7 @@ public class MainDeclarationChecker extends AnalysisVisitor {
         if (methodName.equals("main")) {
             boolean isPublic = method.getOptional("isPublic").map(Boolean::parseBoolean).orElse(false);
             boolean isStatic = method.getOptional("isStatic").map(Boolean::parseBoolean).orElse(false);
-            JmmNode returnTypeNode = method.getChildren().get(0);
+            JmmNode returnTypeNode = method.getChildren().getFirst();
             String returnType = returnTypeNode.get("name");
 
             // Check if the method is public, static, and returns void
@@ -37,20 +37,21 @@ public class MainDeclarationChecker extends AnalysisVisitor {
             }
 
             var params = table.getParameters(methodName);
-            if (params.size() == 1) {
-                var paramType = params.getFirst().getType();
-
-                // Check if it is "String[]"
-                if (!paramType.isArray() || !paramType.getName().equals("String")) {
-                    addReport(newError(
-                            method,
-                            "Main method parameter must be of type 'String[]'.")
-                    );
-                }
-            } else {
+            if (params == null || params.size() != 1) {
                 addReport(newError(
                         method,
                         "Main method must have exactly one parameter of type 'String[]'.")
+                );
+                return null;
+            }
+
+            var paramType = params.getFirst().getType();
+
+            // Check if the parameter is of type "String[]"
+            if (paramType == null || !paramType.isArray() || !"String".equals(paramType.getName())) {
+                addReport(newError(
+                        method,
+                        "Main method parameter must be of type 'String[]'.")
                 );
             }
         }

@@ -39,12 +39,11 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         addVisit(BOOLEAN_LITERAL, this::visitBoolean);
         addVisit(PARENT_EXPR, this::visitParentExpr);
         addVisit(NEW_OBJECT_EXPR, this::visitNewObject);
-        //addVisit(LENGTH_EXPR, this::visitLength);
+        addVisit(LENGTH_EXPR, this::visitLength);
         addVisit(STRING_LITERAL, this::visitString);
-        //addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
+        addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
         addVisit(THIS_EXPR, this::visitThis);
         addVisit(UNARY_NOT_EXPR, this::visitUnaryNot);
-        //addVisit(BINARY_EXPR, this::visitBinExpr);
         addVisit(ARRAY_INIT, this::visitArrayInit);
         addVisit(NEW_INT_ARRAY_EXPR, this::visitNewIntArray);
         addVisit(ARRAY_ACCESS_EXPR, this::visitArrayAccess);
@@ -133,11 +132,68 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return new OllirExprResult(code);
     }
 
+    private OllirExprResult visitMethodCall(JmmNode node, Void unused) {
+        String methodName = node.get("name");
+
+        // Visit the object on which the method is called
+        OllirExprResult objectResult = visit(node.getChild(0));
+
+        // Arguments computation
+        StringBuilder computation = new StringBuilder(objectResult.getComputation());
+        StringBuilder argsCode = new StringBuilder();
+        for (int i = 1; i < node.getNumChildren(); i++) {
+            OllirExprResult argResult = visit(node.getChild(i));
+            computation.append(argResult.getComputation());
+            argsCode.append(argResult.getCode());
+            if (i < node.getNumChildren() - 1) {
+                argsCode.append(", ");
+            }
+        }
+
+        // Return type of the method
+        Type returnType = types.getExprType(node);
+        String ollirReturnType = ollirTypes.toOllirType(returnType);
+
+        // Generate the method call code
+        String methodCall = "invokevirtual(" + objectResult.getCode() + ", \"" + methodName + "\", " + argsCode + ")" + ollirReturnType;
+
+        // Check if the method call is part of an assignment
+        JmmNode parent = node.getParent();
+        if (parent != null && (parent.getKind().equals("ArrayAssignStmt")
+                || parent.getKind().equals("AssignStmt"))) {
+            // Don't generate assignment to prevent double-assignment
+            return new OllirExprResult(methodCall, computation.toString());
+        }
+
+        // If not part of an assignment, assign to a temp
+        String tempVar = ollirTypes.nextTemp();
+        String tempVarWithType = tempVar + ollirReturnType;
+        computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirReturnType).append(SPACE)
+                .append(methodCall).append(END_STMT);
+        return new OllirExprResult(tempVarWithType, computation.toString());
+    }
+
     private OllirExprResult visitString(JmmNode node, Void unused) {
         var stringType = TypeUtils.newStringType();
         String ollirStringType = ollirTypes.toOllirType(stringType);
         String code = node.get("value") + ollirStringType;
         return new OllirExprResult(code);
+    }
+
+    private OllirExprResult visitLength(JmmNode node, Void unused) {
+        OllirExprResult arrayResult = visit(node.getChild(0));
+    
+        String tempVar = ollirTypes.nextTemp();
+        String ollirIntType = ollirTypes.toOllirType(TypeUtils.newIntType());
+        String tempVarWithType = tempVar + ollirIntType;
+    
+        StringBuilder computation = new StringBuilder();
+        computation.append(arrayResult.getComputation())
+                   .append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirIntType).append(SPACE)
+                   .append("arraylength(").append(arrayResult.getCode()).append(")").append(ollirIntType)
+                   .append(END_STMT);
+    
+        return new OllirExprResult(tempVarWithType, computation.toString());
     }
 
     private OllirExprResult visitNewObject(JmmNode node, Void unused) {

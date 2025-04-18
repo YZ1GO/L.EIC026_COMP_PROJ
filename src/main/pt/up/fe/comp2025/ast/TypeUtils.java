@@ -7,10 +7,8 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.symboltable.JmmSymbolTable;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
-import static pt.up.fe.comp2025.ast.Kind.BOOLEAN_LITERAL;
 import static pt.up.fe.comp2025.ast.Kind.METHOD_DECL;
 
 /**
@@ -25,9 +23,7 @@ public class TypeUtils {
         this.table = (JmmSymbolTable) table;
     }
 
-    public static Type newIntType() {
-        return new Type("int", false);
-    }
+    public static Type newIntType() { return new Type("int", false); }
 
     public static Type newBooleanType() {
         return new Type("boolean", false);
@@ -40,7 +36,7 @@ public class TypeUtils {
     public static Type newVoidType() {
         return new Type("void", false);
     }
-    
+
     public static Type convertType(JmmNode typeNode) {
 
         // TODO: When you support new types, this must be updated
@@ -53,7 +49,6 @@ public class TypeUtils {
 
 
     /**
-     * Gets the {@link Type} of an arbitrary expression.
      *
      * @param expr
      * @return
@@ -93,34 +88,30 @@ public class TypeUtils {
                 return newStringType();
 
             case METHOD_CALL_EXPR: {
-                Type objectType = getExprType(expr.getChild(0));
+                Type receiverType = getExprType(expr.getChild(0));
                 String methodName = expr.get("name");
 
-                // Check if the object's type is imported
-                boolean isImported = !objectType.getName().equals(table.getClassName()) &&
-                        table.getImports().stream()
-                                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                                .map(String::trim)
-                                .anyMatch(imported -> imported.equals(objectType.getName()));
-
-            if (isImported) {
+                // Check if the object's type is imported, extended, or inherited
+                if (isImportedOrExtendedOrInherited(receiverType)) {
                     // Assume the method returns the same type as the enclosing method's return type
-                    Optional<JmmNode> methodDeclOpt = expr.getAncestor(METHOD_DECL);
+                    Optional<JmmNode> methodDeclOpt = expr.getAncestor(Kind.METHOD_DECL);
                     if (methodDeclOpt.isPresent()) {
                         JmmNode methodDecl = methodDeclOpt.get();
                         JmmNode returnTypeNode = methodDecl.getChildren().getFirst();
-                        return convertType(returnTypeNode);
+                        return TypeUtils.convertType(returnTypeNode);
                     } else {
-                        throw new RuntimeException("Method call on imported class outside of method declaration");
+                        // Return a generic type for assumed methods
+                        return new Type("unknown", false);
                     }
-                } else {
-                    // For non-imported classes
-                    Type returnType = table.getReturnType(methodName);
-                    if (returnType == null) {
-                        throw new RuntimeException("Method '" + methodName + "' not found in class " + objectType.getName());
-                    }
-                    return returnType;
                 }
+
+                // For non-imported and non-extended classes
+                Type returnType = table.getReturnType(methodName);
+                if (returnType == null) {
+                    // Return a generic type for undefined methods
+                    return new Type("unknown", false);
+                }
+                return returnType;
             }
 
             case THIS_EXPR:
@@ -152,6 +143,17 @@ public class TypeUtils {
             case ARRAY_INIT, NEW_INT_ARRAY_EXPR: {
                 return new Type("int", true);
             }
+
+            case ARRAY_ASSIGN_STMT: {
+                String arrayVarName = expr.get("name");
+
+                String methodName = expr.getAncestor(Kind.METHOD_DECL)
+                        .map(method -> method.get("name"))
+                        .orElseThrow(() -> new RuntimeException("Cannot determine method context for array assignment."));
+
+                return resolveVariableType(arrayVarName, methodName);
+            }
+
 
             default:
                 throw new UnsupportedOperationException("Unhandled expression type: " + expr.getKind());
@@ -206,4 +208,58 @@ public class TypeUtils {
         throw new RuntimeException("Variable '" + varName + "' not found");
     }
 
+    public boolean isImportedOrExtendedOrInherited(Type receiverType) {
+        return (!receiverType.getName().equals(table.getClassName()) &&
+                (table.getImports().stream()
+                        .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                        .map(String::trim)
+                        .anyMatch(imported -> imported.equals(receiverType.getName())) ||
+                        receiverType.getName().equals(table.getSuper()))) ||
+                (receiverType.getName().equals(table.getClassName()) && table.getSuper() != null);
+    }
+
+    public boolean isStaticallyEvaluable(JmmNode expr) {
+        switch (Kind.fromString(expr.getKind())) {
+            case INTEGER_LITERAL:
+                return true;
+            case BINARY_EXPR:
+                return isStaticallyEvaluable(expr.getChild(0)) && isStaticallyEvaluable(expr.getChild(1));
+            default:
+                return false;
+        }
+    }
+
+    public int evaluateExpression(JmmNode expr) {
+        switch (Kind.fromString(expr.getKind())) {
+            case INTEGER_LITERAL:
+                return Integer.parseInt(expr.get("value"));
+            case BINARY_EXPR:
+                int left = evaluateExpression(expr.getChild(0));
+                int right = evaluateExpression(expr.getChild(1));
+                String op = expr.get("op");
+                return switch (op) {
+                    case "+" -> left + right;
+                    case "-" -> left - right;
+                    case "*" -> left * right;
+                    case "/" -> left / right;
+                    default -> throw new UnsupportedOperationException("Unsupported operator: " + op);
+                };
+            case LENGTH_EXPR:
+                JmmNode arrayExpr = expr.getChild(0);
+                Type arrayType = getExprType(arrayExpr);
+                if (!arrayType.isArray()) {
+                    throw new RuntimeException("Cannot evaluate 'length' on a non-array type.");
+                }
+
+                // Check if the array is initialized with a known size
+                if (arrayExpr.getKind().equals(Kind.NEW_INT_ARRAY_EXPR.toString())) {
+                    JmmNode sizeExpr = arrayExpr.getChild(0);
+                    return evaluateExpression(sizeExpr);
+                }
+
+                throw new UnsupportedOperationException("Array length cannot be determined statically.");
+            default:
+                throw new UnsupportedOperationException("Cannot evaluate expression: " + expr.getKind());
+        }
+    }
 }

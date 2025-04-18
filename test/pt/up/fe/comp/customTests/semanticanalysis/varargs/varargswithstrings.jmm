@@ -1,0 +1,12 @@
+class VarargsWithStrings {
+
+    public int foo() {
+        this.varargs("hello", "world"); // Valid call
+        //this.varargs(1, 2, 3);          // Invalid call, wrong type
+        return 0;
+    }
+
+    public int varargs(String... strings) {
+        return 0;
+    }
+}

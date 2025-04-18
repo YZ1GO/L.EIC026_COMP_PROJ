@@ -101,27 +101,33 @@ public class JmmSymbolTableBuilder {
 
         for (var method : classDecl.getChildren(METHOD_DECL)) {
             var name = method.get("name");
-            var params = method.getChildren(PARAM).stream()
-                    // TODO: When you support new types, this code has to be updated
-                    // DONE: Updated based on convertType from TypeUtils.java
-                    .map(param -> {
-                        JmmNode typeNode = param.getChild(0);
-                        Type type = TypeUtils.convertType(typeNode);
+            var params = new ArrayList<Symbol>();
+            // TODO: When you support new types, this code has to be updated
+            // DONE: Updated based on convertType from TypeUtils.java
+            boolean foundVarArgs = false;
 
-                        boolean isVarArgs = isVarArgs(typeNode);
-                        type.putObject("isVarArgs", isVarArgs);
+            for (int i = 0; i < method.getChildren(PARAM).size(); i++) {
+                JmmNode param = method.getChildren(PARAM).get(i);
+                JmmNode typeNode = param.getChild(0);
+                Type type = TypeUtils.convertType(typeNode);
 
-                        return new Symbol(type, param.get("name"));
-                    })
-                    .toList();
+                boolean isVarArgs = isVarArgs(typeNode);
+                type.putObject("isVarArgs", isVarArgs);
 
-            // Debug statement to print parameters
-            /*System.out.println("Method: " + name + ", Params:");
-            params.forEach(param -> {
-                System.out.println("  Param: " + param.getName() +
-                        " (Type: " + param.getType() + ")" +
-                        " (isVarArgs: " + param.getType().getObject("isVarArgs") + ")");
-            });*/
+                if (isVarArgs) {
+                    if (foundVarArgs) {
+                        reports.add(newError(param, "Method '" + name + "' has multiple varargs parameters, which is not allowed."));
+                    }
+                    foundVarArgs = true;
+
+                    // Check if the varargs parameter is not the last parameter
+                    if (i != method.getChildren(PARAM).size() - 1) {
+                        reports.add(newError(param, "Varargs parameter in method '" + name + "' must be the last parameter in the method signature."));
+                    }
+                }
+
+                params.add(new Symbol(type, param.get("name")));
+            }
 
             map.put(name, params);
         }

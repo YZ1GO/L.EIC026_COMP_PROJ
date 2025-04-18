@@ -22,13 +22,43 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
     private Void visitMethodCall(JmmNode methodCallNode, SymbolTable table) {
         var typeUtils = new TypeUtils(table);
         String methodName = methodCallNode.get("name");
+
+        // Check if the method call has a receiver
+        if (methodCallNode.getNumChildren() == 0) {
+            addReport(newError(methodCallNode, "Method call '" + methodName + "' is missing a receiver object."));
+            return null;
+        }
+
         JmmNode receiverNode = methodCallNode.getChild(0);
         Type receiverType = typeUtils.getExprType(receiverNode);
 
-        // Skip checks for imported classes
-        if (table.getImports().stream()
-                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                .anyMatch(importName -> importName.trim().equals(receiverType.getName()))) {
+        if (receiverType == null) {
+            addReport(newError(methodCallNode, "Receiver object for method call '" + methodName + "' is invalid or undefined."));
+            return null;
+        }
+
+        if (typeUtils.isImportedOrExtendedOrInherited(receiverType)) {
+            // Assume the method returns the same type as the enclosing method's return type
+            Optional<JmmNode> methodDeclOpt = methodCallNode.getAncestor(Kind.METHOD_DECL);
+            if (methodDeclOpt.isPresent()) {
+                JmmNode methodDecl = methodDeclOpt.get();
+                JmmNode returnTypeNode = methodDecl.getChildren().getFirst();
+                TypeUtils.convertType(returnTypeNode);
+            } else {
+                addReport(newError(methodCallNode, "Method call on imported or extended class outside of method declaration."));
+            }
+            return null;
+        }
+
+        // For non-imported and non-extended classes
+        Type returnType = table.getReturnType(methodName);
+        if (returnType == null) {
+            String superClassName = table.getSuper();
+            if (superClassName != null && !superClassName.isEmpty()) {
+                return null;
+            }
+
+            addReport(newError(methodCallNode, "Method '" + methodName + "' not found in class " + receiverType.getName() + "."));
             return null;
         }
 
@@ -45,7 +75,8 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
         List<Symbol> methodParams = methodParamsOpt.get();
         boolean foundVarArgs = false;
 
-        for (Symbol param : methodParams) {
+        for (int i = 0; i < methodParams.size(); i++) {
+            Symbol param = methodParams.get(i);
             Object isVarArgsObject = param.getType().getObject("isVarArgs");
             boolean isVarArgs = isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
 
@@ -59,21 +90,15 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
                 }
 
                 foundVarArgs = true;
-            }
-        }
-        
-        // After ensuring only one varargs parameter exists, check if it is the last parameter
-        if (foundVarArgs) {
-            Symbol lastParam = methodParams.getLast();
-            Object isLastVarArgsObject = lastParam.getType().getObject("isVarArgs");
-            boolean isLastVarArgs = isLastVarArgsObject instanceof Boolean && (Boolean) isLastVarArgsObject;
-        
-            if (!isLastVarArgs) {
-                addReport(newError(
-                        methodCallNode,
-                        "Varargs parameter must be the last parameter in the method signature.")
-                );
-                return null;
+
+                // Check if the varargs parameter is not the last parameter
+                if (i != methodParams.size() - 1) {
+                    addReport(newError(
+                            methodCallNode,
+                            "Varargs parameter must be the last parameter in the method signature.")
+                    );
+                    return null;
+                }
             }
         }
 
@@ -115,29 +140,38 @@ public class MethodCallTypeChecker extends AnalysisVisitor {
             checkTypeMatch(node, methodName, args.get(i), params.get(i).getType(), i + 1);
         }
 
-        // Check if varargs parameter is single int array
-        if (args.get(0).isArray() && args.get(0).getName().equals("int")) {
-            if (args.size() != 1) {
+        List<Type> varargsArgs = args.subList(fixedParams, args.size());
+
+        if (varargsArgs.isEmpty()) {
+            return;
+        }
+
+        // Get the expected type of the varargs parameter
+        Type varargsType = params.get(fixedParams).getType();
+        String expectedTypeName = varargsType.getName();
+
+        // Check if varargs parameter is a single array of the expected type
+        if (varargsArgs.size() == 1 && varargsArgs.getFirst().isArray()) {
+            Type arrayType = varargsArgs.getFirst();
+            if (!arrayType.getName().equals(expectedTypeName) || !arrayType.isArray()) {
                 addReport(newError(
                         node,
-                        "Varargs argument can either one array of type 'int' or various integers.")
+                        "Varargs argument must be an array of type '" + expectedTypeName + "'.")
                 );
             }
             return;
         }
 
-        // Check if all elements are integers
-        for (int i = fixedParams; i < args.size(); i++) {
-            Type argType = args.get(i);
-
-            if (!argType.getName().equals("int") || argType.isArray()) {
+        // Check if all elements match the expected type
+        for (Type argType : varargsArgs) {
+            if (!argType.getName().equals(expectedTypeName) || argType.isArray()) {
                 addReport(newError(
                         node,
-                        "Varargs argument can either one array of type 'int' or various integers.")
+                        "Varargs argument must be either a single array of type '" + expectedTypeName + "' or multiple elements of type '" + expectedTypeName + "'.")
                 );
+                return;
             }
         }
-
     }
 
     private void handleNormalCall(JmmNode node, String methodName, List<Symbol> params, List<Type> args) {

@@ -1,0 +1,11 @@
+class VarargsEmpty {
+
+    public int foo() {
+        this.varargs(); // No arguments passed
+        return 0;
+    }
+
+    public int varargs(int... a) {
+        return a.length; // Should handle empty varargs
+    }
+}

@@ -59,6 +59,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(BLOCK_STMT, this::visitBlockStmt);
         addVisit(IF_STMT, this::visitIfStmt);
         addVisit(BINARY_EXPR, this::visitArithmeticExpr);
+        addVisit(ARRAY_ASSIGN_STMT, this::visitArrayAssignStmt);
 
 //        setDefaultVisit(this::defaultVisit);
     }
@@ -347,9 +348,38 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     private String visitExprStmt(JmmNode node, Void unused) {
 
         var expr = exprVisitor.visit(node.getChild(0));
+
+        return expr.getComputation();
+    }
+
+    private String visitArrayAssignStmt(JmmNode node, Void unused) {
         StringBuilder code = new StringBuilder();
 
-        code.append(expr.getComputation());
+        String arrayName = node.get("name");
+
+        JmmNode indexNode = node.getChild(0);
+        JmmNode valueNode = node.getChild(1);
+
+        OllirExprResult indexRes = exprVisitor.visit(indexNode);
+        OllirExprResult valueRes = exprVisitor.visit(valueNode);
+
+        Type elementType = types.getExprType(valueNode);
+        String ollirElemType = ollirTypes.toOllirType(elementType);
+
+        code.append(indexRes.getComputation());
+        code.append(valueRes.getComputation());
+
+        code.append(arrayName)
+                .append("[")
+                .append(indexRes.getCode())
+                .append("]")
+                .append(ollirElemType)
+                .append(SPACE)
+                .append(ASSIGN)
+                .append(ollirElemType)
+                .append(SPACE)
+                .append(valueRes.getCode())
+                .append(END_STMT);
 
         return code.toString();
     }
@@ -387,7 +417,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
     }
 
 
-        /**
+    /**
          * Default visitor. Visits every child node and return an empty string.
          *
          * @param node
