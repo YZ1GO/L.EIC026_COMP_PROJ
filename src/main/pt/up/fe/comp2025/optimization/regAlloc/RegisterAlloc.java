@@ -138,7 +138,9 @@ public class RegisterAlloc {
             intGraph.put(met, new HashMap<>());
 
             for (var var : met.getVarTable().keySet()) {
-                if (met.getVarTable().get(var).getScope().equals(VarScope.LOCAL)) {
+                if (var.equals("this")) continue;
+
+                if (met.getVarTable().get(var).getScope().equals(VarScope.LOCAL) ) {
                     intGraph.get(met).put(var, new HashSet<>());
                 }
             }
@@ -152,13 +154,13 @@ public class RegisterAlloc {
 
 
                 for (var i : liveSet.liveOut) {
+                    if (i.equals("this")) continue;
 
                     for (var j : liveSet.liveOut) {
+                        if (j.equals("this") || i.equals(j)) continue;
 
-                        if (!i.equals(j)) {
-                            intGraph.get(meth).get(i).add(j);
-                            intGraph.get(meth).get(j).add(i);
-                        }
+                        intGraph.get(meth).get(i).add(j);
+                        intGraph.get(meth).get(j).add(i);
                     }
                 }
 
@@ -186,6 +188,16 @@ public class RegisterAlloc {
     the available number of registers (maxRegisters), especially after accounting for parameters
      */
     private boolean createColor() {
+        for (var meth : cfg.getMethods()) {
+            // static methods don’t have `this`
+            if (meth.isStaticMethod()) continue;
+
+            if (meth.getVarTable().containsKey("this")) {
+                meth.getVarTable().get("this").setVirtualReg(0);
+                color.computeIfAbsent(meth, k -> new HashMap<>()).put("this", 0);
+            }
+        }
+
         for (var meth : cfg.getMethods()) {
             color.put(meth, new HashMap<>());
             Stack<Pair<String, Set<String>>> s = new Stack<>();
