@@ -7,6 +7,12 @@ import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp2025.ast.TypeUtils;
 
+import javax.swing.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+
 import static pt.up.fe.comp2025.ast.Kind.*;
 
 /**
@@ -137,7 +143,6 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         // Visit the object on which the method is called
         OllirExprResult objectResult = visit(node.getChild(0));
-
         // Arguments computation
         StringBuilder computation = new StringBuilder(objectResult.getComputation());
         StringBuilder argsCode = new StringBuilder();
@@ -150,13 +155,20 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             }
         }
 
+
+        // Determine if the call is static (receiver is a class name)
+        boolean isStaticCall = !objectResult.getCode().contains(".");
+        String invocationType = isStaticCall ? "invokestatic" : "invokevirtual";
+
+
         // Return type of the method
         Type returnType = types.getExprType(node);
+        System.out.println(node.getKind());
         String ollirReturnType = ollirTypes.toOllirType(returnType);
 
         // Generate the method call code
-        String methodCall = "invokevirtual(" + objectResult.getCode() + ", \"" + methodName + "\", " + argsCode + ")" + ollirReturnType;
-
+        String methodCall = invocationType + "(" + objectResult.getCode() + ", \"" + methodName + "\", " + argsCode + ")" + ollirReturnType;
+        System.out.println(methodCall);
         // Check if the method call is part of an assignment
         JmmNode parent = node.getParent();
         if (parent != null && (parent.getKind().equals("ArrayAssignStmt")
@@ -261,14 +273,21 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
 
     private OllirExprResult visitVarRef(JmmNode node, Void unused) {
-
         var id = node.get("name");
         Type type = types.getExprType(node);
         String ollirType = ollirTypes.toOllirType(type);
 
-        String code = id + ollirType;
+        // Check if this VarRef is an imported class
+        if (table.getImports().stream()
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .map(String::trim)
+                .anyMatch(importName -> importName.equals(id))) {
 
-        return new OllirExprResult(code);
+            return new OllirExprResult(id);
+        } else {
+            String code = id + ollirType;
+            return new OllirExprResult(code);
+        }
     }
 
     /**

@@ -1,0 +1,15 @@
+import io;
+Arithmetic_less {
+.construct Arithmetic_less().V {
+    invokespecial(this, "<init>").V;
+}
+.method public static main(args.array.String).V {
+   tmp0.bool :=.bool 10.i32 <.bool 20.i32;
+a.bool :=.bool tmp0.bool;
+   if (a.bool) goto then0;
+goto endif0;
+then0:
+endif0:
+   ret.V;
+}
+}

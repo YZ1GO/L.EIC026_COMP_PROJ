@@ -174,5 +174,10 @@ public class OllirGenerationTest {
     }
 
     @Test
+    public void testSimpleMethodInvocation() {
+        assertTrue(testOllirGeneration("MethodInvocation.jmm", "MethodInvocation.ollir"));
+    }
+
+    @Test
     public void testArrayAssignStmt() {assertTrue(testOllirGeneration("ArrayAssignStmt.jmm", "ArrayAssignStmt.ollir"));}
 }

@@ -36,4 +36,9 @@ public class OllirArithmeticTest {
         assertTrue(testOllirGeneration("BinaryAnd.jmm", "BinaryAnd.ollir"));
     }
 
+    @Test
+    public void testBinaryLess() {
+        assertTrue(testOllirGeneration("BinaryLess.jmm", "BinaryLess.ollir"));
+    }
+
 }

@@ -60,8 +60,9 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(IF_STMT, this::visitIfStmt);
         addVisit(BINARY_EXPR, this::visitArithmeticExpr);
         addVisit(ARRAY_ASSIGN_STMT, this::visitArrayAssignStmt);
+        addVisit(METHOD_CALL_EXPR, this::visitMethodCall);
 
-//        setDefaultVisit(this::defaultVisit);
+        setDefaultVisit(this::defaultVisit);
     }
 
     private String visitImportDecl(JmmNode node, Void unused) {
@@ -416,6 +417,15 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return computation.toString();
     }
 
+    private String visitMethodCall(JmmNode node, Void unused) {
+        // Delegate to the expression visitor to generate the OLLIR code
+        OllirExprResult exprResult = exprVisitor.visit(node);
+
+        // Return the computation (the actual invoke instruction)
+        // + the assignment to a temporary variable (if needed)
+        //System.out.println("Method call: " + exprResult.getCode());
+        return exprResult.getComputation();
+    }
 
     /**
          * Default visitor. Visits every child node and return an empty string.
