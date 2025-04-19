@@ -30,4 +30,24 @@ class VarArgsTests {
     public int testNestedVarargs() {
         return this.sum(this.sum(1, 2), this.sum(3, 4)); // Nested varargs calls
     }
+
+    public int testArrayToVarargs() {
+        int[] arr;
+        arr = [1, 2, 3, 4, 5];
+        return this.sum(arr); // Passing an array to a varargs method
+    }
+
+    public int testArrayToVarargs2() {
+        return this.sum([1, 2, 3, 4, 5]);
+    }
+
+    public int testArrayToVarargs3() {
+        int[] arr;
+        arr = new int[10];
+        return this.sum(arr);
+    }
+
+    public int testArrayToVarargs4() {
+        return this.sum(new int[4]);
+    }
 }
