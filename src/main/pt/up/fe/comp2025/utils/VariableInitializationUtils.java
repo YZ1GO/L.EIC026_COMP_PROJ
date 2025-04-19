@@ -25,10 +25,15 @@ public class VariableInitializationUtils {
 
     private static boolean isVariableInitializedInStatements(String varName, List<JmmNode> statements) {
         for (JmmNode stmt : statements) {
-            String kind = stmt.getKind();
+            switch (Kind.fromString(stmt.getKind())) {
+                case VAR_DECL -> {
+                    // Check if the variable is declared without initialization
+                    if (stmt.get("name").equals(varName) && stmt.getNumChildren() == 0) {
+                        return false;
+                    }
+                }
 
-            switch (kind) {
-                case "AssignStmt" -> {
+                case ASSIGN_STMT -> {
                     JmmNode lhs = stmt.getChild(0);
                     JmmNode rhs = stmt.getChild(1);
 
@@ -48,14 +53,14 @@ public class VariableInitializationUtils {
                     }
                 }
 
-                case "ArrayAssignStmt" -> {
+                case ARRAY_ASSIGN_STMT -> {
                     JmmNode arrayRef = stmt.get("name") != null ? stmt : stmt.getChild(0);
                     if (arrayRef.getKind().equals("VarRefExpr") && arrayRef.get("name").equals(varName)) {
                         return true;
                     }
                 }
 
-                case "IfStmt" -> {
+                case IF_STMT -> {
                     JmmNode thenStmt = stmt.getChild(1);
                     JmmNode elseStmt = stmt.getNumChildren() > 2 ? stmt.getChild(2) : null;
 
@@ -65,7 +70,7 @@ public class VariableInitializationUtils {
                     if (thenInit && elseInit) return true;
                 }
 
-                case "WhileStmt" -> {
+                case WHILE_STMT -> {
                     JmmNode condition = stmt.getChild(0);
                     JmmNode body = stmt.getChild(1);
 
@@ -79,7 +84,7 @@ public class VariableInitializationUtils {
                 }
 
                 default -> {
-                    if (kind.equals("BlockStmt")) {
+                    if (Kind.fromString(stmt.getKind()).equals("BlockStmt")) {
                         if (isVariableInitializedInStatements(varName, stmt.getChildren())) {
                             return true;
                         }

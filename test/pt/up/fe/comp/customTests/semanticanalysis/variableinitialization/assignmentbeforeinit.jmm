@@ -16,6 +16,6 @@ class VariableInitialize {
         arr[0] = arr[1];  // Use before initialization
         arr[2] = j;       // Proper assignment
 
-        return s;
+        return 0;
     }
 }
