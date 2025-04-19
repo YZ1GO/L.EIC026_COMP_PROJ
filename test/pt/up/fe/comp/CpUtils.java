@@ -810,6 +810,18 @@ public class CpUtils {
             registers.add(descriptor.getVirtualReg());
         }
 
+        /// DEBUG purpose
+        System.out.println("Variable to Register Mapping:");
+        for (var entry : varTable.entrySet()) {
+            String varName = entry.getKey();
+            Descriptor descriptor = entry.getValue();
+            if (descriptor != null) {
+                System.out.printf("     - Variable: %s, Register: %s\n", varName, descriptor.getVirtualReg());
+            } else {
+                System.out.printf("     - Variable: %s, Register: not allocated\n", varName);
+            }
+        }
+
         return registers.size();
     }
 
