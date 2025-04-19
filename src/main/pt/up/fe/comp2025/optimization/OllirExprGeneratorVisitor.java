@@ -167,7 +167,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         String ollirReturnType = ollirTypes.toOllirType(returnType);
 
         // Generate the method call code
-        String methodCall = invocationType + "(" + objectResult.getCode() + ", \"" + methodName + "\", " + argsCode + ")" + ollirReturnType;
+        String methodCall;
+        if (!argsCode.isEmpty()) {
+            methodCall = invocationType + "(" + objectResult.getCode() + ", \"" + methodName + "\", " + argsCode + ")" + ollirReturnType;
+        } else {
+            methodCall = invocationType + "(" + objectResult.getCode() + ", \"" + methodName + "\")" + ollirReturnType;
+        }
 
         // Check if the method call is part of an assignment
         JmmNode parent = node.getParent();

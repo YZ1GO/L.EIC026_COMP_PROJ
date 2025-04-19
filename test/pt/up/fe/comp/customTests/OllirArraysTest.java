@@ -41,4 +41,18 @@ public class OllirArraysTest {
         assertTrue(testOllirGeneration("ComplexArrayAccess.jmm", "ComplexArrayAccess.ollir"));
     }
 
+    @Test
+    public void testVarArgs() {
+        assertTrue(testOllirGeneration("VarArgs.jmm", "VarArgs.ollir"));
+    }
+
+    @Test
+    public void testVarArgs2() {
+        assertTrue(testOllirGeneration("VarArgs2.jmm", "VarArgs2.ollir"));
+    }
+
+    @Test
+    public void testVarArgs3() {
+        assertTrue(testOllirGeneration("VarArgs3.jmm", "VarArgs3.ollir"));
+    }
 }

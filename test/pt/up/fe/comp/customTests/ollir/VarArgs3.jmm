@@ -1,0 +1,33 @@
+class VarArgsTests {
+    public int sum(int... numbers) {
+        int total;
+        int i;
+        total = 0;
+        i = 0;
+        while (i < numbers.length) {
+            total = total + numbers[i];
+            i = i + 1;
+        }
+        return total;
+    }
+
+    public int testSingleVararg() {
+        return this.sum(42); // Single argument
+    }
+
+    public int testMultipleVarargs() {
+        return this.sum(1, 2, 3, 4, 5); // Multiple arguments
+    }
+
+    public int testEmptyVarargs() {
+        return this.sum(); // No arguments
+    }
+
+    public int testVarargsWithExpression() {
+        return this.sum(10 + 5, 20 * 2, 30 / 3); // Arguments as expressions
+    }
+
+    public int testNestedVarargs() {
+        return this.sum(this.sum(1, 2), this.sum(3, 4)); // Nested varargs calls
+    }
+}
