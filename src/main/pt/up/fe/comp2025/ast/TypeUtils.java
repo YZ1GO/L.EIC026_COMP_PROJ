@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.symboltable.JmmSymbolTable;
+import pt.up.fe.comp2025.utils.VariableInitializationUtils;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -224,6 +225,28 @@ public class TypeUtils {
                 return true;
             case BINARY_EXPR:
                 return isStaticallyEvaluable(expr.getChild(0)) && isStaticallyEvaluable(expr.getChild(1));
+            case VAR_REF_EXPR: {
+                // Check if the variable is assigned an integer literal
+                String varName = expr.get("name");
+                String currentMethod = expr.getAncestor(METHOD_DECL)
+                        .map(node -> node.get("name"))
+                        .orElse(null);
+
+                Optional<JmmNode> assignStmt = expr.getAncestor(METHOD_DECL)
+                        .map(method -> method.getDescendants(Kind.ASSIGN_STMT))
+                        .orElseThrow(() -> new RuntimeException("Cannot find method context for variable: " + varName))
+                        .stream()
+                        .filter(stmt -> stmt.getChild(0).getKind().equals(Kind.VAR_REF_EXPR.toString()) &&
+                                stmt.getChild(0).get("name").equals(varName))
+                        .findFirst();
+
+                if (assignStmt.isPresent()) {
+                    JmmNode rhs = assignStmt.get().getChild(1);
+                    return Kind.fromString(rhs.getKind()) == Kind.INTEGER_LITERAL;
+                }
+
+                return false;
+            }
             default:
                 return false;
         }
@@ -258,6 +281,28 @@ public class TypeUtils {
                 }
 
                 throw new UnsupportedOperationException("Array length cannot be determined statically.");
+            case VAR_REF_EXPR: {
+                String varName = expr.get("name");
+                JmmNode methodNode = expr.getAncestor(Kind.METHOD_DECL.toString()).orElse(null);
+
+                if (methodNode == null || !VariableInitializationUtils.isVariableInitialized(varName, methodNode)) {
+                    return -1;
+                }
+
+                Optional<JmmNode> assignStmt = methodNode.getDescendants(Kind.ASSIGN_STMT).stream()
+                        .filter(stmt -> stmt.getChild(0).getKind().equals(Kind.VAR_REF_EXPR.toString()) &&
+                                stmt.getChild(0).get("name").equals(varName))
+                        .findFirst();
+
+                if (assignStmt.isPresent()) {
+                    JmmNode rhs = assignStmt.get().getChild(1);
+                    if (Kind.fromString(rhs.getKind()) == Kind.INTEGER_LITERAL) {
+                        return Integer.parseInt(rhs.get("value"));
+                    }
+                }
+
+                return -1; // Cannot statically evaluate variable
+            }
             default:
                 throw new UnsupportedOperationException("Cannot evaluate expression: " + expr.getKind());
         }

@@ -37,6 +37,13 @@ public class AssignTypeChecker extends AnalysisVisitor {
             ));
         }
 
+        if (!typeUtils.getExprType(indexExpr).equals(TypeUtils.newIntType())) {
+            addReport(newError(
+                    indexExpr,
+                    "Array index must be of type 'int'."
+            ));
+        }
+
         // Check if variables in the index expression are initialized
         List<JmmNode> indexVars = indexExpr.getDescendants(Kind.VAR_REF_EXPR.toString());
         for (JmmNode var : indexVars) {
@@ -61,19 +68,47 @@ public class AssignTypeChecker extends AnalysisVisitor {
             }
         }
 
-        // Bounds checking for array index
+        // Checking for array index
         JmmNode initNode = VariableInitializationUtils.findArrayInitialization(methodNode, arrayVarName);
         if (initNode != null) {
-            JmmNode sizeExpr = initNode.getChild(0);
+            int arraySize;
+
+            if (initNode.getKind().equals(Kind.ARRAY_INIT.toString())) {
+                // Handle array initialization with explicit values
+                arraySize = initNode.getChildren().size();
+            } else if (initNode.getKind().equals(Kind.NEW_INT_ARRAY_EXPR.toString())) {
+                // Handle array initialization with a size expression
+                JmmNode sizeExpr = initNode.getChild(0);
+                if (typeUtils.isStaticallyEvaluable(sizeExpr)) {
+                    arraySize = typeUtils.evaluateExpression(sizeExpr);
+                } else {
+                    arraySize = -1;
+                }
+            } else {
+                arraySize = -1;
+            }
 
             if (typeUtils.isStaticallyEvaluable(indexExpr)) {
                 int indexValue = typeUtils.evaluateExpression(indexExpr);
-                int arraySize = Integer.parseInt(sizeExpr.get("value"));
 
-                if (indexValue < 0 || indexValue >= arraySize) {
+                if (arraySize != -1 && (indexValue < 0 || indexValue >= arraySize)) {
                     addReport(newError(
                             indexExpr,
                             String.format("Array index %d is out of bounds (size: %d).", indexValue, arraySize)
+                    ));
+                }
+            } else if (indexExpr.getKind().equals(Kind.VAR_REF_EXPR.toString())) {
+                // Handle cases where the index is a variable reference
+                String indexVarName = indexExpr.get("name");
+                if (!VariableInitializationUtils.isVariableInitialized(indexVarName, methodNode)) {
+                    addReport(newError(
+                            indexExpr,
+                            String.format("Variable '%s' is used as an array index but is not initialized.", indexVarName)
+                    ));
+                } else if (!typeUtils.getExprType(indexExpr).equals(TypeUtils.newIntType())) {
+                    addReport(newError(
+                            indexExpr,
+                            String.format("Array index variable '%s' must be of type 'int'.", indexVarName)
                     ));
                 }
             } else if (indexExpr.getKind().equals(Kind.LENGTH_EXPR.toString())) {
