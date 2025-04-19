@@ -15,9 +15,11 @@ a.bool :=.bool tmp0.bool;
 
    if (a.bool) goto then0;
 
+invokestatic(io, "print", 0.i32).V;
 goto endif0;
 then0:
 
+invokestatic(io, "print", 1.i32).V;
 endif0:
 
 ret.V;

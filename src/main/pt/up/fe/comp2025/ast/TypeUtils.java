@@ -92,6 +92,15 @@ public class TypeUtils {
                 Type receiverType = getExprType(expr.getChild(0));
                 String methodName = expr.get("name");
 
+                boolean isUsedAsStatement =
+                        !expr.getAncestor(Kind.ASSIGN_STMT).isPresent()
+                        && !expr.getAncestor(Kind.ARRAY_ASSIGN_STMT).isPresent()
+                        && !expr.getAncestor(Kind.RETURN_STMT).isPresent();
+
+                if (isUsedAsStatement && isImportedOrExtendedOrInherited(receiverType)) {
+                    return newVoidType(); // Assume void for standalone calls to external methods
+                }
+
                 // Check if the object's type is imported, extended, or inherited
                 if (isImportedOrExtendedOrInherited(receiverType)) {
                     // Assume the method returns the same type as the enclosing method's return type
@@ -109,8 +118,7 @@ public class TypeUtils {
                 // For non-imported and non-extended classes
                 Type returnType = table.getReturnType(methodName);
                 if (returnType == null) {
-                    // Return a generic type for undefined methods
-                    return new Type("unknown", false);
+                    return isUsedAsStatement ? newVoidType() : new Type("unknown", false);
                 }
                 return returnType;
             }

@@ -163,12 +163,12 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         // Return type of the method
         Type returnType = types.getExprType(node);
-        System.out.println(node.getKind());
+        //System.out.println("NODE KIND: " + node.getKind());
         String ollirReturnType = ollirTypes.toOllirType(returnType);
 
         // Generate the method call code
         String methodCall = invocationType + "(" + objectResult.getCode() + ", \"" + methodName + "\", " + argsCode + ")" + ollirReturnType;
-        System.out.println(methodCall);
+
         // Check if the method call is part of an assignment
         JmmNode parent = node.getParent();
         if (parent != null && (parent.getKind().equals("ArrayAssignStmt")
@@ -177,12 +177,19 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
             return new OllirExprResult(methodCall, computation.toString());
         }
 
-        // If not part of an assignment, assign to a temp
-        String tempVar = ollirTypes.nextTemp();
-        String tempVarWithType = tempVar + ollirReturnType;
-        computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirReturnType).append(SPACE)
-                .append(methodCall).append(END_STMT);
-        return new OllirExprResult(tempVarWithType, computation.toString());
+        // If not part of an assignment, check the return type
+        if (ollirReturnType.equals(".V")) {
+            // It's a void method call used as a statement
+            computation.append(methodCall).append(END_STMT);
+            return new OllirExprResult(methodCall, computation.toString());
+        } else {
+            // Assign to temp if not void
+            String tempVar = ollirTypes.nextTemp();
+            String tempVarWithType = tempVar + ollirReturnType;
+            computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirReturnType).append(SPACE)
+                    .append(methodCall).append(END_STMT);
+            return new OllirExprResult(tempVarWithType, computation.toString());
+        }
     }
 
     private OllirExprResult visitString(JmmNode node, Void unused) {
@@ -277,12 +284,8 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         Type type = types.getExprType(node);
         String ollirType = ollirTypes.toOllirType(type);
 
-        // Check if this VarRef is an imported class
-        if (table.getImports().stream()
-                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                .map(String::trim)
-                .anyMatch(importName -> importName.equals(id))) {
-
+        // Check if this VarRef is an imported, extended, or inherited class
+        if (types.isImportedOrExtendedOrInherited(new Type(id, false))) {
             return new OllirExprResult(id);
         } else {
             String code = id + ollirType;
