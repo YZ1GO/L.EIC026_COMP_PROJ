@@ -1,0 +1,13 @@
+class RegAlloc {
+    public int soManyRegisters(int arg){
+       int a;
+       int b;
+       a = 1;
+       b = a + 2;
+       a = b + 3;
+       return a;
+    }
+
+	public static void main(String[] args) {
+	}
+}
