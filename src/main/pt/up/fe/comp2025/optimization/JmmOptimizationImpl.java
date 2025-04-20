@@ -31,6 +31,15 @@ public class JmmOptimizationImpl implements JmmOptimization {
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
 
         //TODO: Do your AST-based optimizations here
+        boolean optimize = Boolean.parseBoolean(semanticsResult.getConfig().getOrDefault("optimize", "false").toString());
+        if (optimize) {
+            boolean changed;
+            do {
+                ConstantPropagationVisitor cpVisitor = new ConstantPropagationVisitor();
+                cpVisitor.visit(semanticsResult.getRootNode());
+                changed = cpVisitor.isChanged();
+            } while (changed);
+        }
 
         return semanticsResult;
     }

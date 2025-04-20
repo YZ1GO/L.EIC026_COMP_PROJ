@@ -6,8 +6,10 @@ class PropWithIf {
         a = 5;
         b = 10;
         if (a < b) {
+            a = 20; // Modifies a constant
             res = a + b;
         } else {
+            b = 30; // Modifies a constant
             res = a - b;
         }
         return res;
