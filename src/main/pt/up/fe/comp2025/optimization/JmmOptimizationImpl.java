@@ -35,9 +35,18 @@ public class JmmOptimizationImpl implements JmmOptimization {
         if (optimize) {
             boolean changed;
             do {
+                changed = false;
+
+                // Apply constant propagation
                 ConstantPropagationVisitor cpVisitor = new ConstantPropagationVisitor();
                 cpVisitor.visit(semanticsResult.getRootNode());
-                changed = cpVisitor.isChanged();
+                changed |= cpVisitor.isChanged();
+
+                // Apply constant folding
+                ConstantFoldingVisitor cfVisitor = new ConstantFoldingVisitor();
+                cfVisitor.visit(semanticsResult.getRootNode());
+                changed |= cfVisitor.isChanged();
+
             } while (changed);
         }
 
