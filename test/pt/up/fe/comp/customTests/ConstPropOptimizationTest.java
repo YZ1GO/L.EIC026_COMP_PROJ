@@ -33,8 +33,15 @@ public class ConstPropOptimizationTest {
                 original.getOllirCode(), optimized.getOllirCode(), optimized);
 
         var method = CpUtils.getMethod(optimized, "foo");
-        CpUtils.assertLiteralCount("5", method, optimized, 2);
+        //without folding
+        /*CpUtils.assertLiteralCount("5", method, optimized, 2);
         CpUtils.assertLiteralCount("10", method, optimized, 4);
+        CpUtils.assertLiteralCount("20", method, optimized, 2);
+        CpUtils.assertLiteralCount("30", method, optimized, 2);*/
+
+        //with folding
+        CpUtils.assertLiteralCount("5", method, optimized, 1);
+        CpUtils.assertLiteralCount("10", method, optimized, 1);
         CpUtils.assertLiteralCount("20", method, optimized, 2);
         CpUtils.assertLiteralCount("30", method, optimized, 2);
     }
@@ -50,13 +57,24 @@ public class ConstPropOptimizationTest {
                 original.getOllirCode(), optimized.getOllirCode(), optimized);
 
         var method = CpUtils.getMethod(optimized, "calculate");
-        CpUtils.assertLiteralCount("8", method, optimized, 4);
+
+        //without folding
+        /*CpUtils.assertLiteralCount("8", method, optimized, 4);
         CpUtils.assertLiteralCount("15", method, optimized, 4);
         CpUtils.assertLiteralCount("20", method, optimized, 6);
         CpUtils.assertLiteralCount("10", method, optimized, 2);
         CpUtils.assertLiteralCount("12", method, optimized, 2);
         CpUtils.assertLiteralCount("25", method, optimized, 2);
-        CpUtils.assertLiteralCount("5", method, optimized, 2);
+        CpUtils.assertLiteralCount("5", method, optimized, 2);*/
+
+        //with folding
+        CpUtils.assertLiteralCount("8", method, optimized, 1);
+        CpUtils.assertLiteralCount("15", method, optimized, 1);
+        CpUtils.assertLiteralCount("20", method, optimized, 1);
+        CpUtils.assertLiteralCount("10", method, optimized, 1);
+        CpUtils.assertLiteralCount("12", method, optimized, 1);
+        CpUtils.assertLiteralCount("25", method, optimized, 1);
+        CpUtils.assertLiteralCount("5", method, optimized, 1);
     }
 
     @Test
@@ -70,10 +88,14 @@ public class ConstPropOptimizationTest {
                 original.getOllirCode(), optimized.getOllirCode(), optimized);
 
         var method = CpUtils.getMethod(optimized, "foo");
-        CpUtils.assertLiteralCount("5", method, optimized, 4);
-        CpUtils.assertLiteralCount("10", method, optimized, 4);
-        //not literal, but changed in code, uncomment line below and check in ollir
-        //CpUtils.assertLiteralCount("2", method, optimized, 2);
+
+        //without folding
+        /*CpUtils.assertLiteralCount("5", method, optimized, 4);
+        CpUtils.assertLiteralCount("10", method, optimized, 4);*/
+
+        //with folding
+        CpUtils.assertLiteralCount("5", method, optimized, 2);
+        CpUtils.assertLiteralCount("10", method, optimized, 3);
     }
 
     @Test
@@ -87,9 +109,16 @@ public class ConstPropOptimizationTest {
                 original.getOllirCode(), optimized.getOllirCode(), optimized);
 
         var method = CpUtils.getMethod(optimized, "calculate");
-        CpUtils.assertLiteralCount("5", method, optimized, 3);
+
+        //without folding
+        /*CpUtils.assertLiteralCount("5", method, optimized, 3);
         CpUtils.assertLiteralCount("10", method, optimized, 4);
-        CpUtils.assertLiteralCount("20", method, optimized, 4);
+        CpUtils.assertLiteralCount("20", method, optimized, 4);*/
+
+        //with folding
+        CpUtils.assertLiteralCount("5", method, optimized, 1);
+        CpUtils.assertLiteralCount("10", method, optimized, 2);
+        CpUtils.assertLiteralCount("20", method, optimized, 1);
     }
 
     @Test
