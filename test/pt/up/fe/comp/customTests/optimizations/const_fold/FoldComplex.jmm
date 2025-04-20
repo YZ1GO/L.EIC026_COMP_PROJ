@@ -1,0 +1,28 @@
+import io;
+
+class FoldingTest {
+
+    public static void main(String[] args) {
+        int a;
+        int b;
+        int c;
+        boolean d;
+        boolean e;
+
+        // Arithmetic operations
+        a = 10;
+        b = 5;
+        c = (a * 2) + (b - 3) / 2;
+
+        // Logical operations
+        d = true && false || (10 > 5);
+        e = (a < b) || (c >= 20) && d;
+
+        // Nested expressions
+        c = (a + b) * (c - 2) / (4 + 1);
+
+        io.print(c);
+        io.print(d);
+        io.print(e);
+    }
+}

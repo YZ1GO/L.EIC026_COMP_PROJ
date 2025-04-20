@@ -31,22 +31,19 @@ public class JmmOptimizationImpl implements JmmOptimization {
     public JmmSemanticsResult optimize(JmmSemanticsResult semanticsResult) {
 
         //TODO: Do your AST-based optimizations here
-        boolean optimize = Boolean.parseBoolean(semanticsResult.getConfig().getOrDefault("optimize", "false").toString());
+        //DONE: Constant propagation and folding implemented
+        boolean optimize = CompilerConfig.getOptimize(semanticsResult.getConfig());
+
         if (optimize) {
             boolean changed;
             do {
-                changed = false;
-
-                // Apply constant propagation
                 ConstantPropagationVisitor cpVisitor = new ConstantPropagationVisitor();
                 cpVisitor.visit(semanticsResult.getRootNode());
-                changed |= cpVisitor.isChanged();
 
-                // Apply constant folding
                 ConstantFoldingVisitor cfVisitor = new ConstantFoldingVisitor();
                 cfVisitor.visit(semanticsResult.getRootNode());
-                changed |= cfVisitor.isChanged();
 
+                changed = cpVisitor.isChanged() || cfVisitor.isChanged();
             } while (changed);
         }
 

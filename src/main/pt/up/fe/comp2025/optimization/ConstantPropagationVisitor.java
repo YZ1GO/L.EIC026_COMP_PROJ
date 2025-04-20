@@ -156,22 +156,31 @@ public class ConstantPropagationVisitor extends AJmmVisitor<Void, Boolean> {
     }
 
     private Boolean visitWhileStmt(JmmNode node, Void unused) {
-        //System.out.println("Global Constants Before While: Integers: " + intConsts + ", Booleans: " + boolConsts);
-        boolean condChanged = visit(node.getChild(0));
+        JmmNode condition = node.getChild(0);
 
-        boolean bodyChanged = visit(node.getChild(1));
+        if (condition.isInstance(BINARY_EXPR)) {
+            JmmNode rhs = condition.getChild(1);
 
-        // Invalidate variables modified in the loop body
-        for (JmmNode child : node.getChild(1).getChildren()) {
-            if (child.isInstance(ASSIGN_STMT) && child.getChild(0).isInstance(VAR_REF_EXPR)) {
-                clearConstants(child.getChild(0).get("name"));
+            boolean rhsChanged = visit(rhs);
+
+            boolean bodyChanged = visit(node.getChild(1));
+
+            // Invalidate variables assigned in the loop
+            for (JmmNode child : node.getChild(1).getChildren()) {
+                if (child.isInstance(ASSIGN_STMT)) {
+                    JmmNode varRef = child.getChild(0);
+                    if (varRef.isInstance(VAR_REF_EXPR)) {
+                        clearConstants(varRef.get("name"));
+                    }
+                }
             }
+
+            return rhsChanged || bodyChanged;
         }
 
-        //System.out.println("Global Constants After While: Integers: " + intConsts + ", Booleans: " + boolConsts);
-
-        return condChanged || bodyChanged;
+        return visitChildren(node);
     }
+
 
     private Boolean defaultVisit(JmmNode node, Void unused) {
         return visitChildren(node);
