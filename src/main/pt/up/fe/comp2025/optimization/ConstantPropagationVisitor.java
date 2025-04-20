@@ -91,29 +91,41 @@ public class ConstantPropagationVisitor extends AJmmVisitor<Void, Boolean> {
     }
 
     private Boolean visitIfStmt(JmmNode node, Void unused) {
-        // Save the current state of constants
+        //System.out.println("Global Constants Before Condition: Integers: " + intConsts + ", Booleans: " + boolConsts);
         Map<String, Integer> originalIntConsts = new HashMap<>(intConsts);
         Map<String, Boolean> originalBoolConsts = new HashMap<>(boolConsts);
 
         boolean condChanged = visit(node.getChild(0));
 
         // Handle the "then" branch
+        boolean thenChanged = visit(node.getChild(1));
         Map<String, Integer> thenIntConsts = new HashMap<>(intConsts);
         Map<String, Boolean> thenBoolConsts = new HashMap<>(boolConsts);
-        boolean thenChanged = visit(node.getChild(1));
+        //System.out.println("Global Constants After Then Branch: Integers: " + thenIntConsts + ", Booleans: " + thenBoolConsts);
 
-        // Restore the original constants for the "else" branch
         intConsts = new HashMap<>(originalIntConsts);
         boolConsts = new HashMap<>(originalBoolConsts);
 
         // Handle the "else" branch (if it exists)
         boolean elseChanged = false;
+        Map<String, Integer> elseIntConsts = new HashMap<>();
+        Map<String, Boolean> elseBoolConsts = new HashMap<>();
         if (node.getChildren().size() > 2) {
             elseChanged = visit(node.getChild(2));
+            elseIntConsts = new HashMap<>(intConsts);
+            elseBoolConsts = new HashMap<>(boolConsts);
+            //System.out.println("Global Constants After Else Branch: Integers: " + elseIntConsts + ", Booleans: " + elseBoolConsts);
         }
 
+        // Merge the constants from both branches
+        intConsts = new HashMap<>(originalIntConsts);
+        boolConsts = new HashMap<>(originalBoolConsts);
         mergeBranchConstants(thenIntConsts, intConsts);
+        mergeBranchConstants(elseIntConsts, intConsts);
         mergeBranchConstants(thenBoolConsts, boolConsts);
+        mergeBranchConstants(elseBoolConsts, boolConsts);
+
+        //System.out.println("Global Constants After If-Else: Integers: " + intConsts + ", Booleans: " + boolConsts);
 
         return condChanged || thenChanged || elseChanged;
     }
@@ -122,20 +134,29 @@ public class ConstantPropagationVisitor extends AJmmVisitor<Void, Boolean> {
         // Collect keys to be removed
         var keysToRemove = new java.util.ArrayList<String>();
         for (String var : globalConsts.keySet()) {
+            // Remove if the variable is not in the branch or has a different value
             if (!branchConsts.containsKey(var) || !branchConsts.get(var).equals(globalConsts.get(var))) {
                 keysToRemove.add(var);
             }
         }
+
         // Remove keys after iteration
         for (String key : keysToRemove) {
             globalConsts.remove(key);
         }
+
+        // Remove any variables that exist in the branch but are not in the global constants
+        for (String var : branchConsts.keySet()) {
+            if (!globalConsts.containsKey(var)) {
+                globalConsts.remove(var);
+            }
+        }
+
+        //System.out.println("Global Const After Merge: " + globalConsts);
     }
 
     private Boolean visitWhileStmt(JmmNode node, Void unused) {
-        Map<String, Integer> originalIntConsts = new HashMap<>(intConsts);
-        Map<String, Boolean> originalBoolConsts = new HashMap<>(boolConsts);
-
+        //System.out.println("Global Constants Before While: Integers: " + intConsts + ", Booleans: " + boolConsts);
         boolean condChanged = visit(node.getChild(0));
 
         boolean bodyChanged = visit(node.getChild(1));
@@ -147,9 +168,7 @@ public class ConstantPropagationVisitor extends AJmmVisitor<Void, Boolean> {
             }
         }
 
-        // Restore the original constants after the loop
-        intConsts = new HashMap<>(originalIntConsts);
-        boolConsts = new HashMap<>(originalBoolConsts);
+        //System.out.println("Global Constants After While: Integers: " + intConsts + ", Booleans: " + boolConsts);
 
         return condChanged || bodyChanged;
     }

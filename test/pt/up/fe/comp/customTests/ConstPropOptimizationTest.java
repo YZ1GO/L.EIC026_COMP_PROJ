@@ -33,8 +33,8 @@ public class ConstPropOptimizationTest {
                 original.getOllirCode(), optimized.getOllirCode(), optimized);
 
         var method = CpUtils.getMethod(optimized, "foo");
-        CpUtils.assertLiteralCount("5", method, optimized, 3);
-        CpUtils.assertLiteralCount("10", method, optimized, 3);
+        CpUtils.assertLiteralCount("5", method, optimized, 2);
+        CpUtils.assertLiteralCount("10", method, optimized, 4);
         CpUtils.assertLiteralCount("20", method, optimized, 2);
         CpUtils.assertLiteralCount("30", method, optimized, 2);
     }
@@ -90,5 +90,21 @@ public class ConstPropOptimizationTest {
         CpUtils.assertLiteralCount("5", method, optimized, 3);
         CpUtils.assertLiteralCount("10", method, optimized, 4);
         CpUtils.assertLiteralCount("20", method, optimized, 4);
+    }
+
+    @Test
+    public void constPropWithLoop() {
+
+        String filename = "PropWithLoop.jmm";
+
+        OllirResult original = getOllirResult(filename);
+        OllirResult optimized = getOllirResultOpt(filename);
+
+        CpUtils.assertNotEquals("Expected code to change with -o flag\n\nOriginal code:\n" + original.getOllirCode(),
+                original.getOllirCode(), optimized.getOllirCode(),
+                optimized);
+
+        var method = CpUtils.getMethod(optimized, "foo");
+        CpUtils.assertLiteralCount("3", method, optimized, 3);
     }
 }

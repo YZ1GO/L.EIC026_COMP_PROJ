@@ -9,7 +9,7 @@ class PropWithIf {
             a = 20; // Modifies a constant
             res = a + b;
         } else {
-            b = 30; // Modifies a constant
+            a = 30; // Modifies a constant
             res = a - b;
         }
         return res;
