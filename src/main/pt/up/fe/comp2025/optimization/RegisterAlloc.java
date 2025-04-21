@@ -40,6 +40,37 @@ public class RegisterAlloc {
         return createColor();
     }
 
+    public static String getVarRegMap(Method meth) {
+        StringBuilder res = new StringBuilder();
+
+        res.append("Method: ").append(meth.getMethodName()).append("\n");
+
+        var varTable = meth.getVarTable();
+
+        for (var entry : varTable.entrySet()) {
+            String varName = entry.getKey();
+            Descriptor descriptor = entry.getValue();
+
+            if (descriptor != null && descriptor.getVirtualReg() != -1) {
+                res.append(String.format("     - Variable: %-20s | Register: %-4d\n", varName, descriptor.getVirtualReg()));
+            } else {
+                res.append(String.format("     - Variable: %-20s | Register: not allocated\n", varName));
+            }
+        }
+
+        return res.toString();
+    }
+
+    public static String getALlVarRegMap(ArrayList<Method> meths) {
+        StringBuilder res = new StringBuilder();
+
+        for (var method : meths) {
+            res.append(RegisterAlloc.getVarRegMap(method)).append("\n");
+        }
+
+        return res.toString();
+    }
+
     /*
         Liveness analysis
      */
@@ -243,13 +274,13 @@ public class RegisterAlloc {
 
             // assign colors
             while (!stack.isEmpty()) {
-                Pair<String, Set<String>> node = stack.pop();
-                String var = node.a;
-                Set<String> neighbors = node.b;
+                var node = stack.pop();
+                var var = node.a;
+                var neighbors = node.b;
 
                 methGraph.put(var, neighbors);
 
-                Set<Integer> usedColors = new HashSet<>();
+                var usedColors = new HashSet<>();
                 for (String n : neighbors) {
                     Integer neighborColor = color.get(meth).get(n);
                     if (neighborColor != null) usedColors.add(neighborColor);

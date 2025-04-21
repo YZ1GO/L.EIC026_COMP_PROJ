@@ -811,6 +811,7 @@ public class CpUtils {
         }
 
         /// DEBUG purpose
+        /*
         System.out.println("Variable to Register Mapping:");
         for (var entry : varTable.entrySet()) {
             String varName = entry.getKey();
@@ -820,7 +821,7 @@ public class CpUtils {
             } else {
                 System.out.printf("     - Variable: %s, Register: not allocated\n", varName);
             }
-        }
+        }*/
 
         return registers.size();
     }

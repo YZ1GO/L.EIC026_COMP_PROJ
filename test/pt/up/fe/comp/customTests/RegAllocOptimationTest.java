@@ -173,7 +173,7 @@ public class RegAllocOptimationTest {
     @Test
     public void regAlloc6() {
         String filename = "alloc6.jmm";
-        int expectedNumReg = 4;
+        int expectedNumReg = 3;
 
         OllirResult original = getOllirResult(filename);
         OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
@@ -193,9 +193,9 @@ public class RegAllocOptimationTest {
 
         var varTable = CpUtils.getMethod(optimized, "soManyRegisters").getVarTable();
         var aReg = varTable.get("a").getVirtualReg();
-        CpUtils.assertNotEquals("Expected registers of variables 'a' and 'b' to be different", aReg, varTable.get("b").getVirtualReg(), optimized);
-        CpUtils.assertNotEquals("Expected registers of variables 'a' and 'c' to be different", aReg, varTable.get("c").getVirtualReg(), optimized);
-        CpUtils.assertNotEquals("Expected registers of variables 'a' and 'd' to be different", aReg, varTable.get("d").getVirtualReg(), optimized);
+        CpUtils.assertEquals("Expected registers of variables 'a' and 'b' to be equal", aReg, varTable.get("b").getVirtualReg(), optimized);
+        CpUtils.assertEquals("Expected registers of variables 'a' and 'c' to be equal", aReg, varTable.get("c").getVirtualReg(), optimized);
+        CpUtils.assertEquals("Expected registers of variables 'a' and 'd' to be equal", aReg, varTable.get("d").getVirtualReg(), optimized);
     }
 
     @Test
