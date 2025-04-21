@@ -6,7 +6,6 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2025.CompilerConfig;
-import pt.up.fe.comp2025.optimization.regAlloc.RegisterAlloc;
 
 import java.util.Collections;
 
@@ -60,8 +59,7 @@ public class JmmOptimizationImpl implements JmmOptimization {
             return ollirResult;
         }
 
-        int MAX_REGS = maxRegs;
-        boolean succ = false;
+        int neededRegs = maxRegs;
 
         /* Steps:
         1. CFG - Use buildCFGs() to understand the program flow
@@ -72,21 +70,20 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
         source: https://docs.google.com/document/d/14_l17ffME6HbCc1F3-NH-Df8czx0aTg8Myfkt8WMDxE/edit?tab=t.0#heading=h.do4dn22opt57
          */
-        while (!succ) {
+        while (true) {
             ollirResult.getOllirClass().buildCFGs();
-            var registerAlloc = new RegisterAlloc(ollirResult.getOllirClass(), maxRegs);
+            var registerAlloc = new RegisterAlloc(ollirResult.getOllirClass(), neededRegs);
 
-            succ = registerAlloc.alloc();
-            maxRegs++;
+            if (registerAlloc.run()) break;
+
+            neededRegs++;
         }
 
-        maxRegs = maxRegs - 1;
-
         // report error in case not enough registers
-        if (maxRegs != MAX_REGS) {
+        if (maxRegs != neededRegs) {
             ollirResult.getReports().add(Report.newError(
                     Stage.OPTIMIZATION,0,0,
-                    String.format("Cannot allocate with %s register(s). It needs at least %s registers.", MAX_REGS, maxRegs),
+                    String.format("Cannot allocate with %s register(s). It needs at least %s registers.", maxRegs, neededRegs),
                     null
             ));
         }

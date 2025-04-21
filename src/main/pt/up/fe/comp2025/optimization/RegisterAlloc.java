@@ -1,4 +1,4 @@
-package pt.up.fe.comp2025.optimization.regAlloc;
+package pt.up.fe.comp2025.optimization;
 
 import org.antlr.v4.runtime.misc.Pair;
 import org.specs.comp.ollir.*;
@@ -11,25 +11,38 @@ import java.util.*;
 
 public class RegisterAlloc {
 
-    // For each method, and for each instruction (node) store a set of LiveIn and LiveOut
-    HashMap<Method, HashMap<Node, LiveSet>> sets = new HashMap<>();
-    HashMap<Method, HashMap<String, Set<String>>> intGraph = new HashMap<>();
-    HashMap<Method, HashMap<String, Integer>> color = new HashMap<>();
 
-    ClassUnit cfg;
-    int maxRegs;
+    private final String VAR_THIS = "this";
+
+
+    // For each method, and for each instruction (node) store a set of LiveIn and LiveOut
+    private final HashMap<Method, HashMap<Node, LiveSet>> sets = new HashMap<>();
+
+    // For each method, store a graph: variable -> {conflicting variables}
+    private final HashMap<Method, HashMap<String, Set<String>>> intGraph = new HashMap<>();
+
+    // For each method, map each variable to register
+    private final HashMap<Method, HashMap<String, Integer>> color = new HashMap<>();
+
+
+    private final ClassUnit cfg;
+    private final int maxRegs;
+
 
     public RegisterAlloc(ClassUnit cfg, int maxRegs) {
         this.cfg = cfg;
         this.maxRegs = maxRegs;
     }
 
-    public boolean alloc() {
+    public boolean run() {
         createSets();
         createIntGraph();
         return createColor();
     }
 
+    /*
+        Liveness analysis
+     */
     private void createSets() {
         for (var met: cfg.getMethods()) {
             sets.put(met, new HashMap<>());
@@ -84,6 +97,7 @@ public class RegisterAlloc {
         return res;
     }
 
+    // Use: Read of a variable (e.g., instruction a = b + c will have `b` and `c` in its use set)
     private Set<String> use(Node instruction) {
         Set<String> res = new HashSet<>();
         var type = instruction.toInstruction().getInstType();
@@ -138,7 +152,7 @@ public class RegisterAlloc {
             intGraph.put(met, new HashMap<>());
 
             for (var var : met.getVarTable().keySet()) {
-                if (var.equals("this")) continue;
+                if (var.equals(VAR_THIS)) continue;
 
                 if (met.getVarTable().get(var).getScope().equals(VarScope.LOCAL) ) {
                     intGraph.get(met).put(var, new HashSet<>());
@@ -148,37 +162,33 @@ public class RegisterAlloc {
 
         // edges
         for (var meth : cfg.getMethods()) {
-            for (var inst : sets.get(meth).keySet()) {
-                var liveSet = new LiveSet(sets.get(meth).get(inst).liveIn, sets.get(meth).get(inst).liveOut);
-                liveSet.addLiveOut(def(inst));
+            var methGraph = intGraph.get(meth);
+            var liveSets = sets.get(meth);
 
+            for (var inst : liveSets.keySet()) {
+                var liveSet = liveSets.get(inst);
+                Set<String> liveOutSet = new HashSet<>(liveSet.liveOut);
+                liveOutSet.addAll(def(inst));
 
-                for (var i : liveSet.liveOut) {
-                    if (i.equals("this")) continue;
-
-                    for (var j : liveSet.liveOut) {
-                        if (j.equals("this") || i.equals(j)) continue;
-
-                        intGraph.get(meth).get(i).add(j);
-                        intGraph.get(meth).get(j).add(i);
-                    }
-                }
-
-
-                for (var i : liveSet.liveIn) {
-
-                    for (var j : liveSet.liveIn) {
-
-                        if (!i.equals(j)) {
-                            intGraph.get(meth).get(i).add(j);
-                            intGraph.get(meth).get(j).add(i);
-                        }
-                    }
-                }
-
+                addEdgesForLiveSet(methGraph, liveOutSet);
+                addEdgesForLiveSet(methGraph, liveSet.liveIn);
             }
         }
     }
+
+    // aux to add edges for given live set
+    private void addEdgesForLiveSet(Map<String, Set<String>> methGraph, Set<String> liveSet) {
+        for (var i : liveSet) {
+            if (i.equals(VAR_THIS)) continue;
+            for (var j : liveSet) {
+                if (!i.equals(j) && !j.equals(VAR_THIS)) {
+                    methGraph.get(i).add(j);
+                    methGraph.get(j).add(i);
+                }
+            }
+        }
+    }
+
 
     /*
     Returns:
@@ -192,57 +202,71 @@ public class RegisterAlloc {
             // static methods don’t have `this`
             if (meth.isStaticMethod()) continue;
 
-            if (meth.getVarTable().containsKey("this")) {
-                meth.getVarTable().get("this").setVirtualReg(0);
-                color.computeIfAbsent(meth, k -> new HashMap<>()).put("this", 0);
+            var varTable = meth.getVarTable();
+            if (varTable.containsKey(VAR_THIS)) {
+                varTable.get(VAR_THIS).setVirtualReg(0);
+                color.computeIfAbsent(meth, k -> new HashMap<>()).put(VAR_THIS, 0);
             }
         }
 
         for (var meth : cfg.getMethods()) {
             color.put(meth, new HashMap<>());
-            Stack<Pair<String, Set<String>>> s = new Stack<>();
 
-            while (!intGraph.get(meth).isEmpty()) {
-                var found = false;
-                var ks = new ArrayList<>(intGraph.get(meth).keySet());
-                for (var k : ks) {
-                    var paramSize = meth.getParams().size() - 1;
-                    if (intGraph.get(meth).get(k).size() < (maxRegs - paramSize) || maxRegs == 0) {
-                        found = true;
-                        s.add(new Pair<>(k, intGraph.get(meth).get(k)));
-                        intGraph.get(meth).remove(k);
+
+            var methGraph = intGraph.get(meth);
+            var varTable = meth.getVarTable();
+            var paramSize = meth.getParams().size();
+
+            // regs
+            var reserved = paramSize + 1; // including 'this'
+            var available = (maxRegs == 0) ? Integer.MAX_VALUE : maxRegs - paramSize;
+
+
+            Stack<Pair<String, Set<String>>> stack = new Stack<>();
+            Set<String> nodes = new HashSet<>(methGraph.keySet());
+
+
+            // stack build
+            while (!nodes.isEmpty()) {
+                boolean allocated = false;
+                for (String node : new HashSet<>(nodes)) {
+                    if (methGraph.get(node).size() < available) {
+                        stack.push(new Pair<>(node, methGraph.remove(node)));
+                        nodes.remove(node);
+                        allocated = true;
                     }
                 }
-                if (!found) return false;
+                if (!allocated) return false;
             }
+            methGraph = intGraph.get(meth);
 
-            // alloc
-            int reg = meth.getParams().size() + 1;
-            while (!s.empty()) {
-                var top = s.pop();
-                List<Integer> minN = new ArrayList<>();
-                intGraph.get(meth).put(top.a, top.b);
 
-                for (var n : top.b) {
-                    minN.add(color.get(meth).get(n));
+            // assign colors
+            while (!stack.isEmpty()) {
+                Pair<String, Set<String>> node = stack.pop();
+                String var = node.a;
+                Set<String> neighbors = node.b;
+
+                methGraph.put(var, neighbors);
+
+                Set<Integer> usedColors = new HashSet<>();
+                for (String n : neighbors) {
+                    Integer neighborColor = color.get(meth).get(n);
+                    if (neighborColor != null) usedColors.add(neighborColor);
                 }
 
-
-
-                Integer c = null; // initial null
-                var realMax = maxRegs;
-                if (maxRegs == 0) realMax = Integer.MAX_VALUE;
-
-                for (var r = reg; r < realMax; r++) {
-                    if (!minN.contains(r)) {
-                        c = r;
+                Integer reg = null;
+                for (int i = reserved; i < reserved + available; i++) {
+                    if (!usedColors.contains(i)) {
+                        reg = i;
                         break;
                     }
                 }
 
-                if (c == null) return false;
-                meth.getVarTable().get(top.a).setVirtualReg(c);
-                color.get(meth).put(top.a, c);
+                if (reg == null) return false;
+
+                color.get(meth).put(var, reg);
+                varTable.get(var).setVirtualReg(reg);
             }
         }
 

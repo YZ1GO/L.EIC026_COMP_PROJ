@@ -1,4 +1,4 @@
-package pt.up.fe.comp2025.optimization.regAlloc;
+package pt.up.fe.comp2025.optimization;
 
 import java.util.HashSet;
 import java.util.Set;
