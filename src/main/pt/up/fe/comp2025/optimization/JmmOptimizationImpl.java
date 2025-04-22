@@ -6,7 +6,6 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp2025.CompilerConfig;
-import pt.up.fe.comp2025.optimization.regAlloc.RegisterAlloc;
 
 import java.util.Collections;
 
@@ -60,9 +59,6 @@ public class JmmOptimizationImpl implements JmmOptimization {
             return ollirResult;
         }
 
-        int MAX_REGS = maxRegs;
-        boolean succ = false;
-
         /* Steps:
         1. CFG - Use buildCFGs() to understand the program flow
         2. Liveness - Figure out where each variable is alive
@@ -72,23 +68,41 @@ public class JmmOptimizationImpl implements JmmOptimization {
 
         source: https://docs.google.com/document/d/14_l17ffME6HbCc1F3-NH-Df8czx0aTg8Myfkt8WMDxE/edit?tab=t.0#heading=h.do4dn22opt57
          */
-        while (!succ) {
-            ollirResult.getOllirClass().buildCFGs();
-            var registerAlloc = new RegisterAlloc(ollirResult.getOllirClass(), maxRegs);
 
-            succ = registerAlloc.alloc();
-            maxRegs++;
+        int neededRegs = maxRegs;
+        ollirResult.getOllirClass().buildCFGs();
+        while (true) {
+            var alloc = new RegisterAlloc(ollirResult.getOllirClass(), neededRegs);
+            if (alloc.run()) {
+                break;
+            }
+            neededRegs++;
         }
 
-        maxRegs = maxRegs - 1;
 
-        // report error in case not enough registers
-        if (maxRegs != MAX_REGS) {
-            ollirResult.getReports().add(Report.newError(
-                    Stage.OPTIMIZATION,0,0,
-                    String.format("Cannot allocate with %s register(s). It needs at least %s registers.", MAX_REGS, maxRegs),
-                    null
-            ));
+        var regMap = new StringBuilder();
+        if (maxRegs == 0) {
+            regMap.append(RegisterAlloc.getALlVarRegMap(ollirResult.getOllirClass().getMethods()));
+
+            ollirResult.getReports().add(Report.newLog(
+                    Stage.OPTIMIZATION, 0, 0,
+                    String.format("Successfully allocated with %d registers\n%s", neededRegs, regMap),
+                    null));
+        } else {
+            if (maxRegs != neededRegs) {
+                ollirResult.getReports().add(Report.newError(
+                        Stage.OPTIMIZATION, 0, 0,
+                        String.format("Cannot allocate with %d register(s). It needs at least %d registers.", maxRegs, neededRegs),
+                        null
+                ));
+            } else {
+                regMap.append(RegisterAlloc.getALlVarRegMap(ollirResult.getOllirClass().getMethods()));
+
+                ollirResult.getReports().add(Report.newLog(
+                        Stage.OPTIMIZATION, 0, 0,
+                        String.format("Successfully allocated with %d registers\n%s", maxRegs, regMap),
+                        null));
+            }
         }
 
         return ollirResult;
