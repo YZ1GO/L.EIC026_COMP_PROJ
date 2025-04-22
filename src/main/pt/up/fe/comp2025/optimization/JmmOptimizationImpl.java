@@ -70,8 +70,8 @@ public class JmmOptimizationImpl implements JmmOptimization {
          */
 
         int neededRegs = maxRegs;
+        ollirResult.getOllirClass().buildCFGs();
         while (true) {
-            ollirResult.getOllirClass().buildCFGs();
             var alloc = new RegisterAlloc(ollirResult.getOllirClass(), neededRegs);
             if (alloc.run()) {
                 break;
