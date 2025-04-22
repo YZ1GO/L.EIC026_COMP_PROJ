@@ -169,6 +169,15 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
             code.append("static ");
         }
 
+        if (node.getChildren(PARAM).stream()
+                .anyMatch(param -> {
+                    JmmNode typeNode = param.getChild(0);
+                    Object isVarArgsObject = typeNode.getObject("isVarArgs");
+                    return isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
+                })) {
+            code.append("varargs ");
+        }
+
         // name
         var name = node.get("name");
         code.append(name);

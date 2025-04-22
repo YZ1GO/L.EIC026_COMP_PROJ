@@ -1,5 +1,6 @@
 package pt.up.fe.comp2025.optimization;
 
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
@@ -138,13 +139,62 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         return new OllirExprResult(code);
     }
 
-    private OllirExprResult visitMethodCall(JmmNode node, Void unused) {
-        String methodName = node.get("name");
+    private boolean isVarargsMethod(String methodName) {
+        List<Symbol> parameters = table.getParameters(methodName);
+        if (parameters == null) {
+            return false;
+        }
 
-        // Visit the object on which the method is called
-        OllirExprResult objectResult = visit(node.getChild(0));
-        // Arguments computation
-        StringBuilder computation = new StringBuilder(objectResult.getComputation());
+        return parameters.stream()
+                .anyMatch(param -> {
+                    Object isVarArgsObject = param.getType().getObject("isVarArgs");
+                    return isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
+                });
+    }
+
+    private String generateVarargsArray(JmmNode node, StringBuilder computation) {
+        // Check if there are no arguments for the varargs method
+        if (node.getNumChildren() <= 1) {
+            // Create an empty array to send
+            String tempVar = ollirTypes.nextTemp();
+            String ollirArrayType = ollirTypes.toOllirType(new Type("int", true));
+            String tempVarWithType = tempVar + ollirArrayType;
+
+            computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirArrayType).append(SPACE)
+                    .append("new(array, 0.i32)").append(ollirArrayType).append(END_STMT);
+
+            return tempVar + ollirArrayType;
+        }
+
+        // If the first argument is already an array, return it directly
+        OllirExprResult firstArgResult = visit(node.getChild(1));
+        Type firstArgType = types.getExprType(node.getChild(1));
+        if (firstArgType.isArray()) {
+            computation.append(firstArgResult.getComputation());
+            return firstArgResult.getCode();
+        }
+
+        // Otherwise, create a new array to populate with the integers
+        String tempVar = ollirTypes.nextTemp();
+        String ollirArrayType = ollirTypes.toOllirType(new Type("int", true));
+        String tempVarWithType = tempVar + ollirArrayType;
+
+        computation.append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirArrayType).append(SPACE)
+                .append("new(array, ").append(node.getNumChildren() - 1).append(".i32)").append(ollirArrayType)
+                .append(END_STMT);
+
+        for (int i = 1; i < node.getNumChildren(); i++) {
+            OllirExprResult argResult = visit(node.getChild(i));
+            computation.append(argResult.getComputation());
+            computation.append(tempVar).append("[").append((i - 1)).append(".i32]").append(".i32")
+                    .append(SPACE).append(ASSIGN).append(".i32").append(SPACE)
+                    .append(argResult.getCode()).append(END_STMT);
+        }
+
+        return tempVar + ollirArrayType;
+    }
+
+    private String generateRegularArguments(JmmNode node, StringBuilder computation) {
         StringBuilder argsCode = new StringBuilder();
         for (int i = 1; i < node.getNumChildren(); i++) {
             OllirExprResult argResult = visit(node.getChild(i));
@@ -154,12 +204,30 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
                 argsCode.append(", ");
             }
         }
+        return argsCode.toString();
+    }
 
+    private OllirExprResult visitMethodCall(JmmNode node, Void unused) {
+        String methodName = node.get("name");
+
+        // Visit the object on which the method is called
+        OllirExprResult objectResult = visit(node.getChild(0));
+
+        boolean isVarargs = isVarargsMethod(methodName);
+
+        // Arguments computation
+        StringBuilder computation = new StringBuilder(objectResult.getComputation());
+        String argsCode;
+
+        if (isVarargs) {
+            argsCode = generateVarargsArray(node, computation);
+        } else {
+            argsCode = generateRegularArguments(node, computation);
+        }
 
         // Determine if the call is static (receiver is a class name)
         boolean isStaticCall = !objectResult.getCode().contains(".");
         String invocationType = isStaticCall ? "invokestatic" : "invokevirtual";
-
 
         // Return type of the method
         Type returnType = types.getExprType(node);
