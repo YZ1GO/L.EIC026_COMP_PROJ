@@ -49,6 +49,10 @@ public class OptUtils {
         return List.of("while" + id, "endWhile" + id);
     }
 
+    public static void resetWhileLabelCounter() {
+        whileLabelCounter.set(0);
+    }
+
     public String toOllirType(JmmNode typeNode) {
 
         TYPE.checkOrThrow(typeNode);

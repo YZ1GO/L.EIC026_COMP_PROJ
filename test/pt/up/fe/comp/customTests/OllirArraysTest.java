@@ -1,8 +1,10 @@
 package pt.up.fe.comp.customTests;
 
+import org.junit.Before;
 import org.junit.Test;
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
+import pt.up.fe.comp2025.optimization.OptUtils;
 import pt.up.fe.specs.util.SpecsIo;
 
 import static org.junit.Assert.assertEquals;
@@ -27,6 +29,11 @@ public class OllirArraysTest {
     }
     static OllirResult getOllirResult(String filename) {
         return TestUtils.optimize(SpecsIo.getResource("pt/up/fe/comp/customTests/ollir/" + filename));
+    }
+
+    @Before
+    public void setup() {
+        OptUtils.resetWhileLabelCounter();
     }
 
     @Test
@@ -56,9 +63,6 @@ public class OllirArraysTest {
 
     @Test
     public void testVarArgs3() {
-        // changed while0 and endWhile0 to while1 and endWhile1 in VarArgs3.ollir
-        // to pass test when running all, since the label is global and the tests are being run globally
-        // change back to 0 when running the test solo
         assertTrue(testOllirGeneration("VarArgs3.jmm", "VarArgs3.ollir"));
     }
 }
