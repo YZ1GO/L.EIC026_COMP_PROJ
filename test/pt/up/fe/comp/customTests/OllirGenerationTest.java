@@ -1,14 +1,17 @@
 package pt.up.fe.comp.customTests;
 
 import org.junit.Test;
-import org.specs.comp.ollir.inst.CondBranchInstruction;
-import org.specs.comp.ollir.inst.GotoInstruction;
+import org.specs.comp.ollir.ClassUnit;
+import org.specs.comp.ollir.Method;
+import org.specs.comp.ollir.OperationType;
+import org.specs.comp.ollir.inst.*;
 import pt.up.fe.comp.CpUtils;
 import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.specs.util.SpecsIo;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Custom Ollir generation tests to compare ollir generated from .jmm code to existent .ollir
@@ -31,6 +34,56 @@ public class OllirGenerationTest {
 
     static OllirResult getOllirResult(String filename) {
         return TestUtils.optimize(SpecsIo.getResource("pt/up/fe/comp/customTests/ollir/" + filename));
+    }
+
+    public void compileMethodInvocation(ClassUnit classUnit) {
+        // Test name of the class
+        assertEquals("Class name not what was expected", "CompileMethodInvocation", classUnit.getClassName());
+
+        // Test foo
+        var methodName = "foo";
+        Method methodFoo = classUnit.getMethods().stream()
+                .filter(method -> method.getMethodName().equals(methodName))
+                .findFirst()
+                .orElse(null);
+
+        assertNotNull("Could not find method " + methodName, methodFoo);
+
+        var callInst = methodFoo.getInstructions().stream()
+                .filter(inst -> inst instanceof CallInstruction)
+                .map(CallInstruction.class::cast)
+                .findFirst();
+        assertTrue("Could not find a call instruction in method " + methodName, callInst.isPresent());
+
+        assertEquals("Invocation type not what was expected", InvokeStaticInstruction.class,
+                callInst.get().getClass());
+    }
+
+    public void compileArithmetic(ClassUnit classUnit) {
+        // Test name of the class
+        assertEquals("Class name not what was expected", "CompileArithmetic", classUnit.getClassName());
+
+        // Test foo
+        var methodName = "foo";
+        Method methodFoo = classUnit.getMethods().stream()
+                .filter(method -> method.getMethodName().equals(methodName))
+                .findFirst()
+                .orElse(null);
+
+        assertNotNull("Could not find method " + methodName, methodFoo);
+
+        var binOpInst = methodFoo.getInstructions().stream()
+                .filter(inst -> inst instanceof AssignInstruction)
+                .map(instr -> (AssignInstruction) instr)
+                .filter(assign -> assign.getRhs() instanceof BinaryOpInstruction)
+                .findFirst();
+
+        assertTrue("Could not find a binary op instruction in method " + methodName, binOpInst.isPresent());
+
+        var retInst = methodFoo.getInstructions().stream()
+                .filter(inst -> inst instanceof ReturnInstruction)
+                .findFirst();
+        assertTrue("Could not find a return instruction in method " + methodName, retInst.isPresent());
     }
 
     @Test
@@ -175,9 +228,154 @@ public class OllirGenerationTest {
 
     @Test
     public void testSimpleMethodInvocation() {
-        assertTrue(testOllirGeneration("MethodInvocation.jmm", "MethodInvocation.ollir"));
+        var result = getOllirResult("MethodInvocation.jmm");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(result.getOllirCode());
+
+        compileMethodInvocation(result.getOllirClass());
     }
 
     @Test
     public void testArrayAssignStmt() {assertTrue(testOllirGeneration("ArrayAssignStmt.jmm", "ArrayAssignStmt.ollir"));}
+
+    @Test
+    public void testBinaryAdd() {
+        var ollirResult = getOllirResult("BinaryAdd.jmm");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        compileArithmetic(ollirResult.getOllirClass());
+    }
+
+    @Test
+    public void testBinarySub() {
+        var ollirResult = getOllirResult("BinarySub.jmm");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        compileArithmetic(ollirResult.getOllirClass());
+    }
+
+    @Test
+    public void testBinaryProd() {
+        var ollirResult = getOllirResult("BinaryProd.jmm");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        compileArithmetic(ollirResult.getOllirClass());
+    }
+
+    @Test
+    public void testBinaryDiv() {
+        var ollirResult = getOllirResult("BinaryDiv.jmm");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        compileArithmetic(ollirResult.getOllirClass());
+    }
+
+    @Test
+    public void testBinaryAnd() {
+        var ollirResult = getOllirResult("BinaryAnd.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.ANDB, method, ollirResult);
+    }
+
+    @Test
+    public void testBinaryLess() {
+        var ollirResult = getOllirResult("BinaryLess.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.LTH, method, ollirResult);
+    }
+
+    @Test
+    public void testBinaryLessOrEqual() {
+        var ollirResult = getOllirResult("BinaryLessOrEqual.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.LTE, method, ollirResult);
+    }
+
+    @Test
+    public void testBinaryGreater() {
+        var ollirResult = getOllirResult("BinaryGreater.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.GTH, method, ollirResult);
+    }
+
+    @Test
+    public void testBinaryGreaterOrEqual() {
+        var ollirResult = getOllirResult("BinaryGreaterOrEqual.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.GTE, method, ollirResult);
+    }
+
+
+    @Test
+    public void testBinaryOr() {
+
+        OllirResult ollirResult = getOllirResult("BinaryOr.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.ORB, method, ollirResult);
+    }
+
+    @Test
+    public void testEquality() {
+
+        OllirResult ollirResult = getOllirResult("Equality.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.EQ, method, ollirResult);
+    }
+
+    @Test
+    public void testInequality() {
+
+        OllirResult ollirResult = getOllirResult("Inequality.jmm");
+
+        var method = CpUtils.getMethod(ollirResult, "main");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+
+        CpUtils.assertHasOperation(OperationType.NEQ, method, ollirResult);
+    }
 }
