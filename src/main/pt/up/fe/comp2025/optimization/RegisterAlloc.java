@@ -243,19 +243,17 @@ public class RegisterAlloc {
         for (var meth : cfg.getMethods()) {
             color.put(meth, new HashMap<>());
 
-
             var methGraph = intGraph.get(meth);
             var varTable = meth.getVarTable();
             var paramSize = meth.getParams().size();
 
-            // regs
-            var reserved = paramSize + 1; // including 'this'
-            var available = (maxRegs == 0) ? Integer.MAX_VALUE : maxRegs - paramSize;
+            // 'this' + parameters, but separate from maxRegs
+            var reserved = paramSize + 1;
 
+            var available = (maxRegs == 0) ? Integer.MAX_VALUE : maxRegs;
 
             Stack<Pair<String, Set<String>>> stack = new Stack<>();
             Set<String> nodes = new HashSet<>(methGraph.keySet());
-
 
             // stack build
             while (!nodes.isEmpty()) {
@@ -270,7 +268,6 @@ public class RegisterAlloc {
                 if (!allocated) return false;
             }
             methGraph = intGraph.get(meth);
-
 
             // assign colors
             while (!stack.isEmpty()) {

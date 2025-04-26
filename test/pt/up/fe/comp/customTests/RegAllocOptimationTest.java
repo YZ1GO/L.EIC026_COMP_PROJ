@@ -41,10 +41,11 @@ public class RegAllocOptimationTest {
     @Test
     public void regAlloc1() {
         String filename = "alloc1.jmm";
-        int expectedNumReg = 4;
+        int expectedTotalReg = 4;
+        int configMaxRegs = 2;
 
         OllirResult original = getOllirResult(filename);
-        OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
+        OllirResult optimized = getOllirResultRegalloc(filename, configMaxRegs);
 
 
         printOllir("Original", original);
@@ -54,8 +55,8 @@ public class RegAllocOptimationTest {
         int originalNumReg = CpUtils.countRegisters(CpUtils.getMethod(original, "soManyRegisters"));
         int actualNumReg = CpUtils.countRegisters(CpUtils.getMethod(optimized, "soManyRegisters"));
 
-        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedNumReg + ", is " + actualNumReg,
-                actualNumReg == expectedNumReg,
+        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedTotalReg + ", is " + actualNumReg,
+                actualNumReg == expectedTotalReg,
                 optimized);
 
 
@@ -63,15 +64,18 @@ public class RegAllocOptimationTest {
         var aReg = varTable.get("a").getVirtualReg();
         CpUtils.assertNotEquals("Expected registers of variables 'a' and 'b' to be different", aReg, varTable.get("b").getVirtualReg(), optimized);
         CpUtils.assertNotEquals("Expected registers of variables 'a' and 'c' to be different", aReg, varTable.get("c").getVirtualReg(), optimized);
+
+        System.out.println(CpUtils.toMessage("", optimized));
     }
 
     @Test
     public void regAlloc2() {
         String filename = "alloc2.jmm";
-        int expectedNumReg = 4;
+        int expectedTotalReg = 4;
+        int configMaxRegs = 2;
 
         OllirResult original = getOllirResult(filename);
-        OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
+        OllirResult optimized = getOllirResultRegalloc(filename, configMaxRegs);
 
 
         printOllir("Original", original);
@@ -81,23 +85,26 @@ public class RegAllocOptimationTest {
         int originalNumReg = CpUtils.countRegisters(CpUtils.getMethod(original, "soManyRegisters"));
         int actualNumReg = CpUtils.countRegisters(CpUtils.getMethod(optimized, "soManyRegisters"));
 
-        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedNumReg + ", is " + actualNumReg,
-                actualNumReg == expectedNumReg,
+        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedTotalReg + ", is " + actualNumReg,
+                actualNumReg == expectedTotalReg,
                 optimized);
 
 
         var varTable = CpUtils.getMethod(optimized, "soManyRegisters").getVarTable();
         var aReg = varTable.get("a").getVirtualReg();
         CpUtils.assertNotEquals("Expected registers of variables 'a' and 'b' to be different", aReg, varTable.get("b").getVirtualReg(), optimized);
+
+        System.out.println(CpUtils.toMessage("", optimized));
     }
 
     @Test
     public void regAlloc3() {
         String filename = "alloc3.jmm";
-        int expectedNumReg = 3;
+        int expectedTotalReg = 3;
+        int configMaxRegs = 1;
 
         OllirResult original = getOllirResult(filename);
-        OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
+        OllirResult optimized = getOllirResultRegalloc(filename, configMaxRegs);
 
 
         printOllir("Original", original);
@@ -107,8 +114,8 @@ public class RegAllocOptimationTest {
         int originalNumReg = CpUtils.countRegisters(CpUtils.getMethod(original, "soManyRegisters"));
         int actualNumReg = CpUtils.countRegisters(CpUtils.getMethod(optimized, "soManyRegisters"));
 
-        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedNumReg + ", is " + actualNumReg,
-                actualNumReg == expectedNumReg,
+        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedTotalReg + ", is " + actualNumReg,
+                actualNumReg == expectedTotalReg,
                 optimized);
 
 
@@ -116,15 +123,18 @@ public class RegAllocOptimationTest {
         var aReg = varTable.get("a").getVirtualReg();
         CpUtils.assertEquals("Expected registers of variables 'a' and 'b' to be equal", aReg, varTable.get("b").getVirtualReg(), optimized);
         CpUtils.assertEquals("Expected registers of variables 'a' and 'c' to be equal", aReg, varTable.get("c").getVirtualReg(), optimized);
+
+        System.out.println(CpUtils.toMessage("", optimized));
     }
 
     @Test
     public void regAlloc4() {
         String filename = "alloc4.jmm";
-        int expectedNumReg = 3;
+        int expectedTotalReg = 3;
+        int configMaxRegs = 1;
 
         OllirResult original = getOllirResult(filename);
-        OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
+        OllirResult optimized = getOllirResultRegalloc(filename, configMaxRegs);
 
 
         printOllir("Original", original);
@@ -134,23 +144,26 @@ public class RegAllocOptimationTest {
         int originalNumReg = CpUtils.countRegisters(CpUtils.getMethod(original, "soManyRegisters"));
         int actualNumReg = CpUtils.countRegisters(CpUtils.getMethod(optimized, "soManyRegisters"));
 
-        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedNumReg + ", is " + actualNumReg,
-                actualNumReg == expectedNumReg,
+        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedTotalReg + ", is " + actualNumReg,
+                actualNumReg == expectedTotalReg,
                 optimized);
 
 
         var varTable = CpUtils.getMethod(optimized, "soManyRegisters").getVarTable();
         var aReg = varTable.get("a").getVirtualReg();
         CpUtils.assertEquals("Expected registers of variables 'a' and 'b' to be equal", aReg, varTable.get("b").getVirtualReg(), optimized);
+
+        System.out.println(CpUtils.toMessage("", optimized));
     }
 
     @Test
     public void regAlloc5() {
         String filename = "alloc5.jmm";
-        int expectedNumReg = 3;
+        int expectedTotalReg = 3;
+        int configMaxRegs = 1;
 
         OllirResult original = getOllirResult(filename);
-        OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
+        OllirResult optimized = getOllirResultRegalloc(filename, configMaxRegs);
 
 
         printOllir("Original", original);
@@ -160,23 +173,26 @@ public class RegAllocOptimationTest {
         int originalNumReg = CpUtils.countRegisters(CpUtils.getMethod(original, "soManyRegisters"));
         int actualNumReg = CpUtils.countRegisters(CpUtils.getMethod(optimized, "soManyRegisters"));
 
-        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedNumReg + ", is " + actualNumReg,
-                actualNumReg == expectedNumReg,
+        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedTotalReg + ", is " + actualNumReg,
+                actualNumReg == expectedTotalReg,
                 optimized);
 
 
         var varTable = CpUtils.getMethod(optimized, "soManyRegisters").getVarTable();
         var aReg = varTable.get("a").getVirtualReg();
         CpUtils.assertEquals("Expected registers of variables 'a' and 'b' to be equal", aReg, varTable.get("b").getVirtualReg(), optimized);
+
+        System.out.println(CpUtils.toMessage("", optimized));
     }
 
     @Test
     public void regAlloc6() {
         String filename = "alloc6.jmm";
-        int expectedNumReg = 4;
+        int expectedTotalReg = 4;
+        int configMaxRegs = 2;
 
         OllirResult original = getOllirResult(filename);
-        OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
+        OllirResult optimized = getOllirResultRegalloc(filename, configMaxRegs);
 
 
         printOllir("Original", original);
@@ -186,8 +202,8 @@ public class RegAllocOptimationTest {
         int originalNumReg = CpUtils.countRegisters(CpUtils.getMethod(original, "soManyRegisters"));
         int actualNumReg = CpUtils.countRegisters(CpUtils.getMethod(optimized, "soManyRegisters"));
 
-        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedNumReg + ", is " + actualNumReg,
-                actualNumReg == expectedNumReg,
+        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedTotalReg + ", is " + actualNumReg,
+                actualNumReg == expectedTotalReg,
                 optimized);
 
 
@@ -196,15 +212,18 @@ public class RegAllocOptimationTest {
         CpUtils.assertNotEquals("Expected registers of variables 'a' and 'b' to be different", aReg, varTable.get("b").getVirtualReg(), optimized);
         CpUtils.assertNotEquals("Expected registers of variables 'a' and 'c' to be different", aReg, varTable.get("c").getVirtualReg(), optimized);
         CpUtils.assertNotEquals("Expected registers of variables 'a' and 'd' to be different", aReg, varTable.get("d").getVirtualReg(), optimized);
+
+        System.out.println(CpUtils.toMessage("", optimized));
     }
 
     @Test
     public void regAlloc7() {
         String filename = "alloc7.jmm";
-        int expectedNumReg = 3;
+        int expectedTotalReg = 3;
+        int configMaxRegs = 1;
 
         OllirResult original = getOllirResult(filename);
-        OllirResult optimized = getOllirResultRegalloc(filename, expectedNumReg);
+        OllirResult optimized = getOllirResultRegalloc(filename, configMaxRegs);
 
 
         printOllir("Original", original);
@@ -214,13 +233,15 @@ public class RegAllocOptimationTest {
         int originalNumReg = CpUtils.countRegisters(CpUtils.getMethod(original, "soManyRegisters"));
         int actualNumReg = CpUtils.countRegisters(CpUtils.getMethod(optimized, "soManyRegisters"));
 
-        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedNumReg + ", is " + actualNumReg,
-                actualNumReg == expectedNumReg,
+        CpUtils.assertTrue("Expected number of locals in 'soManyRegisters' to be equal to " + expectedTotalReg + ", is " + actualNumReg,
+                actualNumReg == expectedTotalReg,
                 optimized);
 
 
         var varTable = CpUtils.getMethod(optimized, "soManyRegisters").getVarTable();
         var aReg = varTable.get("b").getVirtualReg();
         CpUtils.assertEquals("Expected registers of variables 'b' and 'd' to be equal", aReg, varTable.get("d").getVirtualReg(), optimized);
+
+        System.out.println(CpUtils.toMessage("", optimized));
     }
 }
