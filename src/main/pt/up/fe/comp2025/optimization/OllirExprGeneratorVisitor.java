@@ -325,30 +325,77 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
 
     private OllirExprResult visitBinExpr(JmmNode node, Void unused) {
+        String operator = node.get("op");
+        Type resType = types.getExprType(node);
+        String resOllirType = ollirTypes.toOllirType(resType);
 
+        // Handle short-circuit operators
+        if ("&&".equals(operator) || "||".equals(operator)) {
+            return handleShortCircuitOp(node, operator, resOllirType);
+        }
+
+        // Handle non-short-circuit operators (original code)
         var lhs = visit(node.getChild(0));
         var rhs = visit(node.getChild(1));
 
         StringBuilder computation = new StringBuilder();
-
-        // code to compute the children
         computation.append(lhs.getComputation());
         computation.append(rhs.getComputation());
 
-        // code to compute self
-        Type resType = types.getExprType(node);
-        String resOllirType = ollirTypes.toOllirType(resType);
         String code = ollirTypes.nextTemp() + resOllirType;
 
         computation.append(code).append(SPACE)
                 .append(ASSIGN).append(resOllirType).append(SPACE)
-                .append(lhs.getCode()).append(SPACE);
-
-        Type type = types.getExprType(node);
-        computation.append(node.get("op")).append(ollirTypes.toOllirType(type)).append(SPACE)
+                .append(lhs.getCode()).append(SPACE)
+                .append(operator).append(ollirTypes.toOllirType(resType)).append(SPACE)
                 .append(rhs.getCode()).append(END_STMT);
 
-        return new OllirExprResult(code, computation);
+        return new OllirExprResult(code, computation.toString());
+    }
+
+    private OllirExprResult handleShortCircuitOp(JmmNode node, String operator, String resOllirType) {
+        var lhs = visit(node.getChild(0));
+        var rhs = visit(node.getChild(1));
+
+        StringBuilder computation = new StringBuilder();
+        computation.append(lhs.getComputation());
+
+        List<String> labels = OptUtils.getIfLabels();
+        String branchLabel = labels.get(0);
+        String endLabel = labels.get(1);
+
+        String tempVar = ollirTypes.nextTemp(operator.equals("&&") ? "andTmp" : "orTmp");
+        String tempVarWithType = tempVar + resOllirType;
+
+        if ("&&".equals(operator)) {
+            // Check if LHS is TRUE
+            computation.append("if (").append(lhs.getCode()).append(") goto ").append(branchLabel).append(";\n");
+
+            // LHS is FALSE: Assign false to temp and jump to end
+            computation.append(tempVarWithType).append(" :=.bool 0.bool;\n");
+            computation.append("goto ").append(endLabel).append(";\n");
+
+            // LHS is TRUE: Evaluate RHS and assign to temp
+            computation.append(branchLabel).append(":\n");
+            computation.append(rhs.getComputation());
+            computation.append(tempVarWithType).append(" :=.bool ").append(rhs.getCode()).append(";\n");
+
+        } else if ("||".equals(operator)) {
+            // Check if LHS is TRUE
+            computation.append("if (").append(lhs.getCode()).append(") goto ").append(branchLabel).append(";\n");
+
+            // LHS is FALSE: Evaluate RHS and assign to temp
+            computation.append(rhs.getComputation());
+            computation.append(tempVarWithType).append(" :=.bool ").append(rhs.getCode()).append(";\n");
+            computation.append("goto ").append(endLabel).append(";\n");
+
+            // LHS is TRUE: Assign true to temp
+            computation.append(branchLabel).append(":\n");
+            computation.append(tempVarWithType).append(" :=.bool 1.bool;\n");
+        }
+
+        computation.append(endLabel).append(":\n");
+        return new OllirExprResult(tempVarWithType, computation.toString());
     }
 
 

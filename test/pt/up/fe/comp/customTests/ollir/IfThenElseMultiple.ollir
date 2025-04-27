@@ -2,39 +2,72 @@ MyClass {
 
 
 
-
 .construct MyClass().V {
     invokespecial(this, "<init>").V;
 }
 
-.method public findSmallest(a.i32, b.i32, c.i32, d.i32).i32 {
+.method public func(a.i32, b.i32, c.i32, d.i32).i32 {
    tmp0.bool :=.bool a.i32 <.bool b.i32;
-tmp1.bool :=.bool a.i32 <.bool c.i32;
-tmp2.bool :=.bool tmp0.bool &&.bool tmp1.bool;
-tmp5.bool :=.bool a.i32 <.bool d.i32;
-tmp6.bool :=.bool tmp2.bool &&.bool tmp5.bool;
-if (tmp6.bool) goto then0;
-tmp13.bool :=.bool b.i32 <.bool a.i32;
-tmp14.bool :=.bool b.i32 <.bool c.i32;
-tmp15.bool :=.bool tmp13.bool &&.bool tmp14.bool;
-tmp18.bool :=.bool b.i32 <.bool d.i32;
-tmp19.bool :=.bool tmp15.bool &&.bool tmp18.bool;
-if (tmp19.bool) goto then1;
-tmp26.bool :=.bool c.i32 <.bool a.i32;
-tmp27.bool :=.bool c.i32 <.bool b.i32;
-tmp28.bool :=.bool tmp26.bool &&.bool tmp27.bool;
-tmp31.bool :=.bool c.i32 <.bool d.i32;
-tmp32.bool :=.bool tmp28.bool &&.bool tmp31.bool;
-if (tmp32.bool) goto then2;
-res.i32 :=.i32 d.i32;
-goto endif2;
-then2:
-res.i32 :=.i32 c.i32;
-endif2:
+if (tmp0.bool) goto then1;
+andTmp0.bool :=.bool 0.bool;
 goto endif1;
 then1:
-res.i32 :=.i32 b.i32;
+tmp1.bool :=.bool a.i32 <.bool c.i32;
+
+andTmp0.bool :=.bool tmp1.bool;
 endif1:
+
+if (andTmp0.bool) goto then2;
+andTmp1.bool :=.bool 0.bool;
+goto endif2;
+then2:
+tmp2.bool :=.bool a.i32 <.bool d.i32;
+
+andTmp1.bool :=.bool tmp2.bool;
+endif2:
+if (andTmp1.bool) goto then0;
+tmp3.bool :=.bool b.i32 <.bool a.i32;
+
+if (tmp3.bool) goto then4;
+andTmp2.bool :=.bool 0.bool;
+goto endif4;
+then4:
+tmp4.bool :=.bool b.i32 <.bool c.i32;
+andTmp2.bool :=.bool tmp4.bool;
+endif4:
+if (andTmp2.bool) goto then5;
+andTmp3.bool :=.bool 0.bool;
+goto endif5;
+then5:
+tmp5.bool :=.bool b.i32 <.bool d.i32;
+andTmp3.bool :=.bool tmp5.bool;
+endif5:
+if (andTmp3.bool) goto then3;
+tmp6.bool :=.bool c.i32 <.bool a.i32;
+if (tmp6.bool) goto then7;
+andTmp4.bool :=.bool 0.bool;
+goto endif7;
+then7:
+tmp7.bool :=.bool c.i32 <.bool b.i32;
+andTmp4.bool :=.bool tmp7.bool;
+endif7:
+if (andTmp4.bool) goto then8;
+andTmp5.bool :=.bool 0.bool;
+goto endif8;
+then8:
+tmp8.bool :=.bool c.i32 <.bool d.i32;
+andTmp5.bool :=.bool tmp8.bool;
+endif8:
+if (andTmp5.bool) goto then6;
+res.i32 :=.i32 d.i32;
+goto endif6;
+then6:
+res.i32 :=.i32 c.i32;
+endif6:
+goto endif3;
+then3:
+res.i32 :=.i32 b.i32;
+endif3:
 goto endif0;
 then0:
 res.i32 :=.i32 a.i32;
