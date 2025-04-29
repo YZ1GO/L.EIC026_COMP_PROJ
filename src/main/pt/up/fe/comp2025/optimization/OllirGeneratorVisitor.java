@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.ast.TypeUtils;
+import pt.up.fe.comp2025.utils.GetPutFieldUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -108,7 +109,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                 .map(methodNode -> methodNode.get("name"))
                 .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Assignment not inside a method"));
 
-        if (isClassField(varName, methodName)) {
+        if (GetPutFieldUtils.isClassField(varName, methodName, table)) {
             code.append("putfield(this, ").append(varName).append(typeString).append(", ")
                     .append(rhs.getCode()).append(").V").append(END_STMT);
         } else {
@@ -146,7 +147,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                         .map(methodNode -> methodNode.get("name"))
                         .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Return statement not inside a method"));
 
-                if (isClassField(varName, methodName)) {
+                if (GetPutFieldUtils.isClassField(varName, methodName, table)) {
                     // Generate getfield ollir for class fields that are not shadowed
                     String tempVar = ollirTypes.nextTemp();
                     code.append(tempVar).append(ollirTypes.toOllirType(retType)).append(SPACE)
@@ -424,13 +425,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                 .append(END_STMT);
 
         return code.toString();
-    }
-
-    private boolean isClassField(String varName, String methodName) {
-        boolean isField = table.getFields().stream().anyMatch(field -> field.getName().equals(varName));
-        boolean isParam = table.getParameters(methodName).stream().anyMatch(param -> param.getName().equals(varName));
-        boolean isLocal = table.getLocalVariables(methodName).stream().anyMatch(local -> local.getName().equals(varName));
-        return isField && !isParam && !isLocal;
     }
 
     /**

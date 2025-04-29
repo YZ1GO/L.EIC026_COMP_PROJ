@@ -381,4 +381,12 @@ public class OllirGenerationTest {
 
         CpUtils.assertHasOperation(OperationType.NEQ, method, ollirResult);
     }
+
+    @Test
+    public void testArrayField() {
+        assertTrue(testOllirGeneration("ArrayField.jmm", "ArrayField.ollir"));
+        OllirResult ollirResult = getOllirResult("ArrayField.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
 }
