@@ -7,10 +7,8 @@ class CompileIntArrayExample extends Quicksort {
     int index;
     int assignedValue;
 
-    public int getArrayElement(int index) {
-        return intArrayField[index];
-    }
-
-    public static void main(String[] args) {
+    public int[] initializeArray(int size) {
+        intArrayField = new int[size];
+        return intArrayField;
     }
 }

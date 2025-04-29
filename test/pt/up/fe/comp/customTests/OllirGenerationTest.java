@@ -389,4 +389,28 @@ public class OllirGenerationTest {
         System.out.println("Generated OLLIR:");
         System.out.println(ollirResult.getOllirCode());
     }
+
+    @Test
+    public void testArrayField2() {
+        assertTrue(testOllirGeneration("ArrayField2.jmm", "ArrayField2.ollir"));
+        OllirResult ollirResult = getOllirResult("ArrayField2.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
+
+    @Test
+    public void testArrayField3() {
+        assertTrue(testOllirGeneration("ArrayField3.jmm", "ArrayField3.ollir"));
+        OllirResult ollirResult = getOllirResult("ArrayField3.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
+
+    @Test
+    public void testArrayField4() {
+        assertTrue(testOllirGeneration("ArrayField4.jmm", "ArrayField4.ollir"));
+        OllirResult ollirResult = getOllirResult("ArrayField4.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
 }
