@@ -19,6 +19,7 @@ ret.i32 tmp1.i32;
 }
 
 .method public static main(args.array.String).V {
+ret.V;
    }
 
 }

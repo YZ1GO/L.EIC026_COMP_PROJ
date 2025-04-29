@@ -384,7 +384,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         String ollirElemType = ollirTypes.toOllirType(elementType);
 
         code.append(indexRes.getComputation());
-        code.append(valueRes.getComputation());
 
         String methodName = node.getAncestor(METHOD_DECL)
                 .map(methodNode -> methodNode.get("name"))
@@ -398,16 +397,15 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                     .append("getfield(this, ").append(arrayName).append(".array").append(ollirElemType).append(")")
                     .append(".array").append(ollirElemType).append(END_STMT);
 
-            // Generate assignment to the array element
-            String tempValueVar = ollirTypes.nextTemp();
-            code.append(tempValueVar).append(ollirElemType).append(SPACE)
-                    .append(ASSIGN).append(ollirElemType).append(SPACE)
-                    .append(valueRes.getCode()).append(END_STMT);
+            code.append(valueRes.getComputation());
 
-            code.append(tempArrayVar).append("[").append(indexRes.getCode()).append("]").append(ollirElemType)
+            // Generate assignment to the array element
+            code.append(tempArrayVar).append(".array").append(ollirElemType)
+                    .append("[").append(indexRes.getCode()).append("]").append(ollirElemType)
                     .append(SPACE).append(ASSIGN).append(ollirElemType).append(SPACE)
-                    .append(tempValueVar).append(END_STMT);
+                    .append(valueRes.getCode()).append(END_STMT);
         } else {
+            code.append(valueRes.getComputation());
             code.append(arrayName)
                     .append("[")
                     .append(indexRes.getCode())

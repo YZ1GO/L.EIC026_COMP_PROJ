@@ -44,6 +44,8 @@ public class ConstPropOptimizationTest {
         CpUtils.assertLiteralCount("10", method, optimized, 1);
         CpUtils.assertLiteralCount("20", method, optimized, 2);
         CpUtils.assertLiteralCount("30", method, optimized, 2);
+        System.out.println("GENERATED OLLIR: ");
+        System.out.println(optimized.getOllirCode());
     }
 
     @Test

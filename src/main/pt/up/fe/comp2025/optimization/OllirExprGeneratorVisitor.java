@@ -275,17 +275,17 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
     private OllirExprResult visitLength(JmmNode node, Void unused) {
         OllirExprResult arrayResult = visit(node.getChild(0));
-    
+
         String tempVar = ollirTypes.nextTemp();
         String ollirIntType = ollirTypes.toOllirType(TypeUtils.newIntType());
         String tempVarWithType = tempVar + ollirIntType;
-    
+
         StringBuilder computation = new StringBuilder();
         computation.append(arrayResult.getComputation())
-                   .append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirIntType).append(SPACE)
-                   .append("arraylength(").append(arrayResult.getCode()).append(")").append(ollirIntType)
-                   .append(END_STMT);
-    
+                .append(tempVarWithType).append(SPACE).append(ASSIGN).append(ollirIntType).append(SPACE)
+                .append("arraylength(").append(arrayResult.getCode()).append(")").append(ollirIntType)
+                .append(END_STMT);
+
         return new OllirExprResult(tempVarWithType, computation.toString());
     }
 
@@ -301,7 +301,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
 
         String computation = assignment + constructorCall;
         String code = tempVar + ollirType;
-    
+
         return new OllirExprResult(code, computation);
     }
 
