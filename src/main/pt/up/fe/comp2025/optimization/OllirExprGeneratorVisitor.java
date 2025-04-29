@@ -7,6 +7,7 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.comp2025.ast.TypeUtils;
+import pt.up.fe.comp2025.utils.GetPutFieldUtils;
 
 import javax.swing.*;
 
@@ -407,9 +408,25 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         // Check if this VarRef is an imported, extended, or inherited class
         if (types.isImportedOrExtendedOrInherited(new Type(id, false))) {
             return new OllirExprResult(id);
+        }
+
+        String methodName = node.getAncestor(METHOD_DECL.toString())
+                .map(methodNode -> methodNode.get("name"))
+                .orElseThrow(() -> new RuntimeException("ERROR IN OllirExprGeneratorVisitor: VarRef not inside a method"));
+
+        if (GetPutFieldUtils.isClassField(id, methodName, table)) {
+            // Class field
+            String tempVar = ollirTypes.nextTemp();
+            String tempVarWithType = tempVar + ollirType;
+            StringBuilder getFieldCodeBuilder = new StringBuilder();
+            getFieldCodeBuilder.append(tempVarWithType)
+                    .append(SPACE).append(ASSIGN).append(ollirType).append(SPACE)
+                    .append("getfield(this, ").append(id).append(ollirType).append(")")
+                    .append(ollirType).append(END_STMT);
+            return new OllirExprResult(tempVarWithType, getFieldCodeBuilder.toString());
         } else {
-            String code = id + ollirType;
-            return new OllirExprResult(code);
+            // Local or param
+            return new OllirExprResult(id + ollirType);
         }
     }
 

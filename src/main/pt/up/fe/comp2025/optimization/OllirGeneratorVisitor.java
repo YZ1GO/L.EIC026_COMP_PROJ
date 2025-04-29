@@ -133,49 +133,23 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder();
 
         var expr = node.getNumChildren() > 0 ? exprVisitor.visit(node.getChild(0)) : OllirExprResult.EMPTY;
+
         Type retType = expr != OllirExprResult.EMPTY ? types.getExprType(node.getChild(0)) : TypeUtils.newVoidType();
 
         code.append(expr.getComputation());
+        code.append("ret");
+        code.append(ollirTypes.toOllirType(retType));
+        code.append(SPACE);
 
         if (expr != OllirExprResult.EMPTY) {
-            JmmNode childNode = node.getChild(0);
-
-            if (childNode.getKind().equals(VAR_REF_EXPR.toString())) {
-                var varName = childNode.get("name");
-
-                String methodName = node.getAncestor(METHOD_DECL)
-                        .map(methodNode -> methodNode.get("name"))
-                        .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Return statement not inside a method"));
-
-                if (GetPutFieldUtils.isClassField(varName, methodName, table)) {
-                    // Generate getfield ollir for class fields that are not shadowed
-                    String tempVar = ollirTypes.nextTemp();
-                    code.append(tempVar).append(ollirTypes.toOllirType(retType)).append(SPACE)
-                            .append(ASSIGN).append(ollirTypes.toOllirType(retType)).append(SPACE)
-                            .append("getfield(this, ").append(varName).append(ollirTypes.toOllirType(retType))
-                            .append(")").append(ollirTypes.toOllirType(retType)).append(END_STMT);
-
-                    code.append("ret").append(ollirTypes.toOllirType(retType)).append(SPACE)
-                            .append(tempVar).append(ollirTypes.toOllirType(retType)).append(END_STMT);
-                } else {
-                    // Generate ollir for local variable or parameter
-                    code.append("ret").append(ollirTypes.toOllirType(retType)).append(SPACE)
-                            .append(expr.getCode()).append(END_STMT);
-                }
-            }  else {
-                // Handle for non-VarRefExpr cases (e.g., BinaryExpr, LiteralExpr, etc.)
-                code.append("ret");
-                code.append(ollirTypes.toOllirType(retType));
-                code.append(SPACE);
-                code.append(expr.getCode());
-                code.append(END_STMT);
-            }
-        } else {
-            code.append("ret.V").append(END_STMT);
+            code.append(expr.getCode());
         }
+
+        code.append(END_STMT);
 
         return code.toString();
     }
+
 
 
     private String visitParam(JmmNode node, Void unused) {
@@ -412,17 +386,40 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(indexRes.getComputation());
         code.append(valueRes.getComputation());
 
-        code.append(arrayName)
-                .append("[")
-                .append(indexRes.getCode())
-                .append("]")
-                .append(ollirElemType)
-                .append(SPACE)
-                .append(ASSIGN)
-                .append(ollirElemType)
-                .append(SPACE)
-                .append(valueRes.getCode())
-                .append(END_STMT);
+        String methodName = node.getAncestor(METHOD_DECL)
+                .map(methodNode -> methodNode.get("name"))
+                .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Array assignment not inside a method"));
+
+        if (GetPutFieldUtils.isClassField(arrayName, methodName, table)) {
+            // Generate getfield for the array field
+            String tempArrayVar = ollirTypes.nextTemp();
+            code.append(tempArrayVar).append(".array").append(ollirElemType).append(SPACE)
+                    .append(ASSIGN).append(".array").append(ollirElemType).append(SPACE)
+                    .append("getfield(this, ").append(arrayName).append(".array").append(ollirElemType).append(")")
+                    .append(".array").append(ollirElemType).append(END_STMT);
+
+            // Generate assignment to the array element
+            String tempValueVar = ollirTypes.nextTemp();
+            code.append(tempValueVar).append(ollirElemType).append(SPACE)
+                    .append(ASSIGN).append(ollirElemType).append(SPACE)
+                    .append(valueRes.getCode()).append(END_STMT);
+
+            code.append(tempArrayVar).append("[").append(indexRes.getCode()).append("]").append(ollirElemType)
+                    .append(SPACE).append(ASSIGN).append(ollirElemType).append(SPACE)
+                    .append(tempValueVar).append(END_STMT);
+        } else {
+            code.append(arrayName)
+                    .append("[")
+                    .append(indexRes.getCode())
+                    .append("]")
+                    .append(ollirElemType)
+                    .append(SPACE)
+                    .append(ASSIGN)
+                    .append(ollirElemType)
+                    .append(SPACE)
+                    .append(valueRes.getCode())
+                    .append(END_STMT);
+        }
 
         return code.toString();
     }
