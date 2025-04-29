@@ -147,9 +147,14 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
                 if (isField && !isParam && !isLocal) {
                     // Generate getfield ollir for class fields that are not shadowed
-                    code.append("ret").append(ollirTypes.toOllirType(retType)).append(SPACE)
+                    String tempVar = ollirTypes.nextTemp();
+                    code.append(tempVar).append(ollirTypes.toOllirType(retType)).append(SPACE)
+                            .append(ASSIGN).append(ollirTypes.toOllirType(retType)).append(SPACE)
                             .append("getfield(this, ").append(varName).append(ollirTypes.toOllirType(retType))
                             .append(")").append(ollirTypes.toOllirType(retType)).append(END_STMT);
+
+                    code.append("ret").append(ollirTypes.toOllirType(retType)).append(SPACE)
+                            .append(tempVar).append(ollirTypes.toOllirType(retType)).append(END_STMT);
                 } else {
                     // Generate ollir for local variable or parameter
                     code.append("ret").append(ollirTypes.toOllirType(retType)).append(SPACE)
