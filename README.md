@@ -32,5 +32,53 @@ The optimization reduces the number of local variables (JVM registers) by perfor
           - Variable: args                 | Register: 0
      ```
 
+### Constant Propagation
+This is an optimization technique where the compiler identifies variables that have constant values and replaces their occurrences with the constant value. 
+This reduces the number of local variables used in the JVM and simplifies the code.
 
+#### Example:
+Input Code:
+```
+a = 10;
+b = a + 5;
+c = b + a;
 
+After Constant Propagation:
+
+a = 10;
+b = 10 + 5;
+c = b + 10;
+```
+
+Implementation:
+- The [`ConstantPropagationVisitor`](/src/main/pt/up/fe/comp2025/optimization/ConstantPropagationVisitor.java) integer and boolean constants in a method.
+- It replaces variable references with their constant values when possible.
+- It invalidates constants when variables are reassigned or modified in loops or branches.
+
+Key Features:
+- Handles integer and boolean constants.
+- Supports propagation across assignments and branches (`if` and `while` statements).
+
+### Constant Folding
+This is an optimization technique where the compiler evaluates expressions involving constant values at compile time and replaces them with their resulting value. 
+This reduces runtime computation and simplifies the code.
+
+#### Example:
+Input Code:
+```
+a = 10 + 5;
+
+After Constant Folding:
+
+a = 15;
+```
+
+Implementation:
+- The [`ConstantFoldingVisitor`](/src/main/pt/up/fe/comp2025/optimization/ConstantFoldingVisitor.java) evaluates binary expressions (+, -, *, /, etc.) involving integer or boolean literals.
+- It replaces the expression with a single literal node containing the computed value.
+- The optimization is applied iteratively until no further changes are made.
+
+Key Features:
+- Supports arithmetic and logical operations.
+- Avoids division by zero by replacing such cases with a default value (e.g., 0).
+- Simplifies the abstract syntax tree (AST) by replacing complex expressions with literals.
