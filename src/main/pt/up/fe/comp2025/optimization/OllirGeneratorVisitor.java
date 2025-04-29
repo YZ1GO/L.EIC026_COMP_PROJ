@@ -58,7 +58,6 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         addVisit(BLOCK_STMT, this::visitBlockStmt);
         addVisit(IF_STMT, this::visitIfStmt);
-        //addVisit(BINARY_EXPR, this::visitArithmeticExpr);
         addVisit(ARRAY_ASSIGN_STMT, this::visitArrayAssignStmt);
 
         setDefaultVisit(this::defaultVisit);
@@ -103,19 +102,25 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         var left = node.getChild(0);
         Type thisType = types.getExprType(left);
         String typeString = ollirTypes.toOllirType(thisType);
-        var varCode = left.get("name") + typeString;
+        var varName = left.get("name");
 
+        String methodName = node.getAncestor(METHOD_DECL)
+                .map(methodNode -> methodNode.get("name"))
+                .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Assignment not inside a method"));
 
-        code.append(varCode);
-        code.append(SPACE);
-
-        code.append(ASSIGN);
-        code.append(typeString);
-        code.append(SPACE);
-
-        code.append(rhs.getCode());
-
-        code.append(END_STMT);
+        if (isClassField(varName, methodName)) {
+            code.append("putfield(this, ").append(varName).append(typeString).append(", ")
+                    .append(rhs.getCode()).append(").V").append(END_STMT);
+        } else {
+            code.append(varName);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(ASSIGN);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(rhs.getCode());
+            code.append(END_STMT);
+        }
 
         return code.toString();
     }
@@ -141,11 +146,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                         .map(methodNode -> methodNode.get("name"))
                         .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Return statement not inside a method"));
 
-                boolean isField = table.getFields().stream().anyMatch(field -> field.getName().equals(varName));
-                boolean isParam = table.getParameters(methodName).stream().anyMatch(param -> param.getName().equals(varName));
-                boolean isLocal = table.getLocalVariables(methodName).stream().anyMatch(local -> local.getName().equals(varName));
-
-                if (isField && !isParam && !isLocal) {
+                if (isClassField(varName, methodName)) {
                     // Generate getfield ollir for class fields that are not shadowed
                     String tempVar = ollirTypes.nextTemp();
                     code.append(tempVar).append(ollirTypes.toOllirType(retType)).append(SPACE)
@@ -424,38 +425,13 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         return code.toString();
     }
-/*
-    private String visitArithmeticExpr(JmmNode node, Void unused) {
-        var lhs = exprVisitor.visit(node.getChild(0));
-        var rhs = exprVisitor.visit(node.getChild(1));
 
-        StringBuilder computation = new StringBuilder();
-
-        computation.append(lhs.getComputation());
-        computation.append(rhs.getComputation());
-
-        // Generate code for the arithmetic operation
-        Type resultType = types.getExprType(node);
-        String resultOllirType = ollirTypes.toOllirType(resultType);
-        String tempVar = ollirTypes.nextTemp();
-        String tempVarWithType = tempVar + resultOllirType;
-
-        computation.append(tempVarWithType)
-                .append(SPACE)
-                .append(ASSIGN)
-                .append(SPACE)
-                .append(resultOllirType)
-                .append(SPACE)
-                .append(lhs.getCode())
-                .append(SPACE)
-                .append(node.get("op"))
-                .append(resultOllirType)
-                .append(SPACE)
-                .append(rhs.getCode())
-                .append(END_STMT);
-
-        return computation.toString();
-    }*/
+    private boolean isClassField(String varName, String methodName) {
+        boolean isField = table.getFields().stream().anyMatch(field -> field.getName().equals(varName));
+        boolean isParam = table.getParameters(methodName).stream().anyMatch(param -> param.getName().equals(varName));
+        boolean isLocal = table.getLocalVariables(methodName).stream().anyMatch(local -> local.getName().equals(varName));
+        return isField && !isParam && !isLocal;
+    }
 
     /**
          * Default visitor. Visits every child node and return an empty string.
