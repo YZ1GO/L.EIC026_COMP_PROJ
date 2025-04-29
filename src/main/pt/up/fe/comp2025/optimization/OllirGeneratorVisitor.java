@@ -123,22 +123,49 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitReturn(JmmNode node, Void unused) {
         // TODO: Hardcoded for int type, needs to be expanded
+        // DONE: Expanded for other types
         StringBuilder code = new StringBuilder();
 
         var expr = node.getNumChildren() > 0 ? exprVisitor.visit(node.getChild(0)) : OllirExprResult.EMPTY;
-
         Type retType = expr != OllirExprResult.EMPTY ? types.getExprType(node.getChild(0)) : TypeUtils.newVoidType();
 
         code.append(expr.getComputation());
-        code.append("ret");
-        code.append(ollirTypes.toOllirType(retType));
-        code.append(SPACE);
 
         if (expr != OllirExprResult.EMPTY) {
-            code.append(expr.getCode());
-        }
+            JmmNode childNode = node.getChild(0);
 
-        code.append(END_STMT);
+            if (childNode.getKind().equals(VAR_REF_EXPR.toString())) {
+                var varName = childNode.get("name");
+
+                String methodName = node.getAncestor(METHOD_DECL)
+                        .map(methodNode -> methodNode.get("name"))
+                        .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Return statement not inside a method"));
+
+                boolean isField = table.getFields().stream().anyMatch(field -> field.getName().equals(varName));
+                boolean isParam = table.getParameters(methodName).stream().anyMatch(param -> param.getName().equals(varName));
+                boolean isLocal = table.getLocalVariables(methodName).stream().anyMatch(local -> local.getName().equals(varName));
+
+                if (isField && !isParam && !isLocal) {
+                    // Generate getfield ollir for class fields that are not shadowed
+                    code.append("ret").append(ollirTypes.toOllirType(retType)).append(SPACE)
+                            .append("getfield(this, ").append(varName).append(ollirTypes.toOllirType(retType))
+                            .append(")").append(ollirTypes.toOllirType(retType)).append(END_STMT);
+                } else {
+                    // Generate ollir for local variable or parameter
+                    code.append("ret").append(ollirTypes.toOllirType(retType)).append(SPACE)
+                            .append(expr.getCode()).append(END_STMT);
+                }
+            }  else {
+                // Handle for non-VarRefExpr cases (e.g., BinaryExpr, LiteralExpr, etc.)
+                code.append("ret");
+                code.append(ollirTypes.toOllirType(retType));
+                code.append(SPACE);
+                code.append(expr.getCode());
+                code.append(END_STMT);
+            }
+        } else {
+            code.append("ret.V").append(END_STMT);
+        }
 
         return code.toString();
     }
@@ -209,7 +236,7 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         // Add default return statement if the method is void and no explicit return is present
         if (returnType.getName().equals("void") && node.getChildren(STMT).stream()
-                .noneMatch(stmt -> stmt.getKind().equals(RETURN_STMT))) {
+                .noneMatch(stmt -> stmt.getKind().equals(RETURN_STMT.toString()))) {
             code.append("   ret.V;\n");
         }
 
