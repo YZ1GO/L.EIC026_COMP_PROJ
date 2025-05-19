@@ -1,20 +1,19 @@
 package pt.up.fe.comp2025.backend;
 
 import org.specs.comp.ollir.*;
-import org.specs.comp.ollir.inst.AssignInstruction;
-import org.specs.comp.ollir.inst.BinaryOpInstruction;
-import org.specs.comp.ollir.inst.ReturnInstruction;
-import org.specs.comp.ollir.inst.SingleOpInstruction;
+import org.specs.comp.ollir.inst.*;
 import org.specs.comp.ollir.tree.TreeNode;
+import org.specs.comp.ollir.type.BuiltinKind;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
-import org.specs.comp.ollir.type.Type;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +37,9 @@ public class JasminGenerator {
     private final JasminUtils types;
 
     private final FunctionClassMap<TreeNode, String> generators;
+
+    private int stackSize = 0;
+    private int maxStackSize = 0;
 
     public JasminGenerator(OllirResult ollirResult) {
         this.ollirResult = ollirResult;
@@ -83,6 +85,12 @@ public class JasminGenerator {
         }
 
         return code;
+    }
+
+    private void updateStackSize(){
+        if(stackSize > maxStackSize){
+            maxStackSize = stackSize;
+        }
     }
 
     private String generateClassUnit(ClassUnit classUnit) {
@@ -153,32 +161,75 @@ public class JasminGenerator {
         var code = new StringBuilder();
 
         // calculate modifier
-        var modifier = types.getModifier(method.getMethodAccessModifier());
+        var modifier = method.getMethodAccessModifier() != AccessModifier.DEFAULT ?
+                method.getMethodAccessModifier().name().toLowerCase() + " " : "";
 
         var methodName = method.getMethodName();
 
+
         // TODO: Hardcoded param types and return type, needs to be expanded
-        var params = "I";
-        var returnType = "I";
-
-        code.append("\n.method ").append(modifier)
-                .append(methodName)
-                .append("(" + params + ")" + returnType).append(NL);
-
-        // Add limits
-        code.append(TAB).append(".limit stack 99").append(NL);
-        code.append(TAB).append(".limit locals 99").append(NL);
-
-        for (var inst : method.getInstructions()) {
-            var instCode = StringLines.getLines(apply(inst)).stream()
-                    .collect(Collectors.joining(NL + TAB, TAB, NL));
-
-            code.append(instCode);
+        // done i guess, not tested
+        code.append("\n.method ").append(modifier);
+        if(methodName.equals("main")){
+            code.append("static ").append(methodName).append("([Ljava/lang/String;)V").append(NL);
+        }
+        else {
+            code.append(methodName).append("(");
+            for (Element param : method.getParams()) {
+                code.append(types.getType(param.getType()));
+            }
+            code.append(")").append(types.getType(method.getReturnType())).append(NL);
         }
 
+
+        // Add limits
+        var tempCode =new StringBuilder();
+        for (var instr : method.getInstructions()) {
+            for(var l : method.getLabels(instr)){
+                tempCode.append(l).append(":").append(NL);
+            }
+
+            tempCode.append(
+                    StringLines.getLines(generators.apply(instr))
+                            .stream()
+                            .collect(Collectors.joining(NL + TAB, TAB, NL))
+            );
+            if (instr instanceof CallInstruction && !(((CallInstruction)instr).getReturnType().equals(BuiltinKind.VOID)))
+            {
+                tempCode.append(TAB).append("pop").append(NL);
+                updateStackSize();
+                this.stackSize--;
+            }
+        }
         code.append(".end method\n");
 
+        code.append(TAB)
+                .append(".limit stack")
+                .append(maxStackSize)
+                .append(NL);
+
+        Set<Integer> registers = new HashSet<>();
+        for(var variable : method.getVarTable().values()){
+            if(variable.getScope().equals(VarScope.FIELD)) continue;
+
+            if(!registers.contains(variable.getVirtualReg())){
+                registers.add(variable.getVirtualReg());
+            }
+        }
+        var regSize = registers.size();
+
+        if(!registers.contains(0) && !methodName.equals("main")){
+            code.append(TAB).append(".limit locals ").append(regSize+1).append(NL);
+        } else {
+            code.append(TAB).append(".limit locals ").append(regSize).append(NL);
+        }
+        code.append(tempCode);
+
+
         // unset method
+        maxStackSize = 0;
+        stackSize = 0;
+
         currentMethod = null;
         //System.out.println("ENDING METHOD " + method.getMethodName());
         return code.toString();
