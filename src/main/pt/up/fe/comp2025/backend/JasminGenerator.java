@@ -1,9 +1,6 @@
 package pt.up.fe.comp2025.backend;
 
-import org.specs.comp.ollir.ClassUnit;
-import org.specs.comp.ollir.LiteralElement;
-import org.specs.comp.ollir.Method;
-import org.specs.comp.ollir.Operand;
+import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.inst.AssignInstruction;
 import org.specs.comp.ollir.inst.BinaryOpInstruction;
 import org.specs.comp.ollir.inst.ReturnInstruction;
@@ -14,6 +11,7 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
+import org.specs.comp.ollir.type.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +85,6 @@ public class JasminGenerator {
         return code;
     }
 
-
     private String generateClassUnit(ClassUnit classUnit) {
 
         var code = new StringBuilder();
@@ -97,9 +94,27 @@ public class JasminGenerator {
         code.append(".class ").append(className).append(NL).append(NL);
 
         // TODO: When you support 'extends', this must be updated
-        var fullSuperClass = "java/lang/Object";
+        // done, not tested
+        String extended;
+        if (classUnit.getSuperClass() == null || classUnit.getSuperClass().equals("Object")) {
+            extended = "java/lang/Object";
+            code.append(".super ").append(extended).append(NL);
+        } else {
+            extended = types.convertClassPath(ollirResult.getClass().getSuperclass().getName());
+            code.append(".super ").append(extended).append(NL);
+        }
 
-        code.append(".super ").append(fullSuperClass).append(NL);
+        // fields
+        for (var f : classUnit.getFields()) {
+            var am = types.getModifier(f.getFieldAccessModifier());
+
+            code.append(".field ")
+                    .append(am)
+                    .append(f.getFieldName())
+                    .append(" ")
+                    .append(types.getType(f.getFieldType()))
+                    .append(NL);
+        }
 
         // generate a single constructor method
         var defaultConstructor = """
@@ -109,8 +124,9 @@ public class JasminGenerator {
                     invokespecial %s/<init>()V
                     return
                 .end method
-                """.formatted(fullSuperClass);
+                """.formatted(extended);
         code.append(defaultConstructor);
+
 
         // generate code for all other methods
         for (var method : ollirResult.getOllirClass().getMethods()) {
