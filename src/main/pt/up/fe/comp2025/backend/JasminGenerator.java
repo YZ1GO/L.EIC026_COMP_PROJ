@@ -170,10 +170,9 @@ public class JasminGenerator {
         // TODO: Hardcoded param types and return type, needs to be expanded
         // done i guess, not tested
         code.append("\n.method ").append(modifier);
-        if(methodName.equals("main")){
+        if(methodName.equals("main")) {
             code.append("static ").append(methodName).append("([Ljava/lang/String;)V").append(NL);
-        }
-        else {
+        } else {
             code.append(methodName).append("(");
             for (Element param : method.getParams()) {
                 code.append(types.getType(param.getType()));
@@ -201,10 +200,9 @@ public class JasminGenerator {
                 this.stackSize--;
             }
         }
-        code.append(".end method\n");
 
         code.append(TAB)
-                .append(".limit stack")
+                .append(".limit stack ")
                 .append(maxStackSize)
                 .append(NL);
 
@@ -225,6 +223,7 @@ public class JasminGenerator {
         }
         code.append(tempCode);
 
+        code.append(".end method\n");
 
         // unset method
         maxStackSize = 0;
@@ -243,7 +242,6 @@ public class JasminGenerator {
 
         // store value in the stack in destination
         var lhs = assign.getDest();
-
         if (!(lhs instanceof Operand)) {
             throw new NotImplementedException(lhs.getClass());
         }
@@ -256,6 +254,7 @@ public class JasminGenerator {
 
         // TODO: Hardcoded for int type, needs to be expanded
         code.append("istore ").append(reg.getVirtualReg()).append(NL);
+        stackSize--;
 
         return code.toString();
     }
@@ -265,6 +264,8 @@ public class JasminGenerator {
     }
 
     private String generateLiteral(LiteralElement literal) {
+        stackSize++;
+        updateStackSize();
         return "ldc " + literal.getLiteral() + NL;
     }
 
@@ -281,7 +282,12 @@ public class JasminGenerator {
 
         // load values on the left and on the right
         code.append(apply(binaryOp.getLeftOperand()));
+        stackSize++;
+        updateStackSize();
+
         code.append(apply(binaryOp.getRightOperand()));
+        stackSize++;
+        updateStackSize();
 
         // TODO: Hardcoded for int type, needs to be expanded
         var typePrefix = "i";
@@ -294,6 +300,7 @@ public class JasminGenerator {
         };
 
         code.append(typePrefix + op).append(NL);
+        stackSize--;
 
         return code.toString();
     }
@@ -301,8 +308,16 @@ public class JasminGenerator {
     private String generateReturn(ReturnInstruction returnInst) {
         var code = new StringBuilder();
 
-        // TODO: Hardcoded for int type, needs to be expanded
-        code.append("ireturn").append(NL);
+        if (returnInst.getOperand().isEmpty()) {
+            code.append("return").append(NL);
+        } else {
+            code.append(apply(returnInst.getOperand().get()));
+            stackSize++;
+            updateStackSize();
+            // TODO: Hardcoded for int type, needs to be expanded
+            code.append("ireturn").append(NL);
+            stackSize--;
+        }
 
         return code.toString();
     }
