@@ -196,7 +196,6 @@ public class JasminGenerator {
             if (instr instanceof CallInstruction && !(((CallInstruction)instr).getReturnType().equals(BuiltinKind.VOID)))
             {
                 tempCode.append(TAB).append("pop").append(NL);
-                updateStackSize();
                 this.stackSize--;
             }
         }
@@ -221,8 +220,8 @@ public class JasminGenerator {
         } else {
             code.append(TAB).append(".limit locals ").append(regSize).append(NL);
         }
-        code.append(tempCode);
 
+        code.append(tempCode);
         code.append(".end method\n");
 
         // unset method
@@ -251,9 +250,8 @@ public class JasminGenerator {
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName());
 
-
         // TODO: Hardcoded for int type, needs to be expanded
-        code.append("istore ").append(reg.getVirtualReg()).append(NL);
+        code.append(types.istore(reg.getVirtualReg())).append(NL);
         stackSize--;
 
         return code.toString();
@@ -266,15 +264,33 @@ public class JasminGenerator {
     private String generateLiteral(LiteralElement literal) {
         stackSize++;
         updateStackSize();
-        return "ldc " + literal.getLiteral() + NL;
+
+        String literalValue = literal.getLiteral();
+        String jasminType = types.getType(literal.getType());
+
+        if (jasminType.equals("Z")) {
+            return literalValue.equals("true") ? "iconst_1" + NL : "iconst_0" + NL;
+        } else if (jasminType.equals("I")) {
+            int value = Integer.parseInt(literalValue);
+            if (value >= 0 && value <= 5) {
+                return "iconst_" + value + NL;
+            } else if (value >= -128 && value <= 127) {
+                return "bipush " + value + NL;
+            } else if (value >= -32768 && value <= 32767) {
+                return "sipush " + value + NL;
+            }
+        }
+        return "ldc " + literalValue + NL;
     }
 
     private String generateOperand(Operand operand) {
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName());
+        stackSize++;
+        updateStackSize();
 
         // TODO: Hardcoded for int type, needs to be expanded
-        return "iload " + reg.getVirtualReg() + NL;
+        return types.iload(reg.getVirtualReg()) + NL;
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
@@ -312,8 +328,6 @@ public class JasminGenerator {
             code.append("return").append(NL);
         } else {
             code.append(apply(returnInst.getOperand().get()));
-            stackSize++;
-            updateStackSize();
             // TODO: Hardcoded for int type, needs to be expanded
             code.append("ireturn").append(NL);
             stackSize--;
