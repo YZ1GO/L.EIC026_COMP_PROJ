@@ -24,11 +24,13 @@ public class OllirGenerationTest {
         System.out.println("Generated OLLIR:");
         System.out.println(result.getOllirCode());
 
-        if (!result.getOllirCode().trim().replaceAll("\\s+", " ")
+        assertEquals(result.getOllirCode().trim().replaceAll("\\s+", " "), expectedOllir.trim().replaceAll("\\s+", " "));
+
+        /*if (!result.getOllirCode().trim().replaceAll("\\s+", " ")
                 .equals(expectedOllir.trim().replaceAll("\\s+", " "))) {
             System.out.println("OLLIR output does not match expected result.");
             return false;
-        }
+        }*/
         return true;
     }
 
@@ -414,8 +416,25 @@ public class OllirGenerationTest {
         System.out.println(ollirResult.getOllirCode());
     }
 
-    // method considered local, not the imported
-    // need to change the prioritization, imported more prior
+    @Test
+    public void testImportsFeedback() {
+        assertTrue(testOllirGeneration("Imports.jmm", "Imports.ollir"));
+        OllirResult ollirResult = getOllirResult("Imports.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
+
+    @Test
+    public void testImportsFeedback2() {
+        assertTrue(testOllirGeneration("Imports2.jmm", "Imports2.ollir"));
+        OllirResult ollirResult = getOllirResult("Imports2.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
+
+    // imported methods has more prior than local,
+    // need to change it
+    // it is related to feedback point 2 cp2
     @Test
     public void feedback2() {
         assertTrue(testOllirGeneration("feedback2.jmm", "feedback2.ollir"));
