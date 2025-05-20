@@ -1,0 +1,10 @@
+import opt.Opt;
+import out;
+
+class A {
+    public static void main(String[] args) {
+        int opt;
+        opt = Opt.f();
+        out.println(opt);
+    }
+}

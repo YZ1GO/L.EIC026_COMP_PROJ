@@ -22,8 +22,10 @@ public class ClassNameConflictChecker extends AnalysisVisitor {
         }
 
         if (table.getImports().stream()
-                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
-                .map(String::trim)
+                .map(importName -> {
+                    String[] parts = importName.split("\\.");
+                    return parts[parts.length - 1];
+                })
                 .anyMatch(importName -> importName.equals(className))) {
             addReport(newError(
                     classDecl,

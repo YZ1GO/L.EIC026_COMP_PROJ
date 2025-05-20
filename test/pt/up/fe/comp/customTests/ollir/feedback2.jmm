@@ -1,0 +1,12 @@
+import B;
+class A {
+    int foo() {
+        B b;
+        boolean c;
+        b = new B();
+        c = b.foo();
+
+        return 0;
+    }
+
+}
