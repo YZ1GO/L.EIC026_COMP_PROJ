@@ -3,9 +3,11 @@ package pt.up.fe.comp2025.backend;
 import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.inst.*;
 import org.specs.comp.ollir.tree.TreeNode;
+import org.specs.comp.ollir.type.ArrayType;
 import org.specs.comp.ollir.type.BuiltinKind;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.specs.util.SpecsCheck;
 import pt.up.fe.specs.util.classmap.FunctionClassMap;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
 import pt.up.fe.specs.util.utilities.StringLines;
@@ -59,6 +61,7 @@ public class JasminGenerator {
         generators.put(Operand.class, this::generateOperand);
         generators.put(BinaryOpInstruction.class, this::generateBinaryOp);
         generators.put(ReturnInstruction.class, this::generateReturn);
+        generators.put(NewInstruction.class, this::generateNew);
     }
 
     private String apply(TreeNode node) {
@@ -120,7 +123,7 @@ public class JasminGenerator {
                     .append(am)
                     .append(f.getFieldName())
                     .append(" ")
-                    .append(types.getType(f.getFieldType()))
+                    .append(types.getDescriptor(f.getFieldType()))
                     .append(NL);
         }
 
@@ -175,9 +178,9 @@ public class JasminGenerator {
         } else {
             code.append(methodName).append("(");
             for (Element param : method.getParams()) {
-                code.append(types.getType(param.getType()));
+                code.append(types.getDescriptor(param.getType()));
             }
-            code.append(")").append(types.getType(method.getReturnType())).append(NL);
+            code.append(")").append(types.getDescriptor(method.getReturnType())).append(NL);
         }
 
 
@@ -235,10 +238,6 @@ public class JasminGenerator {
 
     private String generateAssign(AssignInstruction assign) {
         var code = new StringBuilder();
-
-        // generate code for loading what's on the right
-        code.append(apply(assign.getRhs()));
-
         // store value in the stack in destination
         var lhs = assign.getDest();
         if (!(lhs instanceof Operand)) {
@@ -249,9 +248,18 @@ public class JasminGenerator {
 
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName());
+        var rhsCode = apply(assign.getRhs());
+        code.append(rhsCode);
 
         // TODO: Hardcoded for int type, needs to be expanded
-        code.append(types.istore(reg.getVirtualReg())).append(NL);
+        // Add more in utils
+        var prefix = types.getPrefix(operand.getType());
+        switch (prefix) {
+            case "i":
+                code.append(types.istore(reg.getVirtualReg())).append(NL);
+            case "a":
+                code.append(types.astore(reg.getVirtualReg())).append(NL);
+        }
         stackSize--;
 
         return code.toString();
@@ -266,22 +274,34 @@ public class JasminGenerator {
         updateStackSize();
 
         String literalValue = literal.getLiteral();
-        String jasminType = types.getType(literal.getType());
+        String jasminType = types.getDescriptor(literal.getType());
 
-        if (jasminType.equals("Z")) {
-            return literalValue.equals("true") ? "iconst_1" + NL : "iconst_0" + NL;
-        } else if (jasminType.equals("I")) {
-            int value = Integer.parseInt(literalValue);
-            if (value >= 0 && value <= 5) {
-                return "iconst_" + value + NL;
-            } else if (value >= -128 && value <= 127) {
-                return "bipush " + value + NL;
-            } else if (value >= -32768 && value <= 32767) {
-                return "sipush " + value + NL;
-            }
+        switch (jasminType) {
+            case "Z":
+                return literalValue.equals("true") ? "iconst_1" + NL : "iconst_0" + NL;
+            case "I":
+                int value = Integer.parseInt(literalValue);
+                if (value == -1) {
+                    return "iconst_m1" + NL;
+                } else if (value >= 0 && value <= 5) {
+                    return "iconst_" + value + NL;
+                } else if (value >= -128 && value <= 127) {
+                    return "bipush " + value + NL;
+                } else if (value >= -32768 && value <= 32767) {
+                    return "sipush " + value + NL;
+                }
+                return "ldc " + value + NL;
+            default:
+                return "ldc " + literalValue + NL;
         }
-        return "ldc " + literalValue + NL;
     }
+
+    //TODO: when applying iinc care that iinc is byte -128 -> 127
+    // a = a + 1
+    // a = 1 + a
+    // a = a - 1
+    // care a = 1 - a cant use iinc
+
 
     private String generateOperand(Operand operand) {
         // get register
@@ -290,7 +310,15 @@ public class JasminGenerator {
         updateStackSize();
 
         // TODO: Hardcoded for int type, needs to be expanded
-        return types.iload(reg.getVirtualReg()) + NL;
+        var prefix = types.getPrefix(operand.getType());
+        switch (prefix) {
+            case "i":
+                return types.iload(reg.getVirtualReg()) + NL;
+            case "a":
+                return types.aload(reg.getVirtualReg()) + NL;
+            default:
+                throw new NotImplementedException("Unsupported prefix: " + prefix);
+        }
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
@@ -327,10 +355,35 @@ public class JasminGenerator {
         if (returnInst.getOperand().isEmpty()) {
             code.append("return").append(NL);
         } else {
-            code.append(apply(returnInst.getOperand().get()));
+            var loadOperand = apply(returnInst.getOperand().get());
+
+            code.append(loadOperand);
             // TODO: Hardcoded for int type, needs to be expanded
-            code.append("ireturn").append(NL);
+            // Add more in utils
+            var prefix = types.getPrefix(returnInst.getReturnType());
+            code.append(prefix).append("return").append(NL);
+
             stackSize--;
+        }
+
+        return code.toString();
+    }
+
+    private String generateNew(NewInstruction newInst) {
+        var callerType = newInst.getCaller().getType();
+        var code = new StringBuilder();
+
+        if (callerType instanceof ArrayType arrayType) {
+            SpecsCheck.checkArgument(newInst.getArguments().size() == 1,
+                    () -> "Expected exactly one argument for array size: " + newInst);
+
+            code.append(apply(newInst.getArguments().getFirst()));
+
+            code.append("newarray ").append(types.getArrayType(arrayType)).append(NL);
+            stackSize--;
+            updateStackSize();
+        } else {
+            throw new NotImplementedException("Unsupported type for 'new': " + callerType);
         }
 
         return code.toString();
