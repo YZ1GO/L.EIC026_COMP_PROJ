@@ -1,0 +1,23 @@
+import A.B.C;
+import B.D;
+
+A {
+
+
+
+
+.construct A().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public foo().i32 {
+
+invokestatic(D, "println", 2.i32).V;
+   ret.i32 0.i32;
+}
+
+.method public static main(args.array.String).V {
+   ret.V;
+}
+
+}

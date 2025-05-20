@@ -24,11 +24,13 @@ public class OllirGenerationTest {
         System.out.println("Generated OLLIR:");
         System.out.println(result.getOllirCode());
 
-        if (!result.getOllirCode().trim().replaceAll("\\s+", " ")
+        assertEquals(result.getOllirCode().trim().replaceAll("\\s+", " "), expectedOllir.trim().replaceAll("\\s+", " "));
+
+        /*if (!result.getOllirCode().trim().replaceAll("\\s+", " ")
                 .equals(expectedOllir.trim().replaceAll("\\s+", " "))) {
             System.out.println("OLLIR output does not match expected result.");
             return false;
-        }
+        }*/
         return true;
     }
 
@@ -410,6 +412,22 @@ public class OllirGenerationTest {
     public void testArrayField4() {
         assertTrue(testOllirGeneration("ArrayField4.jmm", "ArrayField4.ollir"));
         OllirResult ollirResult = getOllirResult("ArrayField4.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
+
+    @Test
+    public void testImportsFeedback() {
+        assertTrue(testOllirGeneration("Imports.jmm", "Imports.ollir"));
+        OllirResult ollirResult = getOllirResult("Imports.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
+
+    @Test
+    public void testImportsFeedback2() {
+        assertTrue(testOllirGeneration("Imports2.jmm", "Imports2.ollir"));
+        OllirResult ollirResult = getOllirResult("Imports2.jmm");
         System.out.println("Generated OLLIR:");
         System.out.println(ollirResult.getOllirCode());
     }
