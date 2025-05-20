@@ -56,4 +56,13 @@ public class JasminUtils {
 
         return null;
     }
+
+    public String istore(int reg) {
+        return reg >= 0 && reg <= 3 ? "istore_" + reg : "istore " + reg;
+    }
+
+    public String iload(int reg) {
+        return reg >= 0 && reg <= 3 ? "iload_" + reg : "iload " + reg;
+    }
+
 }
