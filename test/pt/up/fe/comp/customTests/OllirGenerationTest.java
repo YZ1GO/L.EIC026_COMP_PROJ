@@ -413,4 +413,14 @@ public class OllirGenerationTest {
         System.out.println("Generated OLLIR:");
         System.out.println(ollirResult.getOllirCode());
     }
+
+    // method considered local, not the imported
+    // need to change the prioritization, imported more prior
+    @Test
+    public void feedback2() {
+        assertTrue(testOllirGeneration("feedback2.jmm", "feedback2.ollir"));
+        OllirResult ollirResult = getOllirResult("feedback2.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
 }
