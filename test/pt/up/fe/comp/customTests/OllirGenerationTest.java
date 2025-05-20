@@ -439,4 +439,15 @@ public class OllirGenerationTest {
         System.out.println("Generated OLLIR:");
         System.out.println(ollirResult.getOllirCode());
     }
+
+    // imported methods has more prior than local,
+    // need to change it
+    // it is related to feedback point 2 cp2
+    @Test
+    public void feedback2() {
+        assertTrue(testOllirGeneration("feedback2.jmm", "feedback2.ollir"));
+        OllirResult ollirResult = getOllirResult("feedback2.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
 }
