@@ -1,0 +1,21 @@
+import opt.Opt;
+import out;
+
+A {
+
+
+
+
+.construct A().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public static main(args.array.String).V {
+   opt.i32 :=.i32 invokestatic(Opt, "f").i32;
+
+
+invokestatic(out, "println", opt.i32).V;
+   ret.V;
+}
+
+}

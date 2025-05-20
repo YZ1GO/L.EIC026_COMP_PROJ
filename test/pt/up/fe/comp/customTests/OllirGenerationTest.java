@@ -431,4 +431,12 @@ public class OllirGenerationTest {
         System.out.println("Generated OLLIR:");
         System.out.println(ollirResult.getOllirCode());
     }
+
+    @Test
+    public void FeedbackTest() {
+        assertTrue(testOllirGeneration("FeedbackTest.jmm", "FeedbackTest.ollir"));
+        OllirResult ollirResult = getOllirResult("FeedbackTest.jmm");
+        System.out.println("Generated OLLIR:");
+        System.out.println(ollirResult.getOllirCode());
+    }
 }
