@@ -180,6 +180,12 @@ public class AssignTypeChecker extends AnalysisVisitor {
         for (JmmNode var : usedVars) {
             String usedVarName = var.get("name");
 
+            // Skip if this VAR_REF_EXPR is the receiver of a method call
+            JmmNode parent = var.getParent();
+            if (parent != null && parent.getKind().equals(Kind.METHOD_CALL_EXPR.toString()) && parent.getChild(0) == var) {
+                continue;
+            }
+
             if (methodNode != null && !VariableInitializationUtils.isVariableInitialized(usedVarName, methodNode)) {
                 addReport(newError(
                         var,
