@@ -1,0 +1,12 @@
+import A.B.C;
+import B.D;
+
+class A {
+    public int foo() {
+        D.println(2);
+        return 0;
+    }
+
+    public static void main(String[] args) {
+    }
+}
