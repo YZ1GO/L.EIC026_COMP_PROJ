@@ -105,7 +105,7 @@ public class RegisterAlloc {
                     // LIVEout(n) = UNION LIVEin(s) (s any successor of n)
                     for (var s : inst.getSuccessors()) {
                         if (s.getNodeType() != NodeType.END) {
-                           newSet.addLiveOut(sets.get(met).get(s).liveIn);
+                            newSet.addLiveOut(sets.get(met).get(s).liveIn);
                         }
                     }
 
@@ -181,21 +181,26 @@ public class RegisterAlloc {
     private void createIntGraph() {
         for (var met : cfg.getMethods()) {
             intGraph.put(met, new HashMap<>());
+            var methGraph = intGraph.get(met);
+            var liveSets = sets.get(met);
 
-            for (var var : met.getVarTable().keySet()) {
-                if (var.equals(VAR_THIS)) continue;
+            // init methGraph with all variables from liveIn, liveOut, and def(inst)
+            for (var inst : liveSets.keySet()) {
+                var liveSet = liveSets.get(inst);
 
-                if (met.getVarTable().get(var).getScope().equals(VarScope.LOCAL) ) {
-                    intGraph.get(met).put(var, new HashSet<>());
+                for (var v : liveSet.liveIn) {
+                    methGraph.computeIfAbsent(v, k -> new HashSet<>());
+                }
+
+
+                Set<String> liveOutSet = new HashSet<>(liveSet.liveOut);
+                liveOutSet.addAll(def(inst));
+                for (var v : liveOutSet) {
+                    methGraph.computeIfAbsent(v, k -> new HashSet<>());
                 }
             }
-        }
 
-        // edges
-        for (var meth : cfg.getMethods()) {
-            var methGraph = intGraph.get(meth);
-            var liveSets = sets.get(meth);
-
+            // edges
             for (var inst : liveSets.keySet()) {
                 var liveSet = liveSets.get(inst);
                 Set<String> liveOutSet = new HashSet<>(liveSet.liveOut);
@@ -211,8 +216,10 @@ public class RegisterAlloc {
     private void addEdgesForLiveSet(Map<String, Set<String>> methGraph, Set<String> liveSet) {
         for (var i : liveSet) {
             if (i.equals(VAR_THIS)) continue;
+            methGraph.computeIfAbsent(i, k -> new HashSet<>());
             for (var j : liveSet) {
                 if (!i.equals(j) && !j.equals(VAR_THIS)) {
+                    methGraph.computeIfAbsent(j, k -> new HashSet<>());
                     methGraph.get(i).add(j);
                     methGraph.get(j).add(i);
                 }
