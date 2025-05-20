@@ -235,14 +235,16 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         boolean isStaticCall = !objectResult.getCode().contains(".");
         String invocationType = isStaticCall ? "invokestatic" : "invokevirtual";
 
-        boolean isImported = types.isImportedOrExtendedOrInherited(new Type(objectResult.getCode(), false));
+        Type receiverType = types.getExprType(node.getChild(0));
+        boolean isImported = types.isImportedOrExtendedOrInherited(receiverType);
 
         // Determine the return type based on context
         Type returnType;
         JmmNode parent = node.getParent();
-        if (isImported && parent != null && parent.getKind().equals("AssignStmt")) {
+        boolean isAssignContext = parent != null && (parent.getKind().equals("ArrayAssignStmt") || parent.getKind().equals("AssignStmt"));
+        if (isAssignContext) {
             // Method call is part of an assignment to a variable
-            JmmNode lhsNode = parent.getChild(0); // Left-hand side is the first child
+            JmmNode lhsNode = parent.getChild(0);
             returnType = types.getExprType(lhsNode);
         } else if (isImported) {
             // Method call is not part of an assignment, assume void
@@ -262,8 +264,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
         }
 
         // Check if the method call is part of an assignment
-        if (parent != null && (parent.getKind().equals("ArrayAssignStmt")
-                || parent.getKind().equals("AssignStmt"))) {
+        if (isAssignContext) {
             // Don't generate assignment to prevent double-assignment
             return new OllirExprResult(methodCall, computation.toString());
         }

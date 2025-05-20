@@ -444,9 +444,9 @@ public class OllirGenerationTest {
     // need to change it
     // it is related to feedback point 2 cp2
     @Test
-    public void feedback2() {
-        assertTrue(testOllirGeneration("feedback2.jmm", "feedback2.ollir"));
-        OllirResult ollirResult = getOllirResult("feedback2.jmm");
+    public void FeedbackTest2() {
+        assertTrue(testOllirGeneration("FeedbackTest2.jmm", "FeedbackTest2.ollir"));
+        OllirResult ollirResult = getOllirResult("FeedbackTest2.jmm");
         System.out.println("Generated OLLIR:");
         System.out.println(ollirResult.getOllirCode());
     }

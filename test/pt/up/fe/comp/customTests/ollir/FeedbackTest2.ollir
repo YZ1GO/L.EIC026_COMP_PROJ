@@ -1,0 +1,22 @@
+import B;
+
+A {
+
+
+
+
+.construct A().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method foo().i32 {
+   tmp0.B :=.B new(B).B;
+invokespecial(tmp0.B, "<init>").V;
+b.B :=.B tmp0.B;
+
+   c.bool :=.bool invokevirtual(b.B, "foo").bool;
+
+   ret.i32 0.i32;
+}
+
+}
