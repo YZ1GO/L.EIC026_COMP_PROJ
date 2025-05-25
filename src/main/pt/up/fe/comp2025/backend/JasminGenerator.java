@@ -257,8 +257,12 @@ public class JasminGenerator {
         switch (prefix) {
             case "i":
                 code.append(types.istore(reg.getVirtualReg())).append(NL);
+                break;
             case "a":
                 code.append(types.astore(reg.getVirtualReg())).append(NL);
+                break;
+            default:
+                throw new NotImplementedException("Unsupported prefix: " + prefix);
         }
         stackSize--;
 
