@@ -4,6 +4,7 @@ import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.type.ArrayType;
 import org.specs.comp.ollir.type.BuiltinType;
 import org.specs.comp.ollir.type.ClassType;
+import org.specs.comp.ollir.type.BuiltinKind;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import org.specs.comp.ollir.type.Type;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
@@ -114,5 +115,10 @@ public class JasminUtils {
 
     public String aload(int reg) {
         return reg >= 0 && reg <= 3 ? "aload_" + reg : "aload " + reg;
+    }
+
+    public boolean isVoid(Type t) {
+        return t instanceof BuiltinType
+                && ((BuiltinType) t).getKind() == BuiltinKind.VOID;
     }
 }

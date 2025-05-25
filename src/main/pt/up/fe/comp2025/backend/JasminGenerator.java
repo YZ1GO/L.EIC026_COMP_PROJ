@@ -202,11 +202,6 @@ public class JasminGenerator {
                             .stream()
                             .collect(Collectors.joining(NL + TAB, TAB, NL))
             );
-            if (instr instanceof CallInstruction && !(((CallInstruction)instr).getReturnType().equals(BuiltinKind.VOID)))
-            {
-                tempCode.append(TAB).append("pop").append(NL);
-                this.stackSize--;
-            }
         }
 
         code.append(TAB)
@@ -427,9 +422,8 @@ public class JasminGenerator {
                 .append(methodName).append(descriptor)
                 .append(NL);
 
-        if (!invokeStatic.getReturnType().equals(BuiltinKind.VOID)) {
-            stackSize++;
-            updateStackSize();
+        if (!types.isVoid(invokeStatic.getReturnType())) {
+            code.append("pop").append(NL);
         }
 
         return code.toString();
