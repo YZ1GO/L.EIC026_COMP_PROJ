@@ -5,6 +5,7 @@ import org.specs.comp.ollir.inst.*;
 import org.specs.comp.ollir.tree.TreeNode;
 import org.specs.comp.ollir.type.ArrayType;
 import org.specs.comp.ollir.type.BuiltinKind;
+import org.specs.comp.ollir.type.ClassType;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.specs.util.SpecsCheck;
@@ -62,6 +63,8 @@ public class JasminGenerator {
         generators.put(BinaryOpInstruction.class, this::generateBinaryOp);
         generators.put(ReturnInstruction.class, this::generateReturn);
         generators.put(NewInstruction.class, this::generateNew);
+        generators.put(InvokeStaticInstruction.class, this::generateInvokeStatic);
+        generators.put(GotoInstruction.class, this::generateGoto);
     }
 
     private String apply(TreeNode node) {
@@ -338,16 +341,18 @@ public class JasminGenerator {
         updateStackSize();
 
         // TODO: Hardcoded for int type, needs to be expanded
-        var typePrefix = "i";
-
-        // apply operation
-        var op = switch (binaryOp.getOperation().getOpType()) {
-            case ADD -> "add";
-            case MUL -> "mul";
-            default -> throw new NotImplementedException(binaryOp.getOperation().getOpType());
-        };
-
-        code.append(typePrefix + op).append(NL);
+        // CHANGES HAVE BEEN MADE
+        var opType = binaryOp.getOperation().getOpType();
+        switch (opType) {
+            case ADD:
+                code.append("iadd").append(NL);
+                break;
+            case MUL:
+                code.append("imul").append(NL);
+                break;
+            default:
+                throw new NotImplementedException(opType);
+        }
         stackSize--;
 
         return code.toString();
@@ -389,6 +394,50 @@ public class JasminGenerator {
         } else {
             throw new NotImplementedException("Unsupported type for 'new': " + callerType);
         }
+
+        return code.toString();
+    }
+
+    private String generateInvokeStatic(InvokeStaticInstruction invokeStatic) {
+        var code = new StringBuilder();
+
+        for (var arg : invokeStatic.getArguments()) {
+            code.append(apply(arg));
+            stackSize++;
+            updateStackSize();
+        }
+
+        var className = types.convertClassPath(((Operand) invokeStatic.getCaller()).getName());
+        var methodElement = invokeStatic.getMethodName();
+        String fullMethodName;
+        if (methodElement instanceof LiteralElement) {
+            fullMethodName = ((LiteralElement) methodElement).getLiteral();
+        } else {
+            throw new NotImplementedException("Method name element type: " + methodElement.getClass());
+        }
+        var methodName = fullMethodName.contains(".") ? fullMethodName.substring(fullMethodName.indexOf('.') + 1) : fullMethodName;
+
+        var descriptor = types.getMethodDescriptor(invokeStatic.getReturnType(), invokeStatic.getArguments());
+
+        code.append("invokestatic ")
+                .append(className).append("/")
+                .append(methodName).append(descriptor)
+                .append(NL);
+
+        if (!invokeStatic.getReturnType().equals(BuiltinKind.VOID)) {
+            stackSize++;
+            updateStackSize();
+        }
+
+        return code.toString();
+    }
+
+    private String generateGoto(GotoInstruction gotoInstruction) {
+        var code = new StringBuilder();
+
+        var label = gotoInstruction.getLabel();
+
+        code.append("goto ").append(label).append(NL);
 
         return code.toString();
     }

@@ -7,8 +7,7 @@ import org.specs.comp.ollir.type.ClassType;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import org.specs.comp.ollir.type.Type;
 import pt.up.fe.specs.util.exceptions.NotImplementedException;
-
-import java.sql.Array;
+import java.util.List;
 
 public class JasminUtils {
 
@@ -67,7 +66,7 @@ public class JasminUtils {
 
         if (ollirType instanceof BuiltinType builtinType) {
             return switch (builtinType.getKind()) {
-                case INT32 -> "i";
+                case INT32, BOOLEAN -> "i";
                 default -> throw new NotImplementedException(builtinType.getKind());
             };
         }
@@ -86,6 +85,19 @@ public class JasminUtils {
             }
         }
         throw new NotImplementedException("Array type not supported for: " + ollirType.getClass().getSimpleName());
+    }
+
+    public String getMethodDescriptor(Type returnType, List<Element> arguments) {
+        var descriptor = new StringBuilder("(");
+
+        for (var arg : arguments) {
+            descriptor.append(getDescriptor(arg.getType()));
+        }
+
+        descriptor.append(")");
+        descriptor.append(getDescriptor(returnType));
+
+        return descriptor.toString();
     }
 
     public String istore(int reg) {
