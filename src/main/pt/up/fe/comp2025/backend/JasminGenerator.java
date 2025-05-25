@@ -65,6 +65,8 @@ public class JasminGenerator {
         generators.put(NewInstruction.class, this::generateNew);
         generators.put(InvokeStaticInstruction.class, this::generateInvokeStatic);
         generators.put(GotoInstruction.class, this::generateGoto);
+        generators.put(PutFieldInstruction.class, this::generatePutField);
+        generators.put(GetFieldInstruction.class, this::generateGetField);
     }
 
     private String apply(TreeNode node) {
@@ -184,6 +186,7 @@ public class JasminGenerator {
                 code.append(types.getDescriptor(param.getType()));
             }
             code.append(")").append(types.getDescriptor(method.getReturnType())).append(NL);
+            System.out.println("RETURNTYPE: " + method.getReturnType());
         }
 
 
@@ -438,6 +441,47 @@ public class JasminGenerator {
         var label = gotoInstruction.getLabel();
 
         code.append("goto ").append(label).append(NL);
+
+        return code.toString();
+    }
+
+    private String generatePutField(PutFieldInstruction putField) {
+        var code = new StringBuilder();
+
+        code.append(apply(putField.getObject()));
+
+        code.append(apply(putField.getValue()));
+
+        var fieldName = putField.getField().getName();
+        var fieldType = types.getDescriptor(putField.getField().getType());
+        var className = types.convertClassPath(((ClassType) putField.getObject().getType()).getName());
+
+        code.append("putfield ")
+                .append(className).append("/")
+                .append(fieldName).append(" ")
+                .append(fieldType).append(NL);
+
+        stackSize -= 2;
+
+        return code.toString();
+    }
+
+    private String generateGetField(GetFieldInstruction getField) {
+        var code = new StringBuilder();
+
+        code.append(apply(getField.getObject()));
+
+        var fieldName = getField.getField().getName();
+        var fieldType = types.getDescriptor(getField.getFieldType());
+        var className = types.convertClassPath(((ClassType) getField.getObject().getType()).getName());
+
+        code.append("getfield ")
+                .append(className).append("/")
+                .append(fieldName).append(" ")
+                .append(fieldType).append(NL);
+
+        stackSize++;
+        updateStackSize();
 
         return code.toString();
     }

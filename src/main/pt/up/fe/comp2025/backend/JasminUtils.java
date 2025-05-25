@@ -56,11 +56,11 @@ public class JasminUtils {
             return "L" + convertClassPath(classType.getName())+";";
         }
 
-        return null;
+        throw new NotImplementedException("Unsupported type: " + ollirType.getClass().getSimpleName());
     }
 
     public String getPrefix(Type ollirType) {
-        if (ollirType instanceof ArrayType) {
+        if (ollirType instanceof ArrayType || ollirType instanceof ClassType) {
             return "a";
         }
 
