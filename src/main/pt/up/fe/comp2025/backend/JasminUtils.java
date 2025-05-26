@@ -121,4 +121,15 @@ public class JasminUtils {
         return t instanceof BuiltinType
                 && ((BuiltinType) t).getKind() == BuiltinKind.VOID;
     }
+
+    public String extractMethodName(Element methodElement) {
+        if (methodElement instanceof LiteralElement literalElement) {
+            String fullMethodName = literalElement.getLiteral();
+            return fullMethodName.contains(".")
+                    ? fullMethodName.substring(fullMethodName.indexOf('.') + 1)
+                    : fullMethodName;
+        } else {
+            throw new NotImplementedException("Method name element type: " + methodElement.getClass());
+        }
+    }
 }

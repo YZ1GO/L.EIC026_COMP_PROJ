@@ -67,6 +67,7 @@ public class JasminGenerator {
         generators.put(PutFieldInstruction.class, this::generatePutField);
         generators.put(GetFieldInstruction.class, this::generateGetField);
         generators.put(InvokeSpecialInstruction.class, this::generateInvokeSpecial);
+        generators.put(InvokeVirtualInstruction.class, this::generateInvokeVirtual);
         generators.put(ArrayLengthInstruction.class, this::generateArrayLength);
     }
 
@@ -187,7 +188,6 @@ public class JasminGenerator {
                 code.append(types.getDescriptor(param.getType()));
             }
             code.append(")").append(types.getDescriptor(method.getReturnType())).append(NL);
-            System.out.println("RETURNTYPE: " + method.getReturnType());
         }
 
 
@@ -421,15 +421,7 @@ public class JasminGenerator {
         }
 
         var className = types.convertClassPath(((Operand) invokeStatic.getCaller()).getName());
-        var methodElement = invokeStatic.getMethodName();
-        String fullMethodName;
-        if (methodElement instanceof LiteralElement) {
-            fullMethodName = ((LiteralElement) methodElement).getLiteral();
-        } else {
-            throw new NotImplementedException("Method name element type: " + methodElement.getClass());
-        }
-        var methodName = fullMethodName.contains(".") ? fullMethodName.substring(fullMethodName.indexOf('.') + 1) : fullMethodName;
-
+        var methodName = types.extractMethodName(invokeStatic.getMethodName());
         var descriptor = types.getMethodDescriptor(invokeStatic.getReturnType(), invokeStatic.getArguments());
 
         code.append("invokestatic ")
@@ -498,15 +490,7 @@ public class JasminGenerator {
     private String generateInvokeSpecial(InvokeSpecialInstruction invokeSpecial) {
         var code = new StringBuilder();
 
-        var methodElement = invokeSpecial.getMethodName();
-        String fullMethodName;
-        if (methodElement instanceof LiteralElement) {
-            fullMethodName = ((LiteralElement) methodElement).getLiteral();
-        } else {
-            throw new NotImplementedException("Method name element type: " + methodElement.getClass());
-        }
-        var methodName = fullMethodName.contains(".") ? fullMethodName.substring(fullMethodName.indexOf('.') + 1) : fullMethodName;
-
+        var methodName = types.extractMethodName(invokeSpecial.getMethodName());
         if (methodName.equals("<init>")) {
             return "";
         }
@@ -528,6 +512,37 @@ public class JasminGenerator {
                 .append(NL);
 
         stackSize -= invokeSpecial.getArguments().size() + 1;
+
+        return code.toString();
+    }
+
+    private String generateInvokeVirtual(InvokeVirtualInstruction invokeVirtual) {
+        var code = new StringBuilder();
+
+        code.append(apply(invokeVirtual.getCaller()));
+        stackSize++;
+        updateStackSize();
+
+        for (var arg : invokeVirtual.getArguments()) {
+            code.append(apply(arg));
+            stackSize++;
+            updateStackSize();
+        }
+
+        var className = types.convertClassPath(((ClassType) invokeVirtual.getCaller().getType()).getName());
+        var methodName = types.extractMethodName(invokeVirtual.getMethodName());
+        var descriptor = types.getMethodDescriptor(invokeVirtual.getReturnType(), invokeVirtual.getArguments());
+
+        code.append("invokevirtual ")
+                .append(className).append("/")
+                .append(methodName).append(descriptor)
+                .append(NL);
+
+        stackSize -= invokeVirtual.getArguments().size() + 1;
+        if (!types.isVoid(invokeVirtual.getReturnType())) {
+            stackSize++;
+        }
+        updateStackSize();
 
         return code.toString();
     }
