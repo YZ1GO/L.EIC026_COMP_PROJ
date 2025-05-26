@@ -1,8 +1,9 @@
+import ioPlus;
 class Test {
 
     public static void main(String[] args) {
-        Test test;
-        test = new Test();
+        int[] a;
+        a = new int[5];
+        ioPlus.printResult(a.length);
     }
-
 }

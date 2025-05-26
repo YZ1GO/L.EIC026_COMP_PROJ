@@ -4,7 +4,6 @@ import org.specs.comp.ollir.*;
 import org.specs.comp.ollir.inst.*;
 import org.specs.comp.ollir.tree.TreeNode;
 import org.specs.comp.ollir.type.ArrayType;
-import org.specs.comp.ollir.type.BuiltinKind;
 import org.specs.comp.ollir.type.ClassType;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
@@ -68,6 +67,7 @@ public class JasminGenerator {
         generators.put(PutFieldInstruction.class, this::generatePutField);
         generators.put(GetFieldInstruction.class, this::generateGetField);
         generators.put(InvokeSpecialInstruction.class, this::generateInvokeSpecial);
+        generators.put(ArrayLengthInstruction.class, this::generateArrayLength);
     }
 
     private String apply(TreeNode node) {
@@ -528,6 +528,19 @@ public class JasminGenerator {
                 .append(NL);
 
         stackSize -= invokeSpecial.getArguments().size() + 1;
+
+        return code.toString();
+    }
+
+    private String generateArrayLength(ArrayLengthInstruction arrayLengthInst) {
+        var code = new StringBuilder();
+
+        code.append(apply(arrayLengthInst.getOperands().getFirst()));
+
+        code.append("arraylength").append(NL);
+
+        stackSize--;
+        updateStackSize();
 
         return code.toString();
     }
