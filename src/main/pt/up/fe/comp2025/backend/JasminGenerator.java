@@ -67,6 +67,7 @@ public class JasminGenerator {
         generators.put(GotoInstruction.class, this::generateGoto);
         generators.put(PutFieldInstruction.class, this::generatePutField);
         generators.put(GetFieldInstruction.class, this::generateGetField);
+        generators.put(InvokeSpecialInstruction.class, this::generateInvokeSpecial);
     }
 
     private String apply(TreeNode node) {
@@ -389,6 +390,20 @@ public class JasminGenerator {
             code.append("newarray ").append(types.getArrayType(arrayType)).append(NL);
             stackSize--;
             updateStackSize();
+        }else if (callerType instanceof ClassType classType) {
+            var className = types.convertClassPath(classType.getName());
+
+            code.append("new ").append(className).append(NL);
+            stackSize++;
+            updateStackSize();
+
+            code.append("dup").append(NL);
+            stackSize++;
+            updateStackSize();
+
+            code.append("invokespecial ").append(className).append("/<init>()V").append(NL);
+            stackSize -= 2;
+            updateStackSize();
         } else {
             throw new NotImplementedException("Unsupported type for 'new': " + callerType);
         }
@@ -476,6 +491,43 @@ public class JasminGenerator {
 
         stackSize++;
         updateStackSize();
+
+        return code.toString();
+    }
+
+    private String generateInvokeSpecial(InvokeSpecialInstruction invokeSpecial) {
+        var code = new StringBuilder();
+
+        var methodElement = invokeSpecial.getMethodName();
+        String fullMethodName;
+        if (methodElement instanceof LiteralElement) {
+            fullMethodName = ((LiteralElement) methodElement).getLiteral();
+        } else {
+            throw new NotImplementedException("Method name element type: " + methodElement.getClass());
+        }
+        var methodName = fullMethodName.contains(".") ? fullMethodName.substring(fullMethodName.indexOf('.') + 1) : fullMethodName;
+
+        if (methodName.equals("<init>")) {
+            return "";
+        }
+
+        for (var arg : invokeSpecial.getArguments()) {
+            code.append(apply(arg));
+            stackSize++;
+            updateStackSize();
+        }
+
+        code.append(apply(invokeSpecial.getCaller()));
+
+        var className = types.convertClassPath(((ClassType) invokeSpecial.getCaller().getType()).getName());
+        var descriptor = types.getMethodDescriptor(invokeSpecial.getReturnType(), invokeSpecial.getArguments());
+
+        code.append("invokespecial ")
+                .append(className).append("/")
+                .append(methodName).append(descriptor)
+                .append(NL);
+
+        stackSize -= invokeSpecial.getArguments().size() + 1;
 
         return code.toString();
     }
