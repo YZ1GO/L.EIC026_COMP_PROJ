@@ -1,0 +1,33 @@
+import ioPlus;
+
+MyClass {
+
+    .method public static main(args.array.String).V {
+
+        a.i32 :=.i32 10.i32;
+
+        b.i32 :=.i32 5.i32;
+
+        res.i32 :=.i32 b.i32;
+
+        t1.bool :=.bool a.i32 <.bool b.i32;
+
+        if (t1.bool) goto if1;
+        goto endif1;
+
+        if1:
+
+            res.i32 :=.i32 a.i32;
+
+        endif1:
+
+        invokestatic(ioPlus, "printResult", res.i32).V;
+
+        ret.V;
+
+    }
+
+    .construct MyClass().V {
+        invokespecial(this, "<init>").V;
+    }
+}

@@ -1,6 +1,7 @@
 package pt.up.fe.comp2025.backend;
 
 import org.specs.comp.ollir.*;
+import org.specs.comp.ollir.inst.BinaryOpInstruction;
 import org.specs.comp.ollir.type.ArrayType;
 import org.specs.comp.ollir.type.BuiltinType;
 import org.specs.comp.ollir.type.ClassType;
@@ -132,4 +133,17 @@ public class JasminUtils {
             throw new NotImplementedException("Method name element type: " + methodElement.getClass());
         }
     }
+
+    public String getIf(OperationType op) {
+        return switch (op) {
+            case NEQ, AND, OR, ANDB, ORB, NOT, NOTB -> "ifne ";
+            case EQ -> "ifeq ";
+            case LTH -> "iflt ";
+            case LTE -> "ifle ";
+            case GTH -> "ifgt ";
+            case GTE -> "ifge ";
+            default -> throw new NotImplementedException(op);
+        };
+    }
+
 }

@@ -60,6 +60,7 @@ public class JasminGenerator {
         generators.put(LiteralElement.class, this::generateLiteral);
         generators.put(Operand.class, this::generateOperand);
         generators.put(BinaryOpInstruction.class, this::generateBinaryOp);
+        generators.put(UnaryOpInstruction.class, this::generateUnaryOp);
         generators.put(ReturnInstruction.class, this::generateReturn);
         generators.put(NewInstruction.class, this::generateNew);
         generators.put(InvokeStaticInstruction.class, this::generateInvokeStatic);
@@ -69,6 +70,10 @@ public class JasminGenerator {
         generators.put(InvokeSpecialInstruction.class, this::generateInvokeSpecial);
         generators.put(InvokeVirtualInstruction.class, this::generateInvokeVirtual);
         generators.put(ArrayLengthInstruction.class, this::generateArrayLength);
+        generators.put(OpCondInstruction.class, this::generateOpCondition);
+        generators.put(SingleOpCondInstruction.class, this::generateSingleOpCondition);
+
+
     }
 
     private String apply(TreeNode node) {
@@ -282,6 +287,7 @@ public class JasminGenerator {
         String literalValue = literal.getLiteral();
         String jasminType = types.getDescriptor(literal.getType());
 
+        // looks this should be moved to utils for code organization
         switch (jasminType) {
             case "Z":
                 return literalValue.equals("true") ? "iconst_1" + NL : "iconst_0" + NL;
@@ -341,17 +347,18 @@ public class JasminGenerator {
 
         // TODO: Hardcoded for int type, needs to be expanded
         // CHANGES HAVE BEEN MADE
-        var opType = binaryOp.getOperation().getOpType();
-        switch (opType) {
-            case ADD:
-                code.append("iadd").append(NL);
-                break;
-            case MUL:
-                code.append("imul").append(NL);
-                break;
-            default:
-                throw new NotImplementedException(opType);
-        }
+
+        // this should be moved to jasminutils
+        var type = binaryOp.getOperation().getOpType();
+        String op = switch (type) {
+            case SUB, EQ, NEQ, LTH, LTE, GTH, GTE  -> "isub";
+            case ADD -> "iadd";
+            case MUL -> "imul";
+            case DIV -> "idiv";
+            default -> throw new NotImplementedException(type);
+        };
+
+        code.append(op).append(NL);
         stackSize--;
 
         return code.toString();
@@ -556,6 +563,55 @@ public class JasminGenerator {
 
         stackSize--;
         updateStackSize();
+
+        return code.toString();
+    }
+
+
+    private String generateOpCondition(OpCondInstruction cond) {
+        var code = new StringBuilder();
+
+        code.append(generators.apply(cond.getCondition()));
+
+        String op = types.getIf(cond.getCondition().getOperation().getOpType());
+
+
+        updateStackSize();
+        stackSize--;
+
+        code.append(op).append(cond.getLabel()).append(NL);
+
+        return code.toString();
+    }
+
+    private String generateUnaryOp(UnaryOpInstruction unary) {
+        var code = new StringBuilder();
+        var isLiteral = unary.getOperand().isLiteral();
+
+        if(isLiteral) {
+
+            if (((LiteralElement) unary.getOperand()).getLiteral().equals("1")) code.append("iconst_0");
+            else code.append("iconst_1");
+
+            stackSize++;
+        } else{
+            code.append(generators.apply(unary.getOperand()))
+                    .append("iconst_1\nixor");
+
+            stackSize++;
+            updateStackSize();
+            stackSize--;
+        }
+
+        code.append(NL);
+        return code.toString();
+    }
+
+    private String generateSingleOpCondition(SingleOpCondInstruction singleOpCond) {
+
+        var code = new StringBuilder();
+        code.append(generators.apply(singleOpCond.getOperands().getFirst()));
+        code.append("ifne ").append(singleOpCond.getLabel()).append(NL);
 
         return code.toString();
     }
