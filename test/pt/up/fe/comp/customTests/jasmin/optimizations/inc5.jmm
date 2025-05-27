@@ -1,0 +1,9 @@
+class InstSelection_iinc {
+	public static void main(String[] args) {
+		int i;
+		int a;
+		i = 2;
+		a = 5;
+		i = a+1;
+	}
+}

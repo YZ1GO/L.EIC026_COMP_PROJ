@@ -1,0 +1,7 @@
+class InstSelection_iinc {
+	public void func() {
+		int i;
+		i = 2;
+		i = i+1;
+	}
+}

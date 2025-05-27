@@ -1,0 +1,27 @@
+import ioPlus;
+
+MyClass {
+
+    .method public static main(args.array.String).V {
+
+
+        if (1.bool) goto if1;
+
+            invokestatic(ioPlus, "printResult", 20.i32).V;
+
+        goto endif1;
+
+        if1:
+
+            invokestatic(ioPlus, "printResult", 10.i32).V;
+
+        endif1:
+
+        ret.V;
+
+    }
+
+    .construct MyClass().V {
+        invokespecial(this, "<init>").V;
+    }
+}

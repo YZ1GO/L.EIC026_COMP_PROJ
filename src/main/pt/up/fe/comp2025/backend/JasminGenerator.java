@@ -258,6 +258,7 @@ public class JasminGenerator {
 
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
+        System.out.println("Var name: " + operand.getName() + ", reg: " + reg);
 
         //TODO: when applying iinc care that iinc is byte -128 -> 127
         // a = a + 1
@@ -265,7 +266,11 @@ public class JasminGenerator {
         // a = a - 1
         // care a = 1 - a cant use iinc
 
-        // done
+        // issue here, as we have tmp in the middle, instead of i = i + 1, we have tmp = i + 1 and i = tmp
+        // this makes the registers to not be the same
+        // which we still have to ensure the regs to be the same to apply the "iinc"
+        // otherwise it has a risk to apply it in a trap case: i = a + 1 (which we are not checking)
+
         var rhs = assign.getRhs();
         if (rhs instanceof BinaryOpInstruction rhsBinOp) {
 
@@ -275,9 +280,9 @@ public class JasminGenerator {
                 var value = Integer.parseInt(r.getLiteral());
                 var valueConverted = convertValue(rhsBinOp.getOperation().getOpType(), value);
                 var regL = currentMethod.getVarTable().get(l.getName()).getVirtualReg();
-                //System.out.println("reg: " + reg );
-                //System.out.println("regL: " + regL );
-                if (/*reg == regL && */valueConverted >= -128 && valueConverted <= 127) {
+                System.out.println("reg: " + reg );
+                System.out.println("regL: " + regL );
+                if (reg == regL && valueConverted >= -128 && valueConverted <= 127) {
                     code.append("iinc ")
                             .append(regL)
                             .append(" ")
@@ -297,7 +302,7 @@ public class JasminGenerator {
                 var regR = currentMethod.getVarTable().get(r.getName()).getVirtualReg();
 
                 // cannot be a = 1 - a (subtraction)
-                if (isAddition(opType) /*&& reg == regR*/ && valueConverted >= -128 && valueConverted <= 127) {
+                if (isAddition(opType) && reg == regR && valueConverted >= -128 && valueConverted <= 127) {
                     code.append("iinc ")
                         .append(regR)
                         .append(" ")
