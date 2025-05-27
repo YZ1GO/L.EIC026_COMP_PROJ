@@ -287,7 +287,7 @@ public class OllirExprGeneratorVisitor extends AJmmVisitor<Void, OllirExprResult
     private OllirExprResult visitString(JmmNode node, Void unused) {
         var stringType = TypeUtils.newStringType();
         String ollirStringType = ollirTypes.toOllirType(stringType);
-        String code = node.get("value") + ollirStringType;
+        String code = "ldc(" + node.get("value") + ")" + ollirStringType;
         return new OllirExprResult(code);
     }
 

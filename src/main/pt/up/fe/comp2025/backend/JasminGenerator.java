@@ -72,7 +72,7 @@ public class JasminGenerator {
         generators.put(ArrayLengthInstruction.class, this::generateArrayLength);
         generators.put(OpCondInstruction.class, this::generateOpCondition);
         generators.put(SingleOpCondInstruction.class, this::generateSingleOpCondition);
-
+        //generators.put(LdcInstruction.class, this::generateLdc);
 
     }
 
