@@ -48,4 +48,11 @@ public class JasminControlFlowTest {
     public void controlFlow_ifNoElse2() {
         CpUtils.runJasmin(getJasminResult("if2.ollir"), "Result: 5");
     }
+
+    @Test
+    public void controlFlow_ifElse1() {
+        CpUtils.runJasmin(getJasminResult("if3.ollir"), "Result: 10");
+    }
+
+
 }
