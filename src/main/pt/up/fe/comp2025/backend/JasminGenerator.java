@@ -72,7 +72,7 @@ public class JasminGenerator {
         generators.put(ArrayLengthInstruction.class, this::generateArrayLength);
         generators.put(OpCondInstruction.class, this::generateOpCondition);
         generators.put(SingleOpCondInstruction.class, this::generateSingleOpCondition);
-        //generators.put(LdcInstruction.class, this::generateLdc);
+        generators.put(LdcInstruction.class, this::generateLdc);
 
     }
 
@@ -612,6 +612,24 @@ public class JasminGenerator {
         var code = new StringBuilder();
         code.append(generators.apply(singleOpCond.getOperands().getFirst()));
         code.append("ifne ").append(singleOpCond.getLabel()).append(NL);
+
+        return code.toString();
+    }
+
+    private String generateLdc(LdcInstruction ldcInstruction) {
+        var code = new StringBuilder();
+
+        var constant = ldcInstruction.getElement();
+
+        if (constant instanceof LiteralElement literal) {
+            String value = literal.getLiteral();
+            code.append("ldc \"").append(value).append("\"").append(NL);
+        } else {
+            throw new NotImplementedException("Unsupported constant type: " + constant.getClass());
+        }
+
+        stackSize++;
+        updateStackSize();
 
         return code.toString();
     }

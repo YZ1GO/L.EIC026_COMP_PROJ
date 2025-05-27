@@ -69,6 +69,7 @@ public class JasminUtils {
         if (ollirType instanceof BuiltinType builtinType) {
             return switch (builtinType.getKind()) {
                 case INT32, BOOLEAN -> "i";
+                case STRING -> "a";
                 default -> throw new NotImplementedException(builtinType.getKind());
             };
         }

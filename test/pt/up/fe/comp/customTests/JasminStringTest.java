@@ -8,6 +8,7 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.specs.util.SpecsCheck;
 import pt.up.fe.specs.util.SpecsIo;
 import utils.ProjectTestUtils;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 
@@ -44,6 +45,9 @@ public class JasminStringTest {
     @Test
     public void stringTest() {
         JasminResult jasminResult = getJasminResult("String.ollir");
-        CpUtils.runJasmin(jasminResult, null);
+        String expected = SpecsIo.getResource("pt/up/fe/comp/customTests/jasmin/string/String.jasmin");
+        String actual = jasminResult.getJasminCode();
+
+        assertEquals("Generated Jasmin code does not match expected", expected.trim(), actual.trim());
     }
 }

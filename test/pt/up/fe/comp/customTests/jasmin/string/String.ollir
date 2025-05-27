@@ -9,4 +9,7 @@ StringLiteralTest {
         ret.String result.String;
     }
 
+    .method public static main(args.array.String).V {
+       ret.V ;
+    }
 }

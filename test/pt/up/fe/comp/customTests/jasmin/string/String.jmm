@@ -1,8 +1,14 @@
+import io;
+
 class StringLiteralTest {
     public String getStringLiteral() {
         String result;
         result = "Hello, World!";
-
+        ioPlus.print(result);
         return result;
+    }
+
+    public static void main(String[] args) {
+
     }
 }
