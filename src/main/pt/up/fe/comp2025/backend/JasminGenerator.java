@@ -257,15 +257,63 @@ public class JasminGenerator {
         var operand = (Operand) lhs;
 
         // get register
-        var reg = currentMethod.getVarTable().get(operand.getName());
+        var reg = currentMethod.getVarTable().get(operand.getName()).getVirtualReg();
 
-        // todo: missing optimization "iinc"
+        //TODO: when applying iinc care that iinc is byte -128 -> 127
+        // a = a + 1
+        // a = 1 + a
+        // a = a - 1
+        // care a = 1 - a cant use iinc
+
+        // done
+        var rhs = assign.getRhs();
+        if (rhs instanceof BinaryOpInstruction rhsBinOp) {
+
+            // operand <-> literal
+            if (rhsBinOp.getLeftOperand() instanceof Operand l &&
+                rhsBinOp.getRightOperand() instanceof LiteralElement r) {
+                var value = Integer.parseInt(r.getLiteral());
+                var valueConverted = convertValue(rhsBinOp.getOperation().getOpType(), value);
+                var regL = currentMethod.getVarTable().get(l.getName()).getVirtualReg();
+                //System.out.println("reg: " + reg );
+                //System.out.println("regL: " + regL );
+                if (/*reg == regL && */valueConverted >= -128 && valueConverted <= 127) {
+                    code.append("iinc ")
+                            .append(regL)
+                            .append(" ")
+                            .append(valueConverted)
+                            .append(NL);
+                    return code.toString();
+                }
+            }
+
+            // literal <-> operand
+            if (rhsBinOp.getLeftOperand() instanceof LiteralElement l &&
+                rhsBinOp.getRightOperand() instanceof Operand r) {
+
+                var opType = rhsBinOp.getOperation().getOpType();
+                var value = Integer.parseInt(l.getLiteral());
+                var valueConverted = convertValue(opType, value);
+                var regR = currentMethod.getVarTable().get(r.getName()).getVirtualReg();
+
+                // cannot be a = 1 - a (subtraction)
+                if (isAddition(opType) /*&& reg == regR*/ && valueConverted >= -128 && valueConverted <= 127) {
+                    code.append("iinc ")
+                        .append(regR)
+                        .append(" ")
+                        .append(valueConverted)
+                        .append(NL);
+                    return code.toString();
+                }
+            }
+        }
+
 
         if (lhs instanceof ArrayOperand lhsArr) {
             stackSize++;
             updateStackSize();
 
-            code.append(aload(reg.getVirtualReg()))
+            code.append(aload(reg))
                     .append(NL)
                     .append(apply(lhsArr.getIndexOperands().getFirst()))
                     .append(apply(assign.getRhs()))
@@ -289,7 +337,7 @@ public class JasminGenerator {
         // done
         var operatorType =types.getDescriptor(operand.getType());
         if (operatorType.equals("I")) { // INT32
-            code.append(istore(reg.getVirtualReg())).append(NL);
+            code.append(istore(reg)).append(NL);
 
         } else if (operatorType.equals("Z")) {  //BOOLEAN
 
@@ -313,18 +361,18 @@ public class JasminGenerator {
                         .append(NL)
                         .append(labelEnd).append(":")
                         .append(NL)
-                        .append(istore(reg.getVirtualReg()))
+                        .append(istore(reg))
                         .append(NL);
                 boolId++;
 
                 //updateStackSize();
                 //stackSize--;
             } else {
-                code.append(istore(reg.getVirtualReg())).append(NL);
+                code.append(istore(reg)).append(NL);
             }
 
         } else {    //OTHERS
-            code.append(astore(reg.getVirtualReg())).append(NL);
+            code.append(astore(reg)).append(NL);
         }
 
 
@@ -347,31 +395,25 @@ public class JasminGenerator {
 
         // looks this should be moved to utils for code organization
         String res = switch (jasminType) {
-            case "Z" -> literalValue.equals("1") ? "iconst_1" + NL : "iconst_0" + NL;
+            case "Z" -> literalValue.equals("1") ? "iconst_1" : "iconst_0";
             case "I" -> {
                 int value = Integer.parseInt(literalValue);
                 if (value == -1) {
-                    yield "iconst_m1" + NL;
+                    yield "iconst_m1";
                 } else if (value >= 0 && value <= 5) {
-                    yield "iconst_" + value + NL;
+                    yield "iconst_" + value;
                 } else if (value >= -128 && value <= 127) {
-                    yield "bipush " + value + NL;
+                    yield "bipush " + value;
                 } else if (value >= -32768 && value <= 32767) {
-                    yield "sipush " + value + NL;
+                    yield "sipush " + value;
                 }
-                yield "ldc " + value + NL;
+                yield "ldc " + value;
             }
-            default -> "ldc " + literalValue + NL;
+            default -> "ldc " + literalValue;
         };
 
-        return res;
+        return res + NL;
     }
-
-    //TODO: when applying iinc care that iinc is byte -128 -> 127
-    // a = a + 1
-    // a = 1 + a
-    // a = a - 1
-    // care a = 1 - a cant use iinc
 
 
     private String generateOperand(Operand operand) {

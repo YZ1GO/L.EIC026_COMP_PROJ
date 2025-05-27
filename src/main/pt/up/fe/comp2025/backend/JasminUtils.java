@@ -147,4 +147,19 @@ public class JasminUtils {
         };
     }
 
+    public static int convertValue(OperationType op, int v) {
+        var res = 128;
+        if (isAddition(op)) {
+            res = v;
+        } else if (op.equals(OperationType.SUB)) {
+            res = -v;
+        }
+
+        return res;
+    }
+
+    public static boolean isAddition(OperationType op) {
+        return op.equals(OperationType.ADD);
+    }
+
 }
