@@ -666,7 +666,9 @@ public class JasminGenerator {
         } else{
             code.append(apply(unary.getOperand()))
                     .append("iconst_1")
-                    .append("ixor");
+                    .append(NL)
+                    .append("ixor")
+                    .append(NL);
 
             stackSize++;
             updateStackSize();
