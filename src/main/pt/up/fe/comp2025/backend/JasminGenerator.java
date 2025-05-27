@@ -293,22 +293,28 @@ public class JasminGenerator {
 
             // is binary op, use cmp_true_n
             if ((assign.getRhs() instanceof BinaryOpInstruction bOp)) {
+                var conditionTypeComplete = types.getIf(bOp.getOperation().getOpType());                    // "ifne "
+                var conditionType = conditionTypeComplete.replaceAll("if|\\s", "");       // "ne"
+                var labelTrue = "cmp_" + conditionType + "_" + boolId + "_true";
+                var labelEnd = "cmp_" + conditionType + "_" + boolId + "_end";
 
-                code.append(types.getIf(bOp.getOperation().getOpType()))
-                        .append("cmp_true_").append(boolId)
+                code.append(conditionTypeComplete)
+                        .append(labelTrue)
                         .append(NL)
                         .append("iconst_0")
                         .append(NL)
-                        .append("goto ").append("cmp_end_").append(boolId)
+                        .append("goto ").append(labelEnd)
                         .append(NL).append(NL)
-                        .append("cmp_true_").append(boolId).append(":")
+                        .append(labelTrue).append(":")
                         .append(NL)
                         .append("iconst_1")
                         .append(NL)
-                        .append("cmp_end_").append(boolId++).append(":")
+                        .append(labelEnd).append(":")
                         .append(NL)
                         .append(types.istore(reg.getVirtualReg()))
                         .append(NL);
+                boolId++;
+
                 //updateStackSize();
                 //stackSize--;
             } else {

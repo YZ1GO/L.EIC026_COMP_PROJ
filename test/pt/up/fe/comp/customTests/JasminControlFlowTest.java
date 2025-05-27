@@ -54,5 +54,8 @@ public class JasminControlFlowTest {
         CpUtils.runJasmin(getJasminResult("if3.ollir"), "Result: 10");
     }
 
-
+    @Test
+    public void controlFlow_while1() {
+        CpUtils.runJasmin(getJasminResult("while.ollir"), "Result: 1\nResult: 1");
+    }
 }
