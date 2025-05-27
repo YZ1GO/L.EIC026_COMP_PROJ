@@ -278,6 +278,7 @@ public class JasminGenerator {
             */
 
             stackSize -= 3;
+            return code.toString();
         }
 
         var rhsCode = apply(assign.getRhs());
@@ -366,6 +367,9 @@ public class JasminGenerator {
 
 
     private String generateOperand(Operand operand) {
+        if (operand instanceof ArrayOperand arrayOperand) {
+            return generateArrayAccess(arrayOperand);
+        }
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName());
         stackSize++;
@@ -381,6 +385,21 @@ public class JasminGenerator {
             default:
                 throw new NotImplementedException("Unsupported prefix: " + prefix);
         }
+    }
+
+    private String generateArrayAccess(ArrayOperand arrayOperand) {
+        var code = new StringBuilder();
+
+        var arrayReg = currentMethod.getVarTable().get(arrayOperand.getName()).getVirtualReg();
+        code.append(types.aload(arrayReg)).append(NL);
+        stackSize++;
+        updateStackSize();
+
+        code.append(apply(arrayOperand.getIndexOperands().getFirst()));
+        code.append("iaload").append(NL);
+        stackSize -= 2; // iaload consumes arrayref and index, pushes int
+        updateStackSize();
+        return code.toString();
     }
 
     private String generateBinaryOp(BinaryOpInstruction binaryOp) {
