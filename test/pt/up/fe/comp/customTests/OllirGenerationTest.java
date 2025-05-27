@@ -180,6 +180,20 @@ public class OllirGenerationTest {
         //assertTrue(testOllirGeneration("If3.jmm", "If3.ollir")); // can be ran individually
     }
 
+    /*@Test
+    public void testIf4() {
+        OllirResult result = getOllirResult("If4.jmm");
+        var method = CpUtils.getMethod(result, "func");
+
+        System.out.println("Generated OLLIR:");
+        System.out.println(result.getOllirCode());
+
+        var gotos = CpUtils.assertInstExists(GotoInstruction.class, method, result);
+        CpUtils.assertTrue("Has at least 3 gotos", gotos.size() >= 3, result);
+
+        //assertTrue(testOllirGeneration("If4.jmm", "If4.ollir")); // can be ran individually
+    }*/
+
     @Test
     public void testImport() {assertTrue(testOllirGeneration("Import.jmm", "Import.ollir"));}
 

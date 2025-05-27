@@ -284,7 +284,7 @@ public class JasminGenerator {
         code.append(rhsCode);
 
         // TODO: Hardcoded for int type, needs to be expanded
-        // Add more in utils
+        // done
         var operatorType =types.getDescriptor(operand.getType());
         if (operatorType.equals("I")) { // INT32
             code.append(types.istore(reg.getVirtualReg())).append(NL);
@@ -344,24 +344,25 @@ public class JasminGenerator {
         String jasminType = types.getDescriptor(literal.getType());
 
         // looks this should be moved to utils for code organization
-        switch (jasminType) {
-            case "Z":
-                return literalValue.equals("1") ? "iconst_1" + NL : "iconst_0" + NL;
-            case "I":
+        String res = switch (jasminType) {
+            case "Z" -> literalValue.equals("1") ? "iconst_1" + NL : "iconst_0" + NL;
+            case "I" -> {
                 int value = Integer.parseInt(literalValue);
                 if (value == -1) {
-                    return "iconst_m1" + NL;
+                    yield "iconst_m1" + NL;
                 } else if (value >= 0 && value <= 5) {
-                    return "iconst_" + value + NL;
+                    yield "iconst_" + value + NL;
                 } else if (value >= -128 && value <= 127) {
-                    return "bipush " + value + NL;
+                    yield "bipush " + value + NL;
                 } else if (value >= -32768 && value <= 32767) {
-                    return "sipush " + value + NL;
+                    yield "sipush " + value + NL;
                 }
-                return "ldc " + value + NL;
-            default:
-                return "ldc " + literalValue + NL;
-        }
+                yield "ldc " + value + NL;
+            }
+            default -> "ldc " + literalValue + NL;
+        };
+
+        return res;
     }
 
     //TODO: when applying iinc care that iinc is byte -128 -> 127
