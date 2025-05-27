@@ -198,7 +198,7 @@ public class JasminGenerator {
 
 
         // Add limits
-        var tempCode =new StringBuilder();
+        var tempCode = new StringBuilder();
         for (var instr : method.getInstructions()) {
             for(var l : method.getLabels(instr)){
                 tempCode.append(l).append(":").append(NL);
@@ -256,7 +256,6 @@ public class JasminGenerator {
 
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName());
-
 
         // todo: missing optimization "iinc"
 
@@ -397,8 +396,7 @@ public class JasminGenerator {
 
         code.append(apply(arrayOperand.getIndexOperands().getFirst()));
         code.append("iaload").append(NL);
-        stackSize -= 2; // iaload consumes arrayref and index, pushes int
-        updateStackSize();
+        stackSize--;
         return code.toString();
     }
 
@@ -407,12 +405,8 @@ public class JasminGenerator {
 
         // load values on the left and on the right
         code.append(apply(binaryOp.getLeftOperand()));
-        stackSize++;
-        updateStackSize();
 
         code.append(apply(binaryOp.getRightOperand()));
-        stackSize++;
-        updateStackSize();
 
         // TODO: Hardcoded for int type, needs to be expanded
         // CHANGES HAVE BEEN MADE
@@ -464,7 +458,7 @@ public class JasminGenerator {
             code.append(apply(newInst.getArguments().getFirst()));
 
             code.append("newarray ").append(types.getArrayType(arrayType)).append(NL);
-            stackSize--;
+            stackSize++;
             updateStackSize();
         }else if (callerType instanceof ClassType classType) {
             var className = types.convertClassPath(classType.getName());
@@ -478,8 +472,7 @@ public class JasminGenerator {
             updateStackSize();
 
             code.append("invokespecial ").append(className).append("/<init>()V").append(NL);
-            stackSize -= 2;
-            updateStackSize();
+            stackSize--;
         } else {
             throw new NotImplementedException("Unsupported type for 'new': " + callerType);
         }
@@ -492,6 +485,13 @@ public class JasminGenerator {
 
         for (var arg : invokeStatic.getArguments()) {
             code.append(apply(arg));
+        }
+
+        int numArgs = invokeStatic.getArguments().size();
+        stackSize -= numArgs;
+
+        boolean hasReturnValue = !types.isVoid(invokeStatic.getReturnType());
+        if (hasReturnValue) {
             stackSize++;
             updateStackSize();
         }
@@ -505,8 +505,9 @@ public class JasminGenerator {
                 .append(methodName).append(descriptor)
                 .append(NL);
 
-        if (!types.isVoid(invokeStatic.getReturnType())) {
+        if (hasReturnValue) {
             code.append("pop").append(NL);
+            stackSize--;
         }
 
         return code.toString();
@@ -557,9 +558,6 @@ public class JasminGenerator {
                 .append(fieldName).append(" ")
                 .append(fieldType).append(NL);
 
-        stackSize++;
-        updateStackSize();
-
         return code.toString();
     }
 
@@ -573,8 +571,6 @@ public class JasminGenerator {
 
         for (var arg : invokeSpecial.getArguments()) {
             code.append(apply(arg));
-            stackSize++;
-            updateStackSize();
         }
 
         code.append(apply(invokeSpecial.getCaller()));
@@ -596,13 +592,9 @@ public class JasminGenerator {
         var code = new StringBuilder();
 
         code.append(apply(invokeVirtual.getCaller()));
-        stackSize++;
-        updateStackSize();
 
         for (var arg : invokeVirtual.getArguments()) {
             code.append(apply(arg));
-            stackSize++;
-            updateStackSize();
         }
 
         var className = types.convertClassPath(((ClassType) invokeVirtual.getCaller().getType()).getName());
@@ -617,8 +609,8 @@ public class JasminGenerator {
         stackSize -= invokeVirtual.getArguments().size() + 1;
         if (!types.isVoid(invokeVirtual.getReturnType())) {
             stackSize++;
+            updateStackSize();
         }
-        updateStackSize();
 
         return code.toString();
     }
@@ -631,7 +623,6 @@ public class JasminGenerator {
         code.append("arraylength").append(NL);
 
         stackSize--;
-        updateStackSize();
 
         return code.toString();
     }
@@ -644,8 +635,6 @@ public class JasminGenerator {
 
         String op = types.getIf(cond.getCondition().getOperation().getOpType());
 
-
-        updateStackSize();
         stackSize--;
 
         code.append(op).append(cond.getLabel()).append(NL);
@@ -663,7 +652,8 @@ public class JasminGenerator {
             else code.append("iconst_1");
 
             stackSize++;
-        } else{
+            updateStackSize();
+        } else {
             code.append(apply(unary.getOperand()))
                     .append("iconst_1")
                     .append(NL)
