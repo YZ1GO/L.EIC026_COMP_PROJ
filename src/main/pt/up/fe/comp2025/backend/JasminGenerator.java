@@ -42,6 +42,7 @@ public class JasminGenerator {
 
     private int stackSize = 0;
     private int maxStackSize = 0;
+    private int boolId = 0;
 
     public JasminGenerator(OllirResult ollirResult) {
         this.ollirResult = ollirResult;
@@ -255,22 +256,71 @@ public class JasminGenerator {
 
         // get register
         var reg = currentMethod.getVarTable().get(operand.getName());
+
+
+        // todo: missing optimization "iinc"
+
+        if (lhs instanceof ArrayOperand lhsArr) {
+            stackSize++;
+            updateStackSize();
+
+            code.append(types.aload(reg.getVirtualReg()))
+                    .append(NL)
+                    .append(apply(lhsArr.getIndexOperands().getFirst()))
+                    .append(apply(assign.getRhs()))
+                    .append("iastore")
+                    .append(NL);
+
+            /* to exec iastore, the stack must contain:
+            - arrayref –> the reference to the array (aload reg)
+            - index – the position within the array (apply(lhsArr.getIndexOperands().getFirst()))
+            - value – the int value to store (apply(assign.getRhs()))
+            */
+
+            stackSize -= 3;
+        }
+
         var rhsCode = apply(assign.getRhs());
         code.append(rhsCode);
 
         // TODO: Hardcoded for int type, needs to be expanded
         // Add more in utils
-        var prefix = types.getPrefix(operand.getType());
-        switch (prefix) {
-            case "i":
+        var operatorType =types.getDescriptor(operand.getType());
+        if (operatorType.equals("I")) { // INT32
+            code.append(types.istore(reg.getVirtualReg())).append(NL);
+
+        } else if (operatorType.equals("Z")) {  //BOOLEAN
+
+            // is binary op, use cmp_true_n
+            if ((assign.getRhs() instanceof BinaryOpInstruction bOp)) {
+
+                code.append(types.getIf(bOp.getOperation().getOpType()))
+                        .append("cmp_true_").append(boolId)
+                        .append(NL)
+                        .append("iconst_0")
+                        .append(NL)
+                        .append("goto ").append("cmp_end_").append(boolId)
+                        .append(NL).append(NL)
+                        .append("cmp_true_").append(boolId).append(":")
+                        .append(NL)
+                        .append("iconst_1")
+                        .append(NL)
+                        .append("cmp_end_").append(boolId++).append(":")
+                        .append(NL)
+                        .append(types.istore(reg.getVirtualReg()))
+                        .append(NL);
+                //updateStackSize();
+                //stackSize--;
+            } else {
                 code.append(types.istore(reg.getVirtualReg())).append(NL);
-                break;
-            case "a":
-                code.append(types.astore(reg.getVirtualReg())).append(NL);
-                break;
-            default:
-                throw new NotImplementedException("Unsupported prefix: " + prefix);
+            }
+
+        } else {    //OTHERS
+            code.append(types.astore(reg.getVirtualReg())).append(NL);
         }
+
+
+        updateStackSize();
         stackSize--;
 
         return code.toString();
@@ -290,7 +340,7 @@ public class JasminGenerator {
         // looks this should be moved to utils for code organization
         switch (jasminType) {
             case "Z":
-                return literalValue.equals("true") ? "iconst_1" + NL : "iconst_0" + NL;
+                return literalValue.equals("1") ? "iconst_1" + NL : "iconst_0" + NL;
             case "I":
                 int value = Integer.parseInt(literalValue);
                 if (value == -1) {
@@ -571,7 +621,7 @@ public class JasminGenerator {
     private String generateOpCondition(OpCondInstruction cond) {
         var code = new StringBuilder();
 
-        code.append(generators.apply(cond.getCondition()));
+        code.append(apply(cond.getCondition()));
 
         String op = types.getIf(cond.getCondition().getOperation().getOpType());
 
@@ -595,8 +645,9 @@ public class JasminGenerator {
 
             stackSize++;
         } else{
-            code.append(generators.apply(unary.getOperand()))
-                    .append("iconst_1\nixor");
+            code.append(apply(unary.getOperand()))
+                    .append("iconst_1")
+                    .append("ixor");
 
             stackSize++;
             updateStackSize();
@@ -609,8 +660,8 @@ public class JasminGenerator {
 
     private String generateSingleOpCondition(SingleOpCondInstruction singleOpCond) {
 
-        var code = new StringBuilder();
-        code.append(generators.apply(singleOpCond.getOperands().getFirst()));
+        StringBuilder code = new StringBuilder();
+        code.append(apply(singleOpCond.getOperands().getFirst()));
         code.append("ifne ").append(singleOpCond.getLabel()).append(NL);
 
         return code.toString();
