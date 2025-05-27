@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static pt.up.fe.comp2025.backend.JasminUtils.*;
+
 /**
  * Generates Jasmin code from an OllirResult.
  * <p>
@@ -130,7 +132,7 @@ public class JasminGenerator {
 
         // fields
         for (var f : classUnit.getFields()) {
-            var am = types.getModifier(f.getFieldAccessModifier());
+            var am = getModifier(f.getFieldAccessModifier());
 
             code.append(".field ")
                     .append(am)
@@ -263,7 +265,7 @@ public class JasminGenerator {
             stackSize++;
             updateStackSize();
 
-            code.append(types.aload(reg.getVirtualReg()))
+            code.append(aload(reg.getVirtualReg()))
                     .append(NL)
                     .append(apply(lhsArr.getIndexOperands().getFirst()))
                     .append(apply(assign.getRhs()))
@@ -287,13 +289,13 @@ public class JasminGenerator {
         // done
         var operatorType =types.getDescriptor(operand.getType());
         if (operatorType.equals("I")) { // INT32
-            code.append(types.istore(reg.getVirtualReg())).append(NL);
+            code.append(istore(reg.getVirtualReg())).append(NL);
 
         } else if (operatorType.equals("Z")) {  //BOOLEAN
 
             // is binary op, use cmp_true_n
             if ((assign.getRhs() instanceof BinaryOpInstruction bOp)) {
-                var conditionTypeComplete = types.getIf(bOp.getOperation().getOpType());                    // "ifne "
+                var conditionTypeComplete = getIf(bOp.getOperation().getOpType());                          // "ifne "
                 var conditionType = conditionTypeComplete.replaceAll("if|\\s", "");       // "ne"
                 var labelTrue = "cmp_" + conditionType + "_" + boolId + "_true";
                 var labelEnd = "cmp_" + conditionType + "_" + boolId + "_end";
@@ -311,18 +313,18 @@ public class JasminGenerator {
                         .append(NL)
                         .append(labelEnd).append(":")
                         .append(NL)
-                        .append(types.istore(reg.getVirtualReg()))
+                        .append(istore(reg.getVirtualReg()))
                         .append(NL);
                 boolId++;
 
                 //updateStackSize();
                 //stackSize--;
             } else {
-                code.append(types.istore(reg.getVirtualReg())).append(NL);
+                code.append(istore(reg.getVirtualReg())).append(NL);
             }
 
         } else {    //OTHERS
-            code.append(types.astore(reg.getVirtualReg())).append(NL);
+            code.append(astore(reg.getVirtualReg())).append(NL);
         }
 
 
@@ -382,12 +384,12 @@ public class JasminGenerator {
         updateStackSize();
 
         // TODO: Hardcoded for int type, needs to be expanded
-        var prefix = types.getPrefix(operand.getType());
+        var prefix = JasminUtils.getPrefix(operand.getType());
         switch (prefix) {
             case "i":
-                return types.iload(reg.getVirtualReg()) + NL;
+                return iload(reg.getVirtualReg()) + NL;
             case "a":
-                return types.aload(reg.getVirtualReg()) + NL;
+                return aload(reg.getVirtualReg()) + NL;
             default:
                 throw new NotImplementedException("Unsupported prefix: " + prefix);
         }
@@ -397,7 +399,7 @@ public class JasminGenerator {
         var code = new StringBuilder();
 
         var arrayReg = currentMethod.getVarTable().get(arrayOperand.getName()).getVirtualReg();
-        code.append(types.aload(arrayReg)).append(NL);
+        code.append(aload(arrayReg)).append(NL);
         stackSize++;
         updateStackSize();
 
@@ -445,7 +447,7 @@ public class JasminGenerator {
             code.append(loadOperand);
             // TODO: Hardcoded for int type, needs to be expanded
             // Add more in utils
-            var prefix = types.getPrefix(returnInst.getReturnType());
+            var prefix = getPrefix(returnInst.getReturnType());
             code.append(prefix).append("return").append(NL);
 
             stackSize--;
@@ -464,7 +466,7 @@ public class JasminGenerator {
 
             code.append(apply(newInst.getArguments().getFirst()));
 
-            code.append("newarray ").append(types.getArrayType(arrayType)).append(NL);
+            code.append("newarray ").append(getArrayType(arrayType)).append(NL);
             stackSize++;
             updateStackSize();
         }else if (callerType instanceof ClassType classType) {
@@ -497,14 +499,14 @@ public class JasminGenerator {
         int numArgs = invokeStatic.getArguments().size();
         stackSize -= numArgs;
 
-        boolean hasReturnValue = !types.isVoid(invokeStatic.getReturnType());
+        boolean hasReturnValue = !isVoid(invokeStatic.getReturnType());
         if (hasReturnValue) {
             stackSize++;
             updateStackSize();
         }
 
         var className = types.convertClassPath(((Operand) invokeStatic.getCaller()).getName());
-        var methodName = types.extractMethodName(invokeStatic.getMethodName());
+        var methodName = extractMethodName(invokeStatic.getMethodName());
         var descriptor = types.getMethodDescriptor(invokeStatic.getReturnType(), invokeStatic.getArguments());
 
         code.append("invokestatic ")
@@ -571,7 +573,7 @@ public class JasminGenerator {
     private String generateInvokeSpecial(InvokeSpecialInstruction invokeSpecial) {
         var code = new StringBuilder();
 
-        var methodName = types.extractMethodName(invokeSpecial.getMethodName());
+        var methodName = extractMethodName(invokeSpecial.getMethodName());
         if (methodName.equals("<init>")) {
             return "";
         }
@@ -605,7 +607,7 @@ public class JasminGenerator {
         }
 
         var className = types.convertClassPath(((ClassType) invokeVirtual.getCaller().getType()).getName());
-        var methodName = types.extractMethodName(invokeVirtual.getMethodName());
+        var methodName = extractMethodName(invokeVirtual.getMethodName());
         var descriptor = types.getMethodDescriptor(invokeVirtual.getReturnType(), invokeVirtual.getArguments());
 
         code.append("invokevirtual ")
@@ -614,7 +616,7 @@ public class JasminGenerator {
                 .append(NL);
 
         stackSize -= invokeVirtual.getArguments().size() + 1;
-        if (!types.isVoid(invokeVirtual.getReturnType())) {
+        if (!isVoid(invokeVirtual.getReturnType())) {
             stackSize++;
             updateStackSize();
         }
@@ -640,7 +642,7 @@ public class JasminGenerator {
 
         code.append(apply(cond.getCondition()));
 
-        String op = types.getIf(cond.getCondition().getOperation().getOpType());
+        String op = getIf(cond.getCondition().getOperation().getOpType());
 
         stackSize--;
 

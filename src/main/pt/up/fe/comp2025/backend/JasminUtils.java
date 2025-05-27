@@ -1,7 +1,6 @@
 package pt.up.fe.comp2025.backend;
 
 import org.specs.comp.ollir.*;
-import org.specs.comp.ollir.inst.BinaryOpInstruction;
 import org.specs.comp.ollir.type.ArrayType;
 import org.specs.comp.ollir.type.BuiltinType;
 import org.specs.comp.ollir.type.ClassType;
@@ -38,12 +37,6 @@ public class JasminUtils {
         return className;
     }
 
-    public String getModifier(AccessModifier accessModifier) {
-        return accessModifier != AccessModifier.DEFAULT ?
-                accessModifier.name().toLowerCase() + " " :
-                "";
-    }
-
     public String getDescriptor(Type ollirType) {
         if (ollirType instanceof BuiltinType builtinType) {
             return switch (builtinType.getKind()) {
@@ -61,7 +54,27 @@ public class JasminUtils {
         throw new NotImplementedException("Unsupported type: " + ollirType.getClass().getSimpleName());
     }
 
-    public String getPrefix(Type ollirType) {
+    public String getMethodDescriptor(Type returnType, List<Element> arguments) {
+        var descriptor = new StringBuilder("(");
+
+        for (var arg : arguments) {
+            descriptor.append(getDescriptor(arg.getType()));
+        }
+
+        descriptor.append(")");
+        descriptor.append(getDescriptor(returnType));
+
+        return descriptor.toString();
+    }
+
+
+    public static String getModifier(AccessModifier accessModifier) {
+        return accessModifier != AccessModifier.DEFAULT ?
+                accessModifier.name().toLowerCase() + " " :
+                "";
+    }
+
+    public static String getPrefix(Type ollirType) {
         if (ollirType instanceof ArrayType || ollirType instanceof ClassType) {
             return "a";
         }
@@ -77,7 +90,7 @@ public class JasminUtils {
         throw new NotImplementedException(ollirType);
     }
 
-    public String getArrayType(Type ollirType) {
+    public static String getArrayType(Type ollirType) {
         if (ollirType instanceof ArrayType arrayType) {
             var elementType = arrayType.getElementType();
             if (elementType instanceof BuiltinType builtinType) {
@@ -90,41 +103,28 @@ public class JasminUtils {
         throw new NotImplementedException("Array type not supported for: " + ollirType.getClass().getSimpleName());
     }
 
-    public String getMethodDescriptor(Type returnType, List<Element> arguments) {
-        var descriptor = new StringBuilder("(");
-
-        for (var arg : arguments) {
-            descriptor.append(getDescriptor(arg.getType()));
-        }
-
-        descriptor.append(")");
-        descriptor.append(getDescriptor(returnType));
-
-        return descriptor.toString();
-    }
-
-    public String istore(int reg) {
+    public static String istore(int reg) {
         return reg >= 0 && reg <= 3 ? "istore_" + reg : "istore " + reg;
     }
 
-    public String iload(int reg) {
+    public static String iload(int reg) {
         return reg >= 0 && reg <= 3 ? "iload_" + reg : "iload " + reg;
     }
 
-    public String astore(int reg) {
+    public static String astore(int reg) {
         return reg >= 0 && reg <= 3 ? "astore_" + reg : "astore " + reg;
     }
 
-    public String aload(int reg) {
+    public static String aload(int reg) {
         return reg >= 0 && reg <= 3 ? "aload_" + reg : "aload " + reg;
     }
 
-    public boolean isVoid(Type t) {
+    public static boolean isVoid(Type t) {
         return t instanceof BuiltinType
                 && ((BuiltinType) t).getKind() == BuiltinKind.VOID;
     }
 
-    public String extractMethodName(Element methodElement) {
+    public static String extractMethodName(Element methodElement) {
         if (methodElement instanceof LiteralElement literalElement) {
             String fullMethodName = literalElement.getLiteral();
             return fullMethodName.contains(".")
@@ -135,7 +135,7 @@ public class JasminUtils {
         }
     }
 
-    public String getIf(OperationType op) {
+    public static String getIf(OperationType op) {
         return switch (op) {
             case NEQ, AND, OR, ANDB, ORB, NOT, NOTB -> "ifne ";
             case EQ -> "ifeq ";
