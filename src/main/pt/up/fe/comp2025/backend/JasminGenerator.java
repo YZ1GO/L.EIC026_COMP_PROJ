@@ -186,7 +186,7 @@ public class JasminGenerator {
 
 
         // TODO: Hardcoded param types and return type, needs to be expanded
-        // done i guess, not tested
+        // DONE: expanded
         code.append("\n.method ").append(modifier);
         if(methodName.equals("main")) {
             code.append("static ").append(methodName).append("([Ljava/lang/String;)V").append(NL);
@@ -265,7 +265,7 @@ public class JasminGenerator {
         // a = 1 + a
         // a = a - 1
         // care a = 1 - a cant use iinc
-        // done
+        // DONE
 
         // issue here, as we have tmp in the middle, instead of i = i + 1, we have tmp = i + 1 and i = tmp
         // this makes the registers to not be the same
@@ -342,7 +342,7 @@ public class JasminGenerator {
         code.append(rhsCode);
 
         // TODO: Hardcoded for int type, needs to be expanded
-        // done
+        // DONE: expanded
         var operatorType =types.getDescriptor(operand.getType());
         if (operatorType.equals("I")) { // INT32
             code.append(istore(reg)).append(NL);
@@ -434,6 +434,7 @@ public class JasminGenerator {
         updateStackSize();
 
         // TODO: Hardcoded for int type, needs to be expanded
+        // DONE: expanded
         var prefix = JasminUtils.getPrefix(operand.getType());
         switch (prefix) {
             case "i":
@@ -468,7 +469,7 @@ public class JasminGenerator {
         code.append(apply(binaryOp.getRightOperand()));
 
         // TODO: Hardcoded for int type, needs to be expanded
-        // CHANGES HAVE BEEN MADE
+        // DONE: expanded
 
         // this should be moved to jasminutils
         var type = binaryOp.getOperation().getOpType();
@@ -496,7 +497,7 @@ public class JasminGenerator {
 
             code.append(loadOperand);
             // TODO: Hardcoded for int type, needs to be expanded
-            // Add more in utils
+            // DONE: expanded using getPrefix
             var prefix = getPrefix(returnInst.getReturnType());
             code.append(prefix).append("return").append(NL);
 
