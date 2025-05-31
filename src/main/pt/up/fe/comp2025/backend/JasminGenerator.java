@@ -680,8 +680,6 @@ public class JasminGenerator {
 
         code.append("arraylength").append(NL);
 
-        stackSize--;
-
         return code.toString();
     }
 
@@ -732,6 +730,8 @@ public class JasminGenerator {
         StringBuilder code = new StringBuilder();
         code.append(apply(singleOpCond.getOperands().getFirst()));
         code.append("ifne ").append(singleOpCond.getLabel()).append(NL);
+
+        stackSize--;
 
         return code.toString();
     }
