@@ -516,10 +516,8 @@ public class JasminGenerator {
                     () -> "Expected exactly one argument for array size: " + newInst);
 
             code.append(apply(newInst.getArguments().getFirst()));
-
             code.append("newarray ").append(getArrayType(arrayType)).append(NL);
-            stackSize++;
-            updateStackSize();
+            // newarray maintains the stack size by replacing the size with the reference so no stackSize++ needed
         }else if (callerType instanceof ClassType classType) {
             var className = types.convertClassPath(classType.getName());
 
