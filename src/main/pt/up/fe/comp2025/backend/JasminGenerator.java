@@ -118,18 +118,14 @@ public class JasminGenerator {
         // generate class name
         var className = ollirResult.getOllirClass().getClassName();
         code.append(".class ").append(className).append(NL).append(NL);
-
-        // TODO: When you support 'extends', this must be updated
-        // done, not tested
+        
         String extended;
         if (classUnit.getSuperClass() == null || classUnit.getSuperClass().equals("Object")) {
             extended = "java/lang/Object";
-            code.append(".super ").append(extended).append(NL);
         } else {
-            extended = types.convertClassPath(ollirResult.getClass().getSuperclass().getName());
-            code.append(".super ").append(extended).append(NL);
+            extended = types.convertClassPath(classUnit.getSuperClass());
         }
-
+        code.append(".super ").append(extended).append(NL);
         // fields
         for (var f : classUnit.getFields()) {
             var am = getModifier(f.getFieldAccessModifier());
