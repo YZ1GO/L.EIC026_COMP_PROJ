@@ -1,0 +1,15 @@
+StringLiteralTest {
+
+    .construct StringLiteralTest().V {
+        invokespecial(this, "<init>").V;
+    }
+
+    .method public getStringLiteral().String {
+        result.String :=.String ldc("Hello, World!").String;
+        ret.String result.String;
+    }
+
+    .method public static main(args.array.String).V {
+       ret.V ;
+    }
+}

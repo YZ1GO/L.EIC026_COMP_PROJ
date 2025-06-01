@@ -1,0 +1,17 @@
+class MyClass {
+    public int func(int a, int b) {
+        int res;
+        res = b;
+
+        if (a<b){
+          res = a;
+
+          if (a<b){
+            res = a;
+          }
+        }
+
+
+        return res;
+    }
+}

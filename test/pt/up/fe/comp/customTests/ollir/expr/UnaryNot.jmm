@@ -1,0 +1,8 @@
+class UnaryNotTest {
+    public boolean negateBoolean(boolean input) {
+        boolean result;
+        result = !input;
+
+        return result;
+    }
+}

@@ -1,0 +1,19 @@
+import io;
+import Quicksort;
+
+class CompileIntArrayExample extends Quicksort {
+
+    int[] intArrayField;
+    int index;
+    int assignedValue;
+
+    public int updateArrayElement(int[] intArrayField) {
+        int index;
+        int value;
+        index = 0;
+        value = 1;
+        intArrayField = new int[2];
+        intArrayField[index] = value;
+        return intArrayField[index];
+    }
+}

@@ -1,0 +1,35 @@
+class ComplexPropWithIf {
+    public int calculate() {
+        int a;
+        int b;
+        int c;
+        int res;
+
+        a = 8;
+        b = 15;
+        c = 20;
+
+        if (a < b) {
+            if (b < c) {
+                a = 10; // Assignment inside nested branch
+                res = a + b + c;
+            } else {
+                b = 12; // Assignment inside nested branch
+                res = b - c;
+            }
+        } else {
+            if (a > c) {
+                c = 25; // Assignment inside nested branch
+                res = a * c;
+            } else {
+                a = 5; // Assignment inside nested branch
+                res = c / a;
+            }
+        }
+
+        return res;
+    }
+
+    public static void main(String[] args) {
+    }
+}

@@ -1,0 +1,12 @@
+import java.util.Scanner;
+import java.io.File;
+
+ImportTest {
+    .construct ImportTest().V {
+        invokespecial(this, "<init>").V;
+    }
+
+    .method public static main(args.array.String).V {
+        ret.V;
+    }
+}

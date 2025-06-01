@@ -1,0 +1,9 @@
+import MyClass;
+
+class NewObjectTest {
+    public static void main(String[] args) {
+        MyClass obj;
+
+        obj = new MyClass();
+    }
+}

@@ -1,0 +1,16 @@
+class RegAlloc {
+    public int soManyRegisters(int arg){
+       int a;
+       int b;
+       a = 3;
+       if (a < 5) {
+           b = 10;
+       } else {
+           b = 20;
+       }
+       return b;
+    }
+
+	public static void main(String[] args) {
+	}
+}

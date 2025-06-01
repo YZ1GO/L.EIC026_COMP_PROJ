@@ -1,0 +1,33 @@
+class ComplexPropWithWhile {
+    public int calculate() {
+        int a;
+        int b;
+        int c;
+        int res;
+
+        a = 5;
+        b = 10;
+        c = 20;
+        res = 0;
+
+        while (a < b) {
+            if (b < c) {
+                a = a + 2; // Increment a
+                res = res + a; // Accumulate result
+            } else {
+                b = b - 1; // Decrement b
+                res = res - b; // Adjust result
+            }
+
+            while (c > 15) {
+                c = c - 1; // Decrement c
+                res = res + c; // Accumulate result
+            }
+        }
+
+        return res;
+    }
+
+    public static void main(String[] args) {
+    }
+}

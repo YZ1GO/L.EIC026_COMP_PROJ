@@ -1,0 +1,14 @@
+class MethodCallExample {
+
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    public static void main(String[] args) {
+        MethodCallExample example;
+        int result;
+
+        example = new MethodCallExample();
+        result = example.add(5, 3);
+    }
+}

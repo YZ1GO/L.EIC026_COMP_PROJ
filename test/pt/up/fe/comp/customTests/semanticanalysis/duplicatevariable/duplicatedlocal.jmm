@@ -1,0 +1,14 @@
+class Test {
+    int a;
+
+    public String duplicatedString() {
+        String b;
+        String b;
+        return new String();
+    }
+
+    public int duplicatedInt() {
+        int a;
+        return a;
+    }
+}

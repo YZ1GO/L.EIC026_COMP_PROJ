@@ -15,3 +15,8 @@ gradle*
 output.ollir
 output.jasmin
 output.j
+
+.DS_Store
+
+Test.java
+Test.class

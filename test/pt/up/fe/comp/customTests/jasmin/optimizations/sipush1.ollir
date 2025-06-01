@@ -1,0 +1,16 @@
+InstSelection_sipush_32767 {
+
+
+
+
+.construct InstSelection_sipush_32767().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public foo().i32 {
+   a.i32 :=.i32 32767.i32;
+
+   ret.i32 32767.i32;
+}
+
+}

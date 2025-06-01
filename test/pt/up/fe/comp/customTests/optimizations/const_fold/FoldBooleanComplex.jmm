@@ -1,0 +1,35 @@
+import io;
+
+class FoldingTestOperators {
+
+    public static void main(String[] args) {
+        int x;
+        int y;
+        int z;
+        boolean p;
+        boolean q;
+
+        // Relational operators
+        x = 15;
+        y = 10;
+        z = 5;
+
+        p = x <= y; // false
+        q = z >= y; // false
+
+        // Equality operators
+        p = x == y; // false
+        q = z != y; // true
+
+        // Logical operators
+        p = (x > y) && (z < y); // true && true = true
+        q = (x < y) || (z > y); // false || false = false
+
+        // Nested logical and relational expressions
+        p = (x + z == 20) && (y - z != 5); // true && false = false
+        q = (x * z >= 75) || (y / z <= 2); // true || true = true
+
+        io.print(p);
+        io.print(q);
+    }
+}

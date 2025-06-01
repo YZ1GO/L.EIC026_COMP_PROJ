@@ -1,0 +1,7 @@
+class ArrayMultiplication {
+    public int[] foo() {
+        int[] a;
+        a = new int[3];
+        return a * 2;
+    }
+}

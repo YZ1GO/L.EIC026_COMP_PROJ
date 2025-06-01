@@ -1,0 +1,16 @@
+import ioPlus;
+class MyClass {
+    public static void main(String[] args) {
+        int res;
+        int a;
+        int b;
+        a = 10;
+        b = 5;
+        res = b;
+
+        if (a<b){
+          res = a;
+        }
+        ioPlus.printResult(res);
+    }
+}

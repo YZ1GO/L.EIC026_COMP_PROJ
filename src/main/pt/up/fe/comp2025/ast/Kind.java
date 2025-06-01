@@ -23,10 +23,28 @@ public enum Kind {
     STMT,
     ASSIGN_STMT,
     RETURN_STMT,
-    EXPR,
+    EXPR_STMT,
     BINARY_EXPR,
     INTEGER_LITERAL,
-    VAR_REF_EXPR;
+    VAR_REF_EXPR,
+    IMPORT_DECL,
+    ID,
+    ARRAY_INIT,
+    NEW_INT_ARRAY_EXPR,
+    ARRAY_ACCESS_EXPR,
+    VAR_DECL_STMT,
+    BLOCK_STMT,
+    IF_STMT,
+    WHILE_STMT,
+    PARENT_EXPR,
+    METHOD_CALL_EXPR,
+    NEW_OBJECT_EXPR, 
+    THIS_EXPR,       
+    UNARY_NOT_EXPR,
+    BOOLEAN_LITERAL, 
+    STRING_LITERAL,
+    LENGTH_EXPR,
+    ARRAY_ASSIGN_STMT;
 
 
     private final String name;

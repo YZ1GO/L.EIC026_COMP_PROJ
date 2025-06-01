@@ -100,6 +100,9 @@ public class JasminOptimizationsTest {
         CpUtils.matches(jasminResult, "iinc\\s+\\w+\\s+1");
 
     }
+    // obs from student: there's not much we can do on our part,
+    // the tests should start from .ollir instead of .jmm to avoid the tmp vars
+    // for more information see comments in jasmin generator, generateAssign, iinc handler
 
     /**
      * Test if iload_1 is used.

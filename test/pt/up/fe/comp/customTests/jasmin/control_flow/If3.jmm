@@ -1,0 +1,10 @@
+import ioPlus;
+class MyClass {
+    public static void main(String[] args) {
+        if (true){
+          ioPlus.printResult(10);
+        } else {
+          ioPlus.printResult(20);
+        }
+    }
+}

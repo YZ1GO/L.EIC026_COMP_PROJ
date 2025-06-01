@@ -1,0 +1,15 @@
+class VarargsWrong {
+
+    public int foo() {
+        int[] a;
+        boolean b;
+        b = false;
+        a = [10, 20, 30];
+        this.varargs(b, 1);
+        return 0;
+    }
+
+    public int varargs(int... a) {
+        return a[0];
+    }
+}

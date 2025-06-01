@@ -1,0 +1,9 @@
+class MyClass {
+    public int a(int a, int b) {
+        int res;
+        res = 0;
+
+        return res;
+    }
+
+}

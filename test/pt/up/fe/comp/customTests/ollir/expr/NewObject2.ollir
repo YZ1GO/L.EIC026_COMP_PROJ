@@ -1,0 +1,31 @@
+import A;
+import B;
+
+ObjectAssignmentPassImports {
+
+
+
+
+.construct ObjectAssignmentPassImports().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public static main(args.array.String).V {
+       ret.V;
+   }
+
+.method public foo().A {
+   tmp0.A :=.A new(A).A;
+invokespecial(tmp0.A, "<init>").V;
+a.A :=.A tmp0.A;
+
+   tmp1.B :=.B new(B).B;
+invokespecial(tmp1.B, "<init>").V;
+b.B :=.B tmp1.B;
+
+   a.A :=.A b.B;
+
+   ret.A a.A;
+}
+
+}

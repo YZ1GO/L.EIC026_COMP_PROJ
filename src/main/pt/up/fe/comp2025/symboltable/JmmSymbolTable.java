@@ -16,24 +16,33 @@ public class JmmSymbolTable extends AJmmSymbolTable {
     private final Map<String, Type> returnTypes;
     private final Map<String, List<Symbol>> params;
     private final Map<String, List<Symbol>> locals;
+    private final List<String> imports;
+    private final String superClassName;
+    private final List<Symbol> fields;
 
 
     public JmmSymbolTable(String className,
                           List<String> methods,
                           Map<String, Type> returnTypes,
                           Map<String, List<Symbol>> params,
-                          Map<String, List<Symbol>> locals) {
+                          Map<String, List<Symbol>> locals,
+                          List<String> imports,
+                          String superClassName,
+                          List<Symbol> fields) {
 
         this.className = className;
         this.methods = methods;
         this.returnTypes = returnTypes;
         this.params = params;
         this.locals = locals;
+        this.imports = imports;
+        this.superClassName = superClassName;
+        this.fields = fields;
     }
 
     @Override
     public List<String> getImports() {
-        throw new NotImplementedException();
+        return imports;
     }
 
     @Override
@@ -43,12 +52,12 @@ public class JmmSymbolTable extends AJmmSymbolTable {
 
     @Override
     public String getSuper() {
-        throw new NotImplementedException();
+        return superClassName;
     }
 
     @Override
     public List<Symbol> getFields() {
-        throw new NotImplementedException();
+        return fields;
     }
 
 
@@ -61,7 +70,8 @@ public class JmmSymbolTable extends AJmmSymbolTable {
     @Override
     public Type getReturnType(String methodSignature) {
         // TODO: Simple implementation that needs to be expanded
-        return TypeUtils.newIntType();
+        // DONE: Expanded implementation
+        return returnTypes.get(methodSignature);
     }
 
     @Override

@@ -1,0 +1,13 @@
+class VarargsInvalidTypes {
+
+    public int foo() {
+        String s;
+        s = "invalid";
+        this.varargs(s); // Invalid type passed
+        return 0;
+    }
+
+    public int varargs(int... a) {
+        return a[0];
+    }
+}

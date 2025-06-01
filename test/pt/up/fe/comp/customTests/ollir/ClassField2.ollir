@@ -1,0 +1,13 @@
+MyClass {
+
+
+.field public x.i32;
+.field public y.bool;
+.field public z.i32;
+.field public c.i32;
+
+.construct MyClass().V {
+    invokespecial(this, "<init>").V;
+}
+
+}

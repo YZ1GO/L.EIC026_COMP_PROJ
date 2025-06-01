@@ -1,0 +1,5 @@
+class Test {
+    public boolean isTrue() {
+        return 42;
+    }
+}

@@ -1,0 +1,47 @@
+class TestArraysAndVarargs {
+    public int sum(int... numbers) {
+        int total;
+        int i;
+        total = 0;
+        i = 0;
+        while (i < numbers.length) {
+            total = total + numbers[i];
+            i = i + 1;
+        }
+        return total;
+    }
+
+    public int[] createArray() {
+        int[] arr;
+        arr = new int[5];
+        arr[0] = 10;
+        arr[1] = 20;
+        arr[2] = 30;
+        arr[3] = 40;
+        arr[4] = 50;
+        return arr;
+    }
+
+    public int accessArray() {
+        int[] arr;
+        arr = this.createArray();
+        return arr[2];
+    }
+
+    public int modifyArray() {
+        int[] arr;
+        arr = this.createArray();
+        arr[1] = 100;
+        return 0;
+    }
+
+    public int callWithArray() {
+        int[] arr;
+        arr = this.createArray();
+        return this.sum(arr);
+    }
+
+    public int callWithVarargs() {
+        return this.sum(5, 10, 15, 20);
+    }
+}

@@ -1,0 +1,25 @@
+import io;
+import Quicksort;
+
+CompileIntArrayExample extends Quicksort  {
+
+
+.field public intArrayField.array.i32;
+.field public index.i32;
+.field public assignedValue.i32;
+
+.construct CompileIntArrayExample().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public getArrayElement(index.i32).i32 {
+   tmp0.array.i32 :=.array.i32 getfield(this, intArrayField.array.i32).array.i32;
+tmp1.i32 :=.i32 tmp0.array.i32[index.i32].i32;
+ret.i32 tmp1.i32;
+}
+
+.method public static main(args.array.String).V {
+ret.V;
+   }
+
+}

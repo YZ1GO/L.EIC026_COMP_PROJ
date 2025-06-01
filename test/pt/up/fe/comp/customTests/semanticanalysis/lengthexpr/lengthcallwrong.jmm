@@ -1,0 +1,10 @@
+class LengthCallExample {
+    public static void main(String[] args) {
+        int[] numbers;
+        boolean c;
+        int arrayLength;
+
+        numbers = new int[5];
+        arrayLength = c.length;
+    }
+}

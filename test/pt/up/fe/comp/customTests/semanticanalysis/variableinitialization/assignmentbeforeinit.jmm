@@ -1,0 +1,21 @@
+class VariableInitialize {
+
+    public int foo() {
+        int s;
+        int i;
+        int[] arr;
+        int j;
+
+        // Normal assignments
+        s = s;          // Self-assignment
+        //i = i + 1;      // Use before initialization
+        j = 10;         // Proper initialization
+
+        // Array assignments
+        //arr = new int[5]; // Proper initialization
+        arr[0] = arr[1];  // Use before initialization
+        arr[2] = j;       // Proper assignment
+
+        return 0;
+    }
+}

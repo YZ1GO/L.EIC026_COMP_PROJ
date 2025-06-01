@@ -1,0 +1,21 @@
+class ArrayAssignStmtTest {
+    public static void main(String[] args) {
+        int[] myArray;
+        int index;
+        int value;
+        int a;
+
+        index = 2;
+        value = 42;
+        myArray = new int[5];
+
+        // Array assignment statements
+        myArray[index] = value;
+        myArray[0] = 10;
+        myArray[1] = 20;
+        myArray[3] = 30;
+        myArray[4] = 50;
+
+        a = myArray[0];
+    }
+}

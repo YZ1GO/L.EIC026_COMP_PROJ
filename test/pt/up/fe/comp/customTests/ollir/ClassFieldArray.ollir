@@ -1,0 +1,10 @@
+MyClass {
+
+
+.field public c.array.i32;
+
+.construct MyClass().V {
+    invokespecial(this, "<init>").V;
+}
+
+}

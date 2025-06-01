@@ -1,0 +1,7 @@
+import CustomClass;
+
+class Test {
+    public CustomClass getCustomClass() {
+        return new CustomClass();
+    }
+}

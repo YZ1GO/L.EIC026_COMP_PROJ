@@ -1,0 +1,9 @@
+class MyClass {
+    public int foo( int ... a) {
+        return 0;
+    }
+
+    public int bar () {
+        return this.foo (1 , 2);
+    }
+}

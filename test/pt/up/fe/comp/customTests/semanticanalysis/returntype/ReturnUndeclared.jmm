@@ -1,0 +1,6 @@
+class Test {
+    public int[] getArray() {
+        int res;
+        return b;
+    }
+}

@@ -47,6 +47,7 @@ public class SymbolTableTest {
     @Test
     public void Fields() {
         var semantics = test("symboltable/MethodsAndFields.jmm", false);
+        System.out.println(semantics.getSymbolTable().print());
         var fields = semantics.getSymbolTable().getFields();
         assertEquals(3, fields.size());
         var checkInt = 0;

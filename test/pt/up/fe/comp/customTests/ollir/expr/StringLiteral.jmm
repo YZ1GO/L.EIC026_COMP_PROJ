@@ -1,0 +1,8 @@
+class StringLiteralTest {
+    public String getStringLiteral() {
+        String result;
+        result = "Hello, World!";
+
+        return result;
+    }
+}

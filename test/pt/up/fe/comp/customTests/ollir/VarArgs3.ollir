@@ -1,0 +1,119 @@
+VarArgsTests {
+
+
+
+
+.construct VarArgsTests().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public varargs sum(numbers.array.i32).i32 {
+   total.i32 :=.i32 0.i32;
+
+   i.i32 :=.i32 0.i32;
+
+   while0:
+tmp0.i32 :=.i32 arraylength(numbers.array.i32).i32;
+tmp1.bool :=.bool i.i32 <.bool tmp0.i32;
+if (!.bool tmp1.bool) goto endWhile0;
+tmp2.i32 :=.i32 numbers.array.i32[i.i32].i32;
+tmp3.i32 :=.i32 total.i32 +.i32 tmp2.i32;
+total.i32 :=.i32 tmp3.i32;
+tmp4.i32 :=.i32 i.i32 +.i32 1.i32;
+i.i32 :=.i32 tmp4.i32;
+
+goto while0;
+endWhile0:
+
+   ret.i32 total.i32;
+}
+
+.method public testSingleVararg().i32 {
+   tmp5.array.i32 :=.array.i32 new(array, 1.i32).array.i32;
+tmp5[0.i32].i32 :=.i32 42.i32;
+tmp6.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp5.array.i32).i32;
+ret.i32 tmp6.i32;
+}
+
+.method public testMultipleVarargs().i32 {
+   tmp7.array.i32 :=.array.i32 new(array, 5.i32).array.i32;
+tmp7[0.i32].i32 :=.i32 1.i32;
+tmp7[1.i32].i32 :=.i32 2.i32;
+tmp7[2.i32].i32 :=.i32 3.i32;
+tmp7[3.i32].i32 :=.i32 4.i32;
+tmp7[4.i32].i32 :=.i32 5.i32;
+tmp8.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp7.array.i32).i32;
+ret.i32 tmp8.i32;
+}
+
+.method public testEmptyVarargs().i32 {
+   tmp9.array.i32 :=.array.i32 new(array, 0.i32).array.i32;
+tmp10.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp9.array.i32).i32;
+ret.i32 tmp10.i32;
+}
+
+.method public testVarargsWithExpression().i32 {
+   tmp12.array.i32 :=.array.i32 new(array, 3.i32).array.i32;
+tmp13.i32 :=.i32 10.i32 +.i32 5.i32;
+tmp12[0.i32].i32 :=.i32 tmp13.i32;
+tmp14.i32 :=.i32 20.i32 *.i32 2.i32;
+tmp12[1.i32].i32 :=.i32 tmp14.i32;
+tmp15.i32 :=.i32 30.i32 /.i32 3.i32;
+tmp12[2.i32].i32 :=.i32 tmp15.i32;
+tmp16.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp12.array.i32).i32;
+ret.i32 tmp16.i32;
+}
+
+.method public testNestedVarargs().i32 {
+   tmp19.array.i32 :=.array.i32 new(array, 2.i32).array.i32;
+tmp20.array.i32 :=.array.i32 new(array, 2.i32).array.i32;
+tmp20[0.i32].i32 :=.i32 1.i32;
+tmp20[1.i32].i32 :=.i32 2.i32;
+tmp21.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp20.array.i32).i32;
+tmp19[0.i32].i32 :=.i32 tmp21.i32;
+tmp22.array.i32 :=.array.i32 new(array, 2.i32).array.i32;
+tmp22[0.i32].i32 :=.i32 3.i32;
+tmp22[1.i32].i32 :=.i32 4.i32;
+tmp23.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp22.array.i32).i32;
+tmp19[1.i32].i32 :=.i32 tmp23.i32;
+tmp24.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp19.array.i32).i32;
+ret.i32 tmp24.i32;
+}
+
+.method public testArrayToVarargs().i32 {
+   tmp25.array.i32 :=.array.i32 new(array, 5.i32).array.i32;
+tmp25[0.i32].i32 :=.i32 1.i32;
+tmp25[1.i32].i32 :=.i32 2.i32;
+tmp25[2.i32].i32 :=.i32 3.i32;
+tmp25[3.i32].i32 :=.i32 4.i32;
+tmp25[4.i32].i32 :=.i32 5.i32;
+arr.array.i32 :=.array.i32 tmp25.array.i32;
+   tmp26.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", arr.array.i32).i32;
+ret.i32 tmp26.i32;
+}
+
+.method public testArrayToVarargs2().i32 {
+   tmp27.array.i32 :=.array.i32 new(array, 5.i32).array.i32;
+tmp27[0.i32].i32 :=.i32 1.i32;
+tmp27[1.i32].i32 :=.i32 2.i32;
+tmp27[2.i32].i32 :=.i32 3.i32;
+tmp27[3.i32].i32 :=.i32 4.i32;
+tmp27[4.i32].i32 :=.i32 5.i32;
+tmp28.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp27.array.i32).i32;
+ret.i32 tmp28.i32;
+}
+
+.method public testArrayToVarargs3().i32 {
+   tmp29.array.i32 :=.array.i32 new(array, 10.i32).array.i32;
+arr.array.i32 :=.array.i32 tmp29.array.i32;
+   tmp30.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", arr.array.i32).i32;
+ret.i32 tmp30.i32;
+}
+
+.method public testArrayToVarargs4().i32 {
+   tmp31.array.i32 :=.array.i32 new(array, 4.i32).array.i32;
+tmp32.i32 :=.i32 invokevirtual(this.VarArgsTests, "sum", tmp31.array.i32).i32;
+ret.i32 tmp32.i32;
+}
+
+}

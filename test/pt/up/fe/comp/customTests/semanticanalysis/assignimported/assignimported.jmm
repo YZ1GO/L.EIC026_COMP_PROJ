@@ -1,0 +1,12 @@
+import B;
+import C;
+
+class A extends B {
+    int foo() {
+        C c;
+        C = new C(); // Correct
+        C = new B(); // Correct (B extends C)
+        C = new A(); // Correct (A extends B, and B extends C)
+        return 0;
+    }
+}

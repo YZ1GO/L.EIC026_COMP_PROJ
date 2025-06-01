@@ -1,0 +1,17 @@
+class Test {
+    String b;
+
+    public String getString() {
+        String b;
+        return "abc";
+    }
+
+    public String getString2() {
+        b = "hello";
+        return b;
+    }
+
+    public String getString4() {
+        return new String();
+    }
+}

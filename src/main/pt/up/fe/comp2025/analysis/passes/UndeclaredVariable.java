@@ -8,6 +8,8 @@ import pt.up.fe.comp2025.analysis.AnalysisVisitor;
 import pt.up.fe.comp2025.ast.Kind;
 import pt.up.fe.specs.util.SpecsCheck;
 
+import java.util.Arrays;
+
 /**
  * Checks if the type of the expression in a return statement is compatible with the method return type.
  *
@@ -34,7 +36,6 @@ public class UndeclaredVariable extends AnalysisVisitor {
         // Check if exists a parameter or variable declaration with the same name as the variable reference
         var varRefName = varRefExpr.get("name");
 
-
         // Var is a parameter, return
         if (table.getParameters(currentMethod).stream()
                 .anyMatch(param -> param.getName().equals(varRefName))) {
@@ -47,15 +48,25 @@ public class UndeclaredVariable extends AnalysisVisitor {
             return null;
         }
 
+        // Var is declared outside the method, return
+        if (table.getFields().stream()
+                .anyMatch(varDecl -> varDecl.getName().equals(varRefName))) {
+            return null;
+        }
+
+        // Check if the variable matches an imported class
+        if (table.getImports().stream()
+                .flatMap(importName -> Arrays.stream(importName.substring(1, importName.length() - 1).split(",")))
+                .map(String::trim)
+                .anyMatch(importedClass -> importedClass.equals(varRefName))) {
+            return null;
+        }
 
         // Create error report
         var message = String.format("Variable '%s' does not exist.", varRefName);
-        addReport(Report.newError(
-                Stage.SEMANTIC,
-                varRefExpr.getLine(),
-                varRefExpr.getColumn(),
-                message,
-                null)
+        addReport(newError(
+                varRefExpr,
+                message)
         );
 
         return null;

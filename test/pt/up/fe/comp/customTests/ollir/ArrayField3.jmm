@@ -1,0 +1,14 @@
+import io;
+import Quicksort;
+
+class CompileIntArrayExample extends Quicksort {
+
+    int[] intArrayField;
+    int index;
+    int assignedValue;
+
+    public int[] initializeArray(int size) {
+        intArrayField = new int[size];
+        return intArrayField;
+    }
+}

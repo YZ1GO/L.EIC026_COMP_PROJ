@@ -5,7 +5,10 @@ import pt.up.fe.comp.jmm.analysis.table.Type;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNode;
 import pt.up.fe.comp2025.ast.TypeUtils;
+import pt.up.fe.comp2025.utils.GetPutFieldUtils;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static pt.up.fe.comp2025.ast.Kind.*;
@@ -49,9 +52,42 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         addVisit(RETURN_STMT, this::visitReturn);
         addVisit(ASSIGN_STMT, this::visitAssignStmt);
 
-//        setDefaultVisit(this::defaultVisit);
+        addVisit(EXPR_STMT, this::visitExprStmt);
+        addVisit(VAR_DECL, this::visitVarDecl);
+        addVisit(IMPORT_DECL, this::visitImportDecl);
+        addVisit(WHILE_STMT, this::visitWhileStmt);
+
+        addVisit(BLOCK_STMT, this::visitBlockStmt);
+        addVisit(IF_STMT, this::visitIfStmt);
+        addVisit(ARRAY_ASSIGN_STMT, this::visitArrayAssignStmt);
+
+        setDefaultVisit(this::defaultVisit);
     }
 
+    private String visitImportDecl(JmmNode node, Void unused) {
+        String name = node.get("name");
+
+        // Remove brackets from the name (e.g., "[java, util, List]" -> "java, util, List")
+        name = name.substring(1, name.length() - 1);
+
+        List<String> importNames = Arrays.stream(name.split(","))
+                .map(String::trim)
+                .collect(Collectors.toList());
+
+        String importPath = String.join(".", importNames);
+
+        return "import " + importPath + ";\n";
+    }
+
+    private String visitVarDecl(JmmNode node, Void unused) {
+
+        var varName = node.get("name");
+
+        JmmNode typeNode = node.getChild(0);
+        String typeCode = ollirTypes.toOllirType(TypeUtils.convertType(typeNode));
+
+        return varName + typeCode + ";\n";
+    }
 
     private String visitAssignStmt(JmmNode node, Void unused) {
 
@@ -67,19 +103,25 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         var left = node.getChild(0);
         Type thisType = types.getExprType(left);
         String typeString = ollirTypes.toOllirType(thisType);
-        var varCode = left.get("name") + typeString;
+        var varName = left.get("name");
 
+        String methodName = node.getAncestor(METHOD_DECL)
+                .map(methodNode -> methodNode.get("name"))
+                .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Assignment not inside a method"));
 
-        code.append(varCode);
-        code.append(SPACE);
-
-        code.append(ASSIGN);
-        code.append(typeString);
-        code.append(SPACE);
-
-        code.append(rhs.getCode());
-
-        code.append(END_STMT);
+        if (GetPutFieldUtils.isClassField(varName, methodName, table)) {
+            code.append("putfield(this, ").append(varName).append(typeString).append(", ")
+                    .append(rhs.getCode()).append(").V").append(END_STMT);
+        } else {
+            code.append(varName);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(ASSIGN);
+            code.append(typeString);
+            code.append(SPACE);
+            code.append(rhs.getCode());
+            code.append(END_STMT);
+        }
 
         return code.toString();
     }
@@ -87,26 +129,27 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
     private String visitReturn(JmmNode node, Void unused) {
         // TODO: Hardcoded for int type, needs to be expanded
-        Type retType = TypeUtils.newIntType();
-
-
+        // DONE: Expanded for other types
         StringBuilder code = new StringBuilder();
-
 
         var expr = node.getNumChildren() > 0 ? exprVisitor.visit(node.getChild(0)) : OllirExprResult.EMPTY;
 
+        Type retType = expr != OllirExprResult.EMPTY ? types.getExprType(node.getChild(0)) : TypeUtils.newVoidType();
 
         code.append(expr.getComputation());
         code.append("ret");
         code.append(ollirTypes.toOllirType(retType));
         code.append(SPACE);
 
-        code.append(expr.getCode());
+        if (expr != OllirExprResult.EMPTY) {
+            code.append(expr.getCode());
+        }
 
         code.append(END_STMT);
 
         return code.toString();
     }
+
 
 
     private String visitParam(JmmNode node, Void unused) {
@@ -125,9 +168,22 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         StringBuilder code = new StringBuilder(".method ");
 
         boolean isPublic = node.getBoolean("isPublic", false);
-
         if (isPublic) {
             code.append("public ");
+        }
+
+        boolean isStatic = node.getBoolean("isStatic", false);
+        if (isStatic) {
+            code.append("static ");
+        }
+
+        if (node.getChildren(PARAM).stream()
+                .anyMatch(param -> {
+                    JmmNode typeNode = param.getChild(0);
+                    Object isVarArgsObject = typeNode.getObject("isVarArgs");
+                    return isVarArgsObject instanceof Boolean && (Boolean) isVarArgsObject;
+                })) {
+            code.append("varargs ");
         }
 
         // name
@@ -136,12 +192,18 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
 
         // params
         // TODO: Hardcoded for a single parameter, needs to be expanded
-        var paramsCode = visit(node.getChild(1));
-        code.append("(" + paramsCode + ")");
+        // DONE: Expanded to handle multiple parameters
+        var params = node.getChildren(PARAM);
+        String paramsCode = params.isEmpty() ? "" : params.stream()
+                .map(this::visit)
+                .collect(Collectors.joining(", "));
+        code.append("(").append(paramsCode).append(")");
 
         // type
         // TODO: Hardcoded for int, needs to be expanded
-        var retType = ".i32";
+        // DONE: Expanded to handle multiple types
+        Type returnType = TypeUtils.convertType(node.getChild(0));
+        String retType = ollirTypes.toOllirType(returnType);
         code.append(retType);
         code.append(L_BRACKET);
 
@@ -152,6 +214,13 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
                 .collect(Collectors.joining("\n   ", "   ", ""));
 
         code.append(stmtsCode);
+
+        // Add default return statement if the method is void and no explicit return is present
+        if (returnType.getName().equals("void") && node.getChildren(STMT).stream()
+                .noneMatch(stmt -> stmt.getKind().equals(RETURN_STMT.toString()))) {
+            code.append("   ret.V;\n");
+        }
+
         code.append(R_BRACKET);
         code.append(NL);
 
@@ -166,8 +235,25 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         code.append(NL);
         code.append(table.getClassName());
         
+        String superClass = table.getSuper();
+        if (superClass != null && !superClass.isEmpty()) {
+            code.append(" extends ").append(superClass);
+        }
+
         code.append(L_BRACKET);
         code.append(NL);
+        code.append(NL);
+
+        table.getFields().forEach(
+                field -> {
+                    code.append(".field public ");
+                    code.append(field.getName());
+                    code.append(ollirTypes.toOllirType(field.getType()));
+                    code.append(END_STMT);
+                    code.append(NL);
+                }
+        );
+
         code.append(NL);
 
         code.append(buildConstructor());
@@ -204,13 +290,145 @@ public class OllirGeneratorVisitor extends AJmmVisitor<Void, String> {
         return code.toString();
     }
 
+    private String visitBlockStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        for (var v : node.getChildren()) {
+            code.append(visit(v));
+        }
+
+        return code.toString();
+    }
+
+    private String visitIfStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var label = OptUtils.getIfLabels();
+        var thenL = label.get(0);
+        var endifL = label.get(1);
+
+        var cond = exprVisitor.visit(node.getChild(0));
+        var thenStmt = node.getChild(1);
+        var elseStmt = node.getChildren().size() > 2 ? node.getChild(2) : null;
+
+        code.append(cond.getComputation());
+
+        code.append("if (").append(cond.getCode()).append(") goto ").append(thenL).append(END_STMT);
+
+        // else block
+        if (elseStmt != null) {
+            code.append(visit(elseStmt));
+
+        }
+
+        code.append("goto ").append(endifL).append(END_STMT);
+
+        // then block
+        code.append(thenL).append(":").append(NL);
+        code.append(visit(thenStmt));
+
+
+        code.append(endifL).append(":").append(NL);
+
+
+        return code.toString();
+    }
+
+    private String visitWhileStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        var label = OptUtils.getWhileLabels();
+        var whileL = label.get(0);
+        var endWhileL = label.get(1);
+
+        code.append(whileL).append(":").append(NL);
+
+        var cond = exprVisitor.visit(node.getChild(0));
+        var body = node.getChild(1);
+
+        code.append(cond.getComputation());
+
+        code.append("if (!.bool ").append(cond.getCode()).append(") goto ").append(endWhileL).append(END_STMT);
+
+        code.append(visit(body));
+
+        code.append("goto ").append(whileL).append(END_STMT);
+
+
+        // end while block
+        code.append(endWhileL).append(":").append(NL);
+
+
+        return code.toString();
+    }
+
+    private String visitExprStmt(JmmNode node, Void unused) {
+
+        var expr = exprVisitor.visit(node.getChild(0));
+
+        return expr.getComputation();
+    }
+
+    private String visitArrayAssignStmt(JmmNode node, Void unused) {
+        StringBuilder code = new StringBuilder();
+
+        String arrayName = node.get("name");
+
+        JmmNode indexNode = node.getChild(0);
+        JmmNode valueNode = node.getChild(1);
+
+        OllirExprResult indexRes = exprVisitor.visit(indexNode);
+        OllirExprResult valueRes = exprVisitor.visit(valueNode);
+
+        Type elementType = types.getExprType(valueNode);
+        String ollirElemType = ollirTypes.toOllirType(elementType);
+
+        code.append(indexRes.getComputation());
+
+        String methodName = node.getAncestor(METHOD_DECL)
+                .map(methodNode -> methodNode.get("name"))
+                .orElseThrow(() -> new RuntimeException("ERROR IN OlllirGeneratorVisitor: Array assignment not inside a method"));
+
+        if (GetPutFieldUtils.isClassField(arrayName, methodName, table)) {
+            // Generate getfield for the array field
+            String tempArrayVar = ollirTypes.nextTemp();
+            code.append(tempArrayVar).append(".array").append(ollirElemType).append(SPACE)
+                    .append(ASSIGN).append(".array").append(ollirElemType).append(SPACE)
+                    .append("getfield(this, ").append(arrayName).append(".array").append(ollirElemType).append(")")
+                    .append(".array").append(ollirElemType).append(END_STMT);
+
+            code.append(valueRes.getComputation());
+
+            // Generate assignment to the array element
+            code.append(tempArrayVar).append(".array").append(ollirElemType)
+                    .append("[").append(indexRes.getCode()).append("]").append(ollirElemType)
+                    .append(SPACE).append(ASSIGN).append(ollirElemType).append(SPACE)
+                    .append(valueRes.getCode()).append(END_STMT);
+        } else {
+            code.append(valueRes.getComputation());
+            code.append(arrayName)
+                    .append("[")
+                    .append(indexRes.getCode())
+                    .append("]")
+                    .append(ollirElemType)
+                    .append(SPACE)
+                    .append(ASSIGN)
+                    .append(ollirElemType)
+                    .append(SPACE)
+                    .append(valueRes.getCode())
+                    .append(END_STMT);
+        }
+
+        return code.toString();
+    }
+
     /**
-     * Default visitor. Visits every child node and return an empty string.
-     *
-     * @param node
-     * @param unused
-     * @return
-     */
+         * Default visitor. Visits every child node and return an empty string.
+         *
+         * @param node
+         * @param unused
+         * @return
+         */
     private String defaultVisit(JmmNode node, Void unused) {
 
         for (var child : node.getChildren()) {

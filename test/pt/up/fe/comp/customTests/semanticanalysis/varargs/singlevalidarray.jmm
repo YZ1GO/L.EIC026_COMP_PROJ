@@ -1,0 +1,16 @@
+class VarargsSingleArray {
+
+    public int foo() {
+        int[] a;
+        a = new int[3];
+        a[0] = 10;
+        a[1] = 20;
+        a[2] = 30;
+        this.varargs(a); // Single valid array
+        return 0;
+    }
+
+    public int varargs(int... a) {
+        return a[0];
+    }
+}

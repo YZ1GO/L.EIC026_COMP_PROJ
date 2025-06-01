@@ -1,0 +1,7 @@
+import java.util.Scanner;
+import java.io.File;
+
+class ImportTest {
+    public static void main(String[] args) {
+    }
+}

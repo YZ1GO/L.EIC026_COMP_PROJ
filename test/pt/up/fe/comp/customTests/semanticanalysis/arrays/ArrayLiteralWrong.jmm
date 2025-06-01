@@ -1,0 +1,7 @@
+class ArrayLiteralWrong {
+    public int[] foo() {
+        int[] a;
+        a = [true, 0, 1];
+        return a;
+    }
+}

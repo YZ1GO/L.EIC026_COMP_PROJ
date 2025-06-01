@@ -1,0 +1,16 @@
+import Parent;
+
+Extends extends Parent  {
+
+
+
+
+.construct Extends().V {
+    invokespecial(this, "<init>").V;
+}
+
+.method public static main(args.array.String).V {
+   ret.V ;
+}
+
+}
