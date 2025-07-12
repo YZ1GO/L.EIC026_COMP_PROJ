@@ -82,3 +82,9 @@ Key Features:
 - Supports arithmetic and logical operations.
 - Avoids division by zero by replacing such cases with a default value (e.g., 0).
 - Simplifies the abstract syntax tree (AST) by replacing complex expressions with literals.
+
+### Grades
+> [Checkpoint 1 - Frontend](https://github.com/YZ1GO/L.EIC026_COMP_PROJ/blob/master/docs/COMP2025_CP1.pdf): 92.6<br>
+> [Checkpoint 2 - Intermediate Representation and Optimizations](https://github.com/YZ1GO/L.EIC026_COMP_PROJ/blob/master/docs/COMP2025_CP2.pdf): 92.2<br>
+> [Checkpoint 3 - Backend](https://github.com/YZ1GO/L.EIC026_COMP_PROJ/blob/master/docs/COMP2025_CP3.pdf): 97.9<br>
+> Final Grade: 19.07/20.00
